@@ -2,11 +2,10 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+// Do not set a global Content-Type header so requests that send FormData
+// can rely on the browser/axios to set the proper multipart boundary.
 export const apiClient = axios.create({
   baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 apiClient.interceptors.request.use((config) => {

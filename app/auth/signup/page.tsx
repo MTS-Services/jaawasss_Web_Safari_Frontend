@@ -83,6 +83,8 @@ export default function SignUpPage() {
     setError("")
     
     try {
+      const deviceName = typeof window !== "undefined" ? navigator.userAgent : "web"
+
       const result = await signup({
         email: formData.email,
         password: formData.password,
@@ -90,6 +92,14 @@ export default function SignUpPage() {
         lastName: formData.lastName,
         company: formData.company,
         role: formData.role as UserRole,
+        country: formData.country,
+        city: formData.city,
+        businessLicense: formData.businessLicense,
+        website: formData.website,
+        factoryPhotos: formData.factoryPhotos,
+        additionalNotes: formData.additionalNotes,
+        agreeTerms: formData.agreeTerms,
+        deviceName,
       })
       
       if (result.success) {

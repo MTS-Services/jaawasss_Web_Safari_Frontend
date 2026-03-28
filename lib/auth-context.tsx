@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import type { LoginInput, User as ApiUser } from "@/lib/types"
-import { login as loginRequest } from "@/lib/api/auth"
+import { login as loginRequest, register as registerRequest } from "@/lib/api/auth"
 import { getDashboardPathByRole, normalizeUserRole, type UserRole } from "@/lib/roles/dashboard-route"
 
 export type ManufacturerStatus =
@@ -46,6 +46,14 @@ interface SignupData {
   lastName: string
   company: string
   role: UserRole
+  country?: string
+  city?: string
+  businessLicense?: File | null
+  website?: string
+  factoryPhotos?: File[]
+  additionalNotes?: string
+  deviceName?: string
+  agreeTerms?: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -151,24 +159,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (data: SignupData): Promise<{ success: boolean; redirectTo: string }> => {
     setIsLoading(true)
 
-    const newUser: User = {
-      id: `new-${Date.now()}`,
-      email: data.email,
-      role: data.role,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      name: `${data.firstName} ${data.lastName}`.trim(),
-      company: data.company,
-      manufacturerStatus: data.role === "manufacturer" ? "pending_approval" : undefined,
-      createdAt: new Date().toISOString().split("T")[0],
-    }
+    try {
+      const form = new FormData()
+      form.append("role", data.role)
+      form.append("first_name", data.firstName)
+      form.append("last_name", data.lastName)
+      form.append("email", data.email)
+      form.append("company_name", data.company)
 
-    setUser(newUser)
-    setIsLoading(false)
+      if (data.country) form.append("country", data.country)
+      form.append("password", data.password)
+      form.append("terms_condition", data.agreeTerms ? "1" : "0")
 
-    return {
-      success: true,
-      redirectTo: getDashboardPathByRole(newUser.role),
+      if (data.city) form.append("city", data.city)
+      if (data.businessLicense) form.append("bussiness_licence", data.businessLicense)
+      
+      // Send fields even if empty, preventing undefined issues on the backend
+      form.append("company_website", data.website || "")
+      form.append("notes", data.additionalNotes || "")
+
+      if (data.factoryPhotos && data.factoryPhotos.length > 0) {
+        data.factoryPhotos.forEach((file) => {
+          // Send array properly with empty brackets
+          form.append("factory_images[]", file)
+        })
+      }
+
+      if (data.deviceName) form.append("device_name", data.deviceName)
+
+      const response = await registerRequest(form)
+
+      if (!response.success) {
+        return { success: false, redirectTo: "" }
+      }
+
+      setToken(response.data.access_token)
+      setUser(response.data.user)
+
+      return {
+        success: true,
+        redirectTo: getDashboardPathByRole(response.data.user.role),
+      }
+    } catch (err: any) {
+      // Log exactly what the backend rejected so we don't have to guess
+      console.error("Registration Failed! Backend Response:", err.response?.data || err.message)
+      return { success: false, redirectTo: "" }
+    } finally {
+      setIsLoading(false)
     }
   }
 
