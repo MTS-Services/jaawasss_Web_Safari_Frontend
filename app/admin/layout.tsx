@@ -189,6 +189,7 @@ export default function AdminLayout({
             >
               <Menu className="h-6 w-6 text-foreground" />
             </button>
+            {/*
             <div className="relative hidden min-w-0 flex-1 md:block md:max-w-md">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input 
@@ -197,6 +198,7 @@ export default function AdminLayout({
                 className="h-9 w-full min-w-0 rounded-lg border border-input bg-background pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
+            */}
           </div>
           <div className="flex items-center gap-3">
             <button className="relative rounded-lg p-2 hover:bg-muted">
