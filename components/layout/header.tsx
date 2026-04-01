@@ -125,7 +125,7 @@ const platformItems: HeaderNavItemDef[] = [
 
 const resourceItems: HeaderNavItemDef[] = [
   {
-    title: "Reviewed",
+    title: "Review",
     href: "/verification",
     description: "Learn how we reviewed and approve suppliers",
     icon: ShieldCheck,
@@ -286,7 +286,7 @@ export function Header() {
                       </Button>
                     </div>
                   ) : (
-                    <div className="max-h-[280px] overflow-y-auto">
+                    <div className="max-h-70 overflow-y-auto">
                       {savedSupplierDetails.map((supplier) => (
                         <div key={supplier.id} className="group relative">
                           <DropdownMenuItem asChild className="cursor-pointer p-0 rounded-none">
@@ -353,7 +353,7 @@ export function Header() {
                       </Button>
                     </div>
                   ) : (
-                    <div className="max-h-[280px] overflow-y-auto">
+                    <div className="max-h-70 overflow-y-auto">
                       {savedProductDetails.map((product) => (
                         <div key={product.id} className="group relative">
                           <DropdownMenuItem asChild className="cursor-pointer p-0 rounded-none">
@@ -418,7 +418,7 @@ export function Header() {
                       {user.name?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="max-w-[100px] truncate">{user.name}</span>
+                  <span className="max-w-25 truncate">{user.name}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">

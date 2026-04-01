@@ -237,7 +237,7 @@ export default function AdminCreateManufacturerPage() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="account" className="gap-2">
             <User className="h-4 w-4" />
             Account
@@ -253,10 +253,6 @@ export default function AdminCreateManufacturerPage() {
           <TabsTrigger value="business" className="gap-2">
             <Factory className="h-4 w-4" />
             Business
-          </TabsTrigger>
-          <TabsTrigger value="products" className="gap-2">
-            <Package className="h-4 w-4" />
-            Products
           </TabsTrigger>
         </TabsList>
 
@@ -646,55 +642,7 @@ export default function AdminCreateManufacturerPage() {
           </div>
         </TabsContent>
 
-        {/* Products Tab */}
-        <TabsContent value="products">
-          <Card>
-            <CardHeader>
-              <CardTitle>Main Products</CardTitle>
-              <CardDescription>
-                Add the main products this manufacturer produces
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input 
-                  value={newProduct}
-                  onChange={(e) => setNewProduct(e.target.value)}
-                  placeholder="Enter product name"
-                  onKeyDown={(e) => e.key === "Enter" && addProduct()}
-                />
-                <Button onClick={addProduct}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add
-                </Button>
-              </div>
-
-              {mainProducts.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {mainProducts.map(product => (
-                    <Badge 
-                      key={product} 
-                      variant="secondary"
-                      className="gap-1 pr-1"
-                    >
-                      {product}
-                      <button 
-                        onClick={() => removeProduct(product)}
-                        className="ml-1 rounded-full hover:bg-muted-foreground/20 p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No products added yet. Add products to help buyers find this manufacturer.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+        
       </Tabs>
 
       {/* Action Buttons */}

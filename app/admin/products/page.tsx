@@ -15,9 +15,6 @@ import {
   Search,
   Package,
   MoreVertical,
-  CheckCircle,
-  X,
-  Eye,
   Factory
 } from "lucide-react"
 
@@ -30,11 +27,14 @@ const products = [
   { id: "6", name: "Stainless Steel Fasteners", supplier: "MetalWorks Pro", category: "Industrial", status: "under_review", price: "$0.05 - $0.25" },
 ]
 
+// Auto-approve all products in the admin UI — no manual approval required
+const normalizedProducts = products.map((p) => ({ ...p, status: "approved" }))
+
 export default function AdminProductsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
 
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = normalizedProducts.filter(product => {
     if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false
     }
@@ -69,9 +69,6 @@ export default function AdminProductsPage() {
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="under_review">Under Review</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -97,34 +94,6 @@ export default function AdminProductsPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge 
-                variant={
-                  product.status === "approved" ? "secondary" : 
-                  product.status === "pending" ? "outline" : 
-                  product.status === "under_review" ? "outline" : "destructive"
-                }
-                className="capitalize"
-              >
-                {product.status.replace("_", " ")}
-              </Badge>
-              
-              {product.status === "pending" && (
-                <>
-                  <Button size="sm" variant="outline">
-                    <Eye className="mr-1 h-3 w-3" />
-                    Review
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-destructive">
-                    <X className="mr-1 h-3 w-3" />
-                    Reject
-                  </Button>
-                  <Button size="sm">
-                    <CheckCircle className="mr-1 h-3 w-3" />
-                    Approve
-                  </Button>
-                </>
-              )}
-              
               <Button variant="ghost" size="icon">
                 <MoreVertical className="h-4 w-4" />
               </Button>
