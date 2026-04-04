@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { Suspense, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
@@ -31,6 +31,21 @@ import { countries } from "@/lib/data/countries"
 type SocialRole = "buyer" | "manufacturer"
 
 export default function SocialCompleteProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div>
+          <h1 className="font-serif text-3xl font-medium text-foreground">Complete your profile</h1>
+          <p className="mt-2 text-muted-foreground">Loading profile setup...</p>
+        </div>
+      }
+    >
+      <SocialCompleteProfileContent />
+    </Suspense>
+  )
+}
+
+function SocialCompleteProfileContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { completeGoogleProfile } = useAuth()
