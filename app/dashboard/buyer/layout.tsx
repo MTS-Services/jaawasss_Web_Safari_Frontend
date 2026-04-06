@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { NotificationsDropdown } from "@/components/notifications-dropdown"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -248,12 +249,7 @@ export default function BuyerDashboardLayout({
 
           <div className="flex items-center gap-3">
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
-                3
-              </span>
-            </Button>
+            <NotificationsDropdown />
 
             {/* User Menu */}
             <DropdownMenu>
