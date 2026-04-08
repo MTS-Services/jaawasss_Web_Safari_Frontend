@@ -24,8 +24,12 @@ import {
 } from "lucide-react"
 import { AccountDangerZone } from "@/components/settings/account-danger-zone"
 import { TwoFactorSettings } from "@/components/settings/two-factor-settings"
+import { LanguageSelector } from "@/components/settings/language-selector"
+import { useTranslation } from "@/lib/i18n"
 
 export default function ManufacturerSettingsPage() {
+  const { t } = useTranslation();
+
   const [notifications, setNotifications] = useState({
     newInquiry: true,
     newMessage: true,
@@ -38,14 +42,14 @@ export default function ManufacturerSettingsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-medium text-foreground">Settings</h1>
+          <h1 className="font-serif text-2xl font-medium text-foreground">{t.settings.title}</h1>
           <p className="mt-1 text-muted-foreground">
-            Manage your account and preferences
+            {t.settings.subtitle}
           </p>
         </div>
         <Button className="gap-2">
           <Save className="h-4 w-4" />
-          Save Changes
+          {t.common.save}
         </Button>
       </div>
 
@@ -56,32 +60,32 @@ export default function ManufacturerSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Account Details
+                {t.settings.accountDetails}
               </CardTitle>
               <CardDescription>
-                Manage your login credentials and contact information
+                {t.settings.accountCredentialsDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-foreground">First Name</label>
+                  <label className="text-sm font-medium text-foreground">{t.settings.firstName}</label>
                   <Input defaultValue="Michael" className="mt-2" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">Last Name</label>
+                  <label className="text-sm font-medium text-foreground">{t.settings.lastName}</label>
                   <Input defaultValue="Chen" className="mt-2" />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">Email Address</label>
+                <label className="text-sm font-medium text-foreground">{t.settings.emailAddress}</label>
                 <Input defaultValue="michael@techvision.com" className="mt-2" type="email" />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">Phone Number</label>
+                <label className="text-sm font-medium text-foreground">{t.settings.phoneNumber}</label>
                 <Input defaultValue="+86 755 1234 5678" className="mt-2" type="tel" />
               </div>
-              <Button variant="outline">Change Password</Button>
+              <Button variant="outline">{t.settings.changePassword}</Button>
             </CardContent>
           </Card>
 
@@ -90,17 +94,17 @@ export default function ManufacturerSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                Notification Preferences
+                {t.settings.notifications}
               </CardTitle>
               <CardDescription>
-                Choose how and when you want to be notified
+                {t.settings.notificationsDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <p className="font-medium text-foreground">New Inquiry Alerts</p>
-                  <p className="text-sm text-muted-foreground">Get notified when buyers send inquiries</p>
+                  <p className="font-medium text-foreground">{t.settings.newInquiryAlerts}</p>
+                  <p className="text-sm text-muted-foreground">{t.settings.newInquiryAlertsDesc}</p>
                 </div>
                 <Switch 
                   checked={notifications.newInquiry}
@@ -109,8 +113,8 @@ export default function ManufacturerSettingsPage() {
               </div>
               <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="font-medium text-foreground">New Messages</p>
-                  <p className="text-sm text-muted-foreground">Get notified for new messages from buyers</p>
+                  <p className="font-medium text-foreground">{t.settings.newMessages}</p>
+                  <p className="text-sm text-muted-foreground">{t.settings.newMessagesMfgDesc}</p>
                 </div>
                 <Switch 
                   checked={notifications.newMessage}
@@ -119,8 +123,8 @@ export default function ManufacturerSettingsPage() {
               </div>
               <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="font-medium text-foreground">Quote Requests</p>
-                  <p className="text-sm text-muted-foreground">Get notified when you receive RFQs</p>
+                  <p className="font-medium text-foreground">{t.settings.quoteRequests}</p>
+                  <p className="text-sm text-muted-foreground">{t.settings.quoteRequestsDesc}</p>
                 </div>
                 <Switch 
                   checked={notifications.quoteRequest}
@@ -129,8 +133,8 @@ export default function ManufacturerSettingsPage() {
               </div>
               <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="font-medium text-foreground">Weekly Performance Digest</p>
-                  <p className="text-sm text-muted-foreground">Receive weekly analytics summary</p>
+                  <p className="font-medium text-foreground">{t.settings.weeklyPerformanceDigest}</p>
+                  <p className="text-sm text-muted-foreground">{t.settings.weeklyPerformanceDigestDesc}</p>
                 </div>
                 <Switch 
                   checked={notifications.weeklyDigest}
@@ -139,8 +143,8 @@ export default function ManufacturerSettingsPage() {
               </div>
               <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="font-medium text-foreground">Marketing & Promotions</p>
-                  <p className="text-sm text-muted-foreground">Receive tips and promotional offers</p>
+                  <p className="font-medium text-foreground">{t.settings.marketingPromotions}</p>
+                  <p className="text-sm text-muted-foreground">{t.settings.marketingPromotionsMfgDesc}</p>
                 </div>
                 <Switch 
                   checked={notifications.promotions}
@@ -155,30 +159,20 @@ export default function ManufacturerSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="h-5 w-5" />
-                Language & Region
+                {t.settings.languageRegion}
               </CardTitle>
               <CardDescription>
-                Set your preferred language and timezone
+                {t.settings.languageRegionDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-foreground">Language</label>
-                  <Select defaultValue="en">
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="zh">Chinese (Simplified)</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="de">German</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <label className="text-sm font-medium text-foreground">{t.settings.language}</label>
+                  <LanguageSelector />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground">Timezone</label>
+                  <label className="text-sm font-medium text-foreground">{t.settings.timezone}</label>
                   <Select defaultValue="asia-shanghai">
                     <SelectTrigger className="mt-2">
                       <SelectValue />
@@ -193,7 +187,7 @@ export default function ManufacturerSettingsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">Currency Display</label>
+                <label className="text-sm font-medium text-foreground">{t.settings.currencyDisplay}</label>
                 <Select defaultValue="usd">
                   <SelectTrigger className="mt-2">
                     <SelectValue />
@@ -214,27 +208,27 @@ export default function ManufacturerSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Security
+                {t.settings.security}
               </CardTitle>
               <CardDescription>
-                Manage your account security settings
+                {t.settings.securityDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <TwoFactorSettings />
               <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="font-medium text-foreground">Login History</p>
-                  <p className="text-sm text-muted-foreground">View recent login activity</p>
+                  <p className="font-medium text-foreground">{t.settings.loginHistory}</p>
+                  <p className="text-sm text-muted-foreground">{t.settings.loginHistoryDesc}</p>
                 </div>
-                <Button variant="outline" size="sm">View</Button>
+                <Button variant="outline" size="sm">{t.common.view}</Button>
               </div>
               <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="font-medium text-foreground">Connected Devices</p>
-                  <p className="text-sm text-muted-foreground">Manage active sessions</p>
+                  <p className="font-medium text-foreground">{t.settings.connectedDevices}</p>
+                  <p className="text-sm text-muted-foreground">{t.settings.connectedDevicesDesc}</p>
                 </div>
-                <Button variant="outline" size="sm">Manage</Button>
+                <Button variant="outline" size="sm">{t.common.manage}</Button>
               </div>
             </CardContent>
           </Card>
@@ -247,7 +241,7 @@ export default function ManufacturerSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Subscription
+                {t.settings.subscription}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -258,13 +252,13 @@ export default function ManufacturerSettingsPage() {
                 </div>
               </div>
               <div className="mt-4 rounded-lg border border-border p-3">
-                <p className="text-sm text-muted-foreground">Next billing date</p>
+                <p className="text-sm text-muted-foreground">{t.settings.nextBillingDate}</p>
                 <p className="font-medium text-foreground">April 1, 2026</p>
               </div>
               <div className="mt-4 space-y-2">
-                <Button variant="outline" className="w-full">Upgrade Plan</Button>
+                <Button variant="outline" className="w-full">{t.settings.upgradePlan}</Button>
                 <Button variant="ghost" className="w-full text-destructive hover:text-destructive">
-                  Cancel Subscription
+                  {t.settings.cancelSubscription}
                 </Button>
               </div>
             </CardContent>
@@ -275,19 +269,19 @@ export default function ManufacturerSettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5" />
-                Email Settings
+                {t.settings.emailSettings}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground">Primary Email</label>
+                <label className="text-sm font-medium text-foreground">{t.settings.primaryEmail}</label>
                 <p className="text-sm text-muted-foreground">michael@techvision.com</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground">Notification Email</label>
+                <label className="text-sm font-medium text-foreground">{t.settings.notificationEmail}</label>
                 <Input defaultValue="inquiries@techvision.com" className="mt-2" />
               </div>
-              <Button variant="outline" size="sm">Add Email</Button>
+              <Button variant="outline" size="sm">{t.settings.addEmail}</Button>
             </CardContent>
           </Card>
 

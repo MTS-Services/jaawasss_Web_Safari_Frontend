@@ -207,6 +207,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // Listen for forced logout triggered by the 401 response interceptor
+  // in lib/api/client.ts. When the backend rejects a token, the
+  // interceptor clears localStorage and dispatches this event so the
+  // React state stays in sync and guarded routes redirect to login.
+  useEffect(() => {
+    const handleForceLogout = () => {
+      setUserState(null)
+      setTokenState(null)
+    }
+
+    window.addEventListener("auth:logout", handleForceLogout)
+    return () => window.removeEventListener("auth:logout", handleForceLogout)
+  }, [])
+
   const login = async (
     email: string,
     password: string,

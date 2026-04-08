@@ -3,6 +3,7 @@ import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import Script from "next/script"
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/lib/auth-context'
+import { I18nProvider } from '@/lib/i18n'
 import { Toaster } from '@/components/ui/toaster'
 import { FavoritesProvider } from '@/lib/favorites-context'
 import { SubscriptionProvider } from '@/lib/subscription-context'
@@ -48,16 +49,18 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`}>
+    <html lang="en" dir="ltr" suppressHydrationWarning className={`${dmSans.variable} ${dmSerif.variable}`}>
       <body className="font-sans antialiased">
         <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
-        <AuthProvider>
-          <SubscriptionProvider>
-            <FavoritesProvider>
-              {children}
-            </FavoritesProvider>
-          </SubscriptionProvider>
-        </AuthProvider>
+        <I18nProvider>
+          <AuthProvider>
+            <SubscriptionProvider>
+              <FavoritesProvider>
+                {children}
+              </FavoritesProvider>
+            </SubscriptionProvider>
+          </AuthProvider>
+        </I18nProvider>
         <Toaster />
         <Analytics />
       </body>

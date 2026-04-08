@@ -163,23 +163,16 @@ function normalizeNotificationsResponse(payload: unknown): NotificationsResponse
 
 /**
  * Fetch all notifications for the current user
+ * Note: Currently returns empty notifications - not connected to backend yet
  */
 export async function getNotifications(limit = 20, offset = 0): Promise<NotificationsResponse> {
-  try {
-    const response = await apiClient.get("/me/notifications", {
-      params: { limit, offset }
-    })
-    return normalizeNotificationsResponse(response.data)
-  } catch (error: any) {
-    console.error("Failed to fetch notifications:", error)
-    return {
-      success: false,
-      data: {
-        notifications: [],
-        unreadCount: 0,
-        total: 0
-      },
-      message: error.response?.data?.message || "Failed to fetch notifications"
+  // Return empty notifications response without calling backend
+  return {
+    success: true,
+    data: {
+      notifications: [],
+      unreadCount: 0,
+      total: 0
     }
   }
 }

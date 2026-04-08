@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react"
+import { useAuth } from "@/lib/auth-context"
 import { 
   getNotifications, 
   markNotificationAsRead, 
@@ -20,6 +21,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     limit = 20 
   } = options
 
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -30,6 +32,14 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
    * Fetch all notifications
    */
   const fetchNotifications = useCallback(async () => {
+    // Don't fetch if auth is still loading or user is not authenticated
+    if (isAuthLoading || !isAuthenticated) {
+      setNotifications([])
+      setUnreadCount(0)
+      setError(null)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
     try {
@@ -54,15 +64,18 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     } finally {
       setIsLoading(false)
     }
-  }, [limit])
+  }, [limit, isAuthLoading, isAuthenticated])
 
   /**
    * Refresh notifications at intervals
    */
   useEffect(() => {
-    fetchNotifications()
+    // Only fetch when auth is done loading and user is authenticated
+    if (!isAuthLoading && isAuthenticated) {
+      fetchNotifications()
+    }
 
-    if (autoRefresh) {
+    if (autoRefresh && !isAuthLoading && isAuthenticated) {
       refreshTimerRef.current = setInterval(fetchNotifications, refreshInterval)
     }
 
@@ -71,7 +84,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
         clearInterval(refreshTimerRef.current)
       }
     }
-  }, [fetchNotifications, autoRefresh, refreshInterval])
+  }, [fetchNotifications, autoRefresh, refreshInterval, isAuthLoading, isAuthenticated])
 
   /**
    * Mark single notification as read

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -13,7 +13,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   AlertDialog,
@@ -25,20 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { 
   HelpCircle, 
   Plus, 
@@ -51,117 +37,82 @@ import {
   MessageSquareText,
   Save
 } from "lucide-react"
-import { toast } from "sonner"
+import {
+  createAdminFaq,
+  createAdminFaqCategory,
+  deleteAdminFaq,
+  deleteAdminFaqCategory,
+  getAdminFaqCategories,
+  moveAdminFaqCategoryPosition,
+  moveAdminFaqPosition,
+  updateAdminFaq,
+  updateAdminFaqCategory,
+} from "@/lib/api/admin-faqs"
+import Swal from "sweetalert2"
 
 interface FAQ {
   id: string
   question: string
   answer: string
+  sort: number
 }
 
 interface FAQCategory {
   id: string
-  title: string
+  name: string
+  slug: string
+  sort: number
   faqs: FAQ[]
 }
 
-// Initial data based on the current FAQ page
-const initialFaqCategories: FAQCategory[] = [
-  {
-    id: "cat-1",
-    title: "General",
-    faqs: [
-      {
-        id: "faq-1",
-        question: "What is SourceNest?",
-        answer: "SourceNest is a premium global B2B sourcing platform that connects buyers, importers, and sourcing professionals with reviewed manufacturers and factories worldwide. It's a digital marketplace where you can search for suppliers, compare their capabilities, view products, and communicate directly with factories.",
-      },
-      {
-        id: "faq-2",
-        question: "Who is SourceNest for?",
-        answer: "SourceNest serves two main audiences: Buyers (importers, distributors, retailers, brands, and sourcing professionals looking for manufacturing partners) and Manufacturers (factories and manufacturers seeking to reach global buyers and expand their export business).",
-      },
-      {
-        id: "faq-3",
-        question: "How is SourceNest different from other B2B platforms?",
-        answer: "Unlike open marketplaces where anyone can list, SourceNest requires every manufacturer to go through our review and approval process based on submitted information. This means buyers know that suppliers have been screened, and manufacturers benefit from being in a quality-focused marketplace.",
-      },
-    ],
-  },
-  {
-    id: "cat-2",
-    title: "For Buyers",
-    faqs: [
-      {
-        id: "faq-4",
-        question: "Is SourceNest free for buyers?",
-        answer: "Yes, absolutely. SourceNest is completely free for buyers. You can create an account, search suppliers, compare factories, send messages, request quotes, and manage your sourcing activity at no cost. There are no hidden fees or premium tiers for buyers.",
-      },
-      {
-        id: "faq-5",
-        question: "Do I need an account to use SourceNest?",
-        answer: "You can browse suppliers and products without an account, but you'll need to create a free buyer account to send messages, request quotes, save suppliers, compare factories, and access other interactive features.",
-      },
-      {
-        id: "faq-6",
-        question: "How do I message a supplier?",
-        answer: "Once you're logged in, you can click 'Message Supplier' on any supplier profile or product page. Your message goes directly to the factory's inbox on SourceNest, and they'll receive a notification.",
-      },
-    ],
-  },
-  {
-    id: "cat-3",
-    title: "For Manufacturers",
-    faqs: [
-      {
-        id: "faq-7",
-        question: "Why do manufacturers need to pay to join?",
-        answer: "Manufacturers pay a subscription fee to maintain platform quality and fund review processes. This ensures only serious, committed manufacturers join the platform. Because buyers use SourceNest for free, manufacturers get access to a large pool of serious sourcing professionals.",
-      },
-      {
-        id: "faq-8",
-        question: "What subscription plans are available?",
-        answer: "We offer three plans: Starter ($149/month or $1,490/year) for small manufacturers, Growth ($299/month or $2,990/year) for established manufacturers, and Enterprise (custom pricing) for large manufacturers with specific requirements.",
-      },
-    ],
-  },
-  {
-    id: "cat-4",
-    title: "Review & Trust",
-    faqs: [
-      {
-        id: "faq-9",
-        question: "How does the review process work?",
-        answer: "When a manufacturer signs up and completes payment, their profile goes through a multi-step review based on submitted information. We review business documents, check submitted certifications, assess factory details, and review all profile content.",
-      },
-      {
-        id: "faq-10",
-        question: "What documents are required for the review process?",
-        answer: "We typically review submitted business registration certificates, export/import licenses (if applicable), industry certifications (ISO, CE, FDA, etc.), and tax registration documents.",
-      },
-    ],
-  },
-  {
-    id: "cat-5",
-    title: "Billing & Payments",
-    faqs: [
-      {
-        id: "faq-11",
-        question: "What payment methods do you accept?",
-        answer: "We accept all major credit cards (Visa, Mastercard, American Express) and PayPal. For Enterprise plans, we also offer bank transfer options.",
-      },
-      {
-        id: "faq-12",
-        question: "What is your refund policy?",
-        answer: "We offer a 30-day money-back guarantee for new subscribers. If you're not satisfied with the platform within the first 30 days, contact us for a full refund.",
-      },
-    ],
-  },
-]
+interface DeleteTarget {
+  type: "category" | "faq"
+  id: string
+  categoryId?: string
+}
+
+function createSlug(value: string): string {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+
+  if (normalized.length > 0) {
+    return normalized
+  }
+
+  return `category-${Date.now()}`
+}
+
+function showSuccessAlert(message: string) {
+  void Swal.fire({
+    icon: "success",
+    title: "Success",
+    text: message,
+    confirmButtonText: "OK",
+    confirmButtonColor: "#3d2e1f",
+  })
+}
+
+function showErrorAlert(message: string) {
+  void Swal.fire({
+    icon: "error",
+    title: "Oops...",
+    text: message,
+    confirmButtonText: "OK",
+    confirmButtonColor: "#3d2e1f",
+  })
+}
 
 export default function AdminFaqPage() {
-  const [categories, setCategories] = useState<FAQCategory[]>(initialFaqCategories)
+  const [categories, setCategories] = useState<FAQCategory[]>([])
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isReordering, setIsReordering] = useState(false)
   
   // Category dialog state
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
@@ -177,7 +128,44 @@ export default function AdminFaqPage() {
   
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [itemToDelete, setItemToDelete] = useState<{ type: "category" | "faq"; id: string; categoryId?: string } | null>(null)
+  const [itemToDelete, setItemToDelete] = useState<DeleteTarget | null>(null)
+
+  const loadCategories = useCallback(async (silent = false) => {
+    if (!silent) {
+      setIsLoading(true)
+    }
+
+    const response = await getAdminFaqCategories()
+    if (response.success) {
+      const normalizedCategories: FAQCategory[] = response.data.map((category, categoryIndex) => ({
+        id: String(category.id || categoryIndex + 1),
+        name: category.name.trim().length > 0 ? category.name : "None",
+        slug: category.slug,
+        sort: Number.isFinite(category.sort) ? category.sort : categoryIndex,
+        faqs: category.faqs.map((faq, faqIndex) => ({
+          id: String(faq.id || `${category.id}-${faqIndex + 1}`),
+          question: faq.question.trim().length > 0 ? faq.question : "None",
+          answer: faq.answer.trim().length > 0 ? faq.answer : "None",
+          sort: Number.isFinite(faq.sort) ? faq.sort : faqIndex,
+        })),
+      }))
+
+      setCategories(normalizedCategories)
+    } else {
+      showErrorAlert(response.message || "Failed to fetch FAQ categories")
+      if (!silent) {
+        setCategories([])
+      }
+    }
+
+    if (!silent) {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadCategories()
+  }, [loadCategories])
 
   // Calculate totals
   const totalCategories = categories.length
@@ -196,7 +184,7 @@ export default function AdminFaqPage() {
   const openCategoryDialog = (category?: FAQCategory) => {
     if (category) {
       setEditingCategory(category)
-      setCategoryTitle(category.title)
+      setCategoryTitle(category.name)
     } else {
       setEditingCategory(null)
       setCategoryTitle("")
@@ -204,33 +192,46 @@ export default function AdminFaqPage() {
     setCategoryDialogOpen(true)
   }
 
-  const saveCategory = () => {
-    if (!categoryTitle.trim()) {
-      toast.error("Please enter a category title")
+  const saveCategory = async () => {
+    if (isSaving) {
       return
     }
 
-    if (editingCategory) {
-      // Update existing category
-      setCategories(prev => prev.map(cat => 
-        cat.id === editingCategory.id 
-          ? { ...cat, title: categoryTitle.trim() }
-          : cat
-      ))
-      toast.success("Category updated successfully")
-    } else {
-      // Add new category
-      const newCategory: FAQCategory = {
-        id: `cat-${Date.now()}`,
-        title: categoryTitle.trim(),
-        faqs: []
-      }
-      setCategories(prev => [...prev, newCategory])
-      toast.success("Category added successfully")
+    if (!categoryTitle.trim()) {
+      showErrorAlert("Please enter a category title")
+      return
     }
-    setCategoryDialogOpen(false)
-    setCategoryTitle("")
-    setEditingCategory(null)
+
+    const trimmedTitle = categoryTitle.trim()
+
+    setIsSaving(true)
+    try {
+      const response = editingCategory
+        ? await updateAdminFaqCategory(editingCategory.id, {
+            name: trimmedTitle,
+            slug: editingCategory.slug,
+            sort: Number.isFinite(editingCategory.sort)
+              ? editingCategory.sort
+              : Math.max(0, categories.findIndex((cat) => cat.id === editingCategory.id)),
+          })
+        : await createAdminFaqCategory({
+            name: trimmedTitle,
+            slug: createSlug(trimmedTitle),
+          })
+
+      if (!response.success) {
+        showErrorAlert(response.message || "Failed to save category")
+        return
+      }
+
+      await loadCategories(true)
+      showSuccessAlert(response.message || (editingCategory ? "Category updated successfully" : "Category added successfully"))
+      setCategoryDialogOpen(false)
+      setCategoryTitle("")
+      setEditingCategory(null)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   // FAQ CRUD
@@ -248,47 +249,53 @@ export default function AdminFaqPage() {
     setFaqDialogOpen(true)
   }
 
-  const saveFaq = () => {
-    if (!faqQuestion.trim() || !faqAnswer.trim()) {
-      toast.error("Please fill in both question and answer")
+  const saveFaq = async () => {
+    if (isSaving) {
       return
     }
 
-    if (editingFaq) {
-      // Update existing FAQ
-      setCategories(prev => prev.map(cat => {
-        if (cat.id === selectedCategoryId) {
-          return {
-            ...cat,
-            faqs: cat.faqs.map(f => 
-              f.id === editingFaq.id 
-                ? { ...f, question: faqQuestion.trim(), answer: faqAnswer.trim() }
-                : f
-            )
-          }
-        }
-        return cat
-      }))
-      toast.success("FAQ updated successfully")
-    } else {
-      // Add new FAQ
-      const newFaq: FAQ = {
-        id: `faq-${Date.now()}`,
-        question: faqQuestion.trim(),
-        answer: faqAnswer.trim()
-      }
-      setCategories(prev => prev.map(cat => {
-        if (cat.id === selectedCategoryId) {
-          return { ...cat, faqs: [...cat.faqs, newFaq] }
-        }
-        return cat
-      }))
-      toast.success("FAQ added successfully")
+    if (!faqQuestion.trim() || !faqAnswer.trim()) {
+      showErrorAlert("Please fill in both question and answer")
+      return
     }
-    setFaqDialogOpen(false)
-    setFaqQuestion("")
-    setFaqAnswer("")
-    setEditingFaq(null)
+
+    if (!selectedCategoryId) {
+      showErrorAlert("Please select a category")
+      return
+    }
+
+    const trimmedQuestion = faqQuestion.trim()
+    const trimmedAnswer = faqAnswer.trim()
+
+    setIsSaving(true)
+    try {
+      const response = editingFaq
+        ? await updateAdminFaq(editingFaq.id, {
+            question: trimmedQuestion,
+            answer: trimmedAnswer,
+            faqCategoryId: selectedCategoryId,
+          })
+        : await createAdminFaq({
+            question: trimmedQuestion,
+            answer: trimmedAnswer,
+            faqCategoryId: selectedCategoryId,
+          })
+
+      if (!response.success) {
+        showErrorAlert(response.message || "Failed to save FAQ")
+        return
+      }
+
+      await loadCategories(true)
+      showSuccessAlert(response.message || (editingFaq ? "FAQ updated successfully" : "FAQ added successfully"))
+      setFaqDialogOpen(false)
+      setFaqQuestion("")
+      setFaqAnswer("")
+      setEditingFaq(null)
+      setExpandedCategories((prev) => (prev.includes(selectedCategoryId) ? prev : [...prev, selectedCategoryId]))
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   // Delete handlers
@@ -297,66 +304,133 @@ export default function AdminFaqPage() {
     setDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
-    if (!itemToDelete) return
-
-    if (itemToDelete.type === "category") {
-      setCategories(prev => prev.filter(cat => cat.id !== itemToDelete.id))
-      toast.success("Category deleted successfully")
-    } else if (itemToDelete.type === "faq" && itemToDelete.categoryId) {
-      setCategories(prev => prev.map(cat => {
-        if (cat.id === itemToDelete.categoryId) {
-          return {
-            ...cat,
-            faqs: cat.faqs.filter(f => f.id !== itemToDelete.id)
-          }
-        }
-        return cat
-      }))
-      toast.success("FAQ deleted successfully")
+  const confirmDelete = async () => {
+    if (!itemToDelete || isDeleting) {
+      return
     }
-    setDeleteDialogOpen(false)
-    setItemToDelete(null)
+
+    setIsDeleting(true)
+    try {
+      const response = itemToDelete.type === "category"
+        ? await deleteAdminFaqCategory(itemToDelete.id)
+        : await deleteAdminFaq(itemToDelete.id)
+
+      if (!response.success) {
+        showErrorAlert(response.message || "Failed to delete item")
+        return
+      }
+
+      await loadCategories(true)
+      showSuccessAlert(response.message || (itemToDelete.type === "category" ? "Category deleted successfully" : "FAQ deleted successfully"))
+      setDeleteDialogOpen(false)
+      setItemToDelete(null)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   // Reorder categories
-  const moveCategoryUp = (index: number) => {
-    if (index === 0) return
-    const newCategories = [...categories]
-    ;[newCategories[index - 1], newCategories[index]] = [newCategories[index], newCategories[index - 1]]
-    setCategories(newCategories)
+  const moveCategoryUp = async (index: number) => {
+    if (index === 0 || isReordering) {
+      return
+    }
+
+    const category = categories[index]
+    if (!category) {
+      return
+    }
+
+    setIsReordering(true)
+    try {
+      const response = await moveAdminFaqCategoryPosition(category.id, index, index - 1)
+      if (!response.success) {
+        showErrorAlert(response.message || "Failed to reorder category")
+        return
+      }
+      await loadCategories(true)
+    } finally {
+      setIsReordering(false)
+    }
   }
 
-  const moveCategoryDown = (index: number) => {
-    if (index === categories.length - 1) return
-    const newCategories = [...categories]
-    ;[newCategories[index], newCategories[index + 1]] = [newCategories[index + 1], newCategories[index]]
-    setCategories(newCategories)
+  const moveCategoryDown = async (index: number) => {
+    if (index === categories.length - 1 || isReordering) {
+      return
+    }
+
+    const category = categories[index]
+    if (!category) {
+      return
+    }
+
+    setIsReordering(true)
+    try {
+      const response = await moveAdminFaqCategoryPosition(category.id, index, index + 1)
+      if (!response.success) {
+        showErrorAlert(response.message || "Failed to reorder category")
+        return
+      }
+      await loadCategories(true)
+    } finally {
+      setIsReordering(false)
+    }
   }
 
   // Reorder FAQs
-  const moveFaqUp = (categoryId: string, faqIndex: number) => {
-    if (faqIndex === 0) return
-    setCategories(prev => prev.map(cat => {
-      if (cat.id === categoryId) {
-        const newFaqs = [...cat.faqs]
-        ;[newFaqs[faqIndex - 1], newFaqs[faqIndex]] = [newFaqs[faqIndex], newFaqs[faqIndex - 1]]
-        return { ...cat, faqs: newFaqs }
+  const moveFaqUp = async (categoryId: string, faqIndex: number) => {
+    if (faqIndex === 0 || isReordering) {
+      return
+    }
+
+    const category = categories.find((cat) => cat.id === categoryId)
+    if (!category) {
+      return
+    }
+
+    const faq = category.faqs[faqIndex]
+    if (!faq) {
+      return
+    }
+
+    setIsReordering(true)
+    try {
+      const response = await moveAdminFaqPosition(faq.id, faqIndex, faqIndex - 1, categoryId)
+      if (!response.success) {
+        showErrorAlert(response.message || "Failed to reorder FAQ")
+        return
       }
-      return cat
-    }))
+      await loadCategories(true)
+    } finally {
+      setIsReordering(false)
+    }
   }
 
-  const moveFaqDown = (categoryId: string, faqIndex: number) => {
-    setCategories(prev => prev.map(cat => {
-      if (cat.id === categoryId) {
-        if (faqIndex === cat.faqs.length - 1) return cat
-        const newFaqs = [...cat.faqs]
-        ;[newFaqs[faqIndex], newFaqs[faqIndex + 1]] = [newFaqs[faqIndex + 1], newFaqs[faqIndex]]
-        return { ...cat, faqs: newFaqs }
+  const moveFaqDown = async (categoryId: string, faqIndex: number) => {
+    if (isReordering) {
+      return
+    }
+
+    const category = categories.find((cat) => cat.id === categoryId)
+    if (!category || faqIndex >= category.faqs.length - 1) {
+      return
+    }
+
+    const faq = category.faqs[faqIndex]
+    if (!faq) {
+      return
+    }
+
+    setIsReordering(true)
+    try {
+      const response = await moveAdminFaqPosition(faq.id, faqIndex, faqIndex + 1, categoryId)
+      if (!response.success) {
+        showErrorAlert(response.message || "Failed to reorder FAQ")
+        return
       }
-      return cat
-    }))
+      await loadCategories(true)
+    } finally {
+      setIsReordering(false)
+    }
   }
 
   return (
@@ -369,7 +443,11 @@ export default function AdminFaqPage() {
             Manage frequently asked questions displayed on the FAQ page
           </p>
         </div>
-        <Button onClick={() => openCategoryDialog()} className="gap-2">
+        <Button
+          onClick={() => openCategoryDialog()}
+          className="gap-2"
+          disabled={isLoading || isSaving || isReordering || isDeleting}
+        >
           <FolderPlus className="h-4 w-4" />
           Add Category
         </Button>
@@ -417,11 +495,20 @@ export default function AdminFaqPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {categories.length === 0 ? (
+          {isLoading ? (
+            <div className="py-12 text-center">
+              <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/50" />
+              <p className="mt-4 text-muted-foreground">Loading FAQ categories...</p>
+            </div>
+          ) : categories.length === 0 ? (
             <div className="py-12 text-center">
               <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/50" />
               <p className="mt-4 text-muted-foreground">No FAQ categories yet</p>
-              <Button onClick={() => openCategoryDialog()} className="mt-4 gap-2">
+              <Button
+                onClick={() => openCategoryDialog()}
+                className="mt-4 gap-2"
+                disabled={isSaving || isReordering || isDeleting}
+              >
                 <Plus className="h-4 w-4" />
                 Add Your First Category
               </Button>
@@ -443,7 +530,7 @@ export default function AdminFaqPage() {
                           expandedCategories.includes(category.id) ? "rotate-180" : ""
                         }`}
                       />
-                      <span className="font-medium text-foreground">{category.title}</span>
+                      <span className="font-medium text-foreground">{category.name}</span>
                       <Badge variant="secondary" className="ml-2">
                         {category.faqs.length} {category.faqs.length === 1 ? "question" : "questions"}
                       </Badge>
@@ -455,7 +542,7 @@ export default function AdminFaqPage() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => moveCategoryUp(categoryIndex)}
-                        disabled={categoryIndex === 0}
+                        disabled={categoryIndex === 0 || isReordering || isSaving || isDeleting}
                       >
                         <ChevronUp className="h-4 w-4" />
                       </Button>
@@ -464,7 +551,7 @@ export default function AdminFaqPage() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => moveCategoryDown(categoryIndex)}
-                        disabled={categoryIndex === categories.length - 1}
+                        disabled={categoryIndex === categories.length - 1 || isReordering || isSaving || isDeleting}
                       >
                         <ChevronDown className="h-4 w-4" />
                       </Button>
@@ -473,6 +560,7 @@ export default function AdminFaqPage() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => openCategoryDialog(category)}
+                        disabled={isSaving || isReordering || isDeleting}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -481,6 +569,7 @@ export default function AdminFaqPage() {
                         size="icon"
                         className="h-8 w-8 text-destructive hover:text-destructive"
                         onClick={() => openDeleteDialog("category", category.id)}
+                        disabled={isSaving || isReordering || isDeleting}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -498,6 +587,7 @@ export default function AdminFaqPage() {
                             size="sm" 
                             className="mt-3 gap-2"
                             onClick={() => openFaqDialog(category.id)}
+                            disabled={isSaving || isReordering || isDeleting}
                           >
                             <Plus className="h-4 w-4" />
                             Add Question
@@ -510,20 +600,20 @@ export default function AdminFaqPage() {
                               key={faq.id} 
                               className="flex items-start gap-3 rounded-lg border border-border bg-background p-4"
                             >
-                              <GripVertical className="mt-1 h-4 w-4 flex-shrink-0 text-muted-foreground cursor-move" />
+                              <GripVertical className="mt-1 h-4 w-4 shrink-0 text-muted-foreground cursor-move" />
                               
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-foreground">{faq.question}</p>
                                 <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{faq.answer}</p>
                               </div>
 
-                              <div className="flex items-center gap-1 flex-shrink-0">
+                              <div className="flex items-center gap-1 shrink-0">
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
                                   onClick={() => moveFaqUp(category.id, faqIndex)}
-                                  disabled={faqIndex === 0}
+                                  disabled={faqIndex === 0 || isReordering || isSaving || isDeleting}
                                 >
                                   <ChevronUp className="h-4 w-4" />
                                 </Button>
@@ -532,7 +622,7 @@ export default function AdminFaqPage() {
                                   size="icon"
                                   className="h-8 w-8"
                                   onClick={() => moveFaqDown(category.id, faqIndex)}
-                                  disabled={faqIndex === category.faqs.length - 1}
+                                  disabled={faqIndex === category.faqs.length - 1 || isReordering || isSaving || isDeleting}
                                 >
                                   <ChevronDown className="h-4 w-4" />
                                 </Button>
@@ -541,6 +631,7 @@ export default function AdminFaqPage() {
                                   size="icon"
                                   className="h-8 w-8"
                                   onClick={() => openFaqDialog(category.id, faq)}
+                                  disabled={isSaving || isReordering || isDeleting}
                                 >
                                   <Pencil className="h-4 w-4" />
                                 </Button>
@@ -549,6 +640,7 @@ export default function AdminFaqPage() {
                                   size="icon"
                                   className="h-8 w-8 text-destructive hover:text-destructive"
                                   onClick={() => openDeleteDialog("faq", faq.id, category.id)}
+                                  disabled={isSaving || isReordering || isDeleting}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -561,6 +653,7 @@ export default function AdminFaqPage() {
                             size="sm" 
                             className="mt-2 gap-2"
                             onClick={() => openFaqDialog(category.id)}
+                            disabled={isSaving || isReordering || isDeleting}
                           >
                             <Plus className="h-4 w-4" />
                             Add Question
@@ -603,7 +696,7 @@ export default function AdminFaqPage() {
             <Button variant="outline" onClick={() => setCategoryDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={saveCategory} className="gap-2">
+            <Button onClick={() => void saveCategory()} className="gap-2" disabled={isSaving}>
               <Save className="h-4 w-4" />
               {editingCategory ? "Save Changes" : "Add Category"}
             </Button>
@@ -648,7 +741,7 @@ export default function AdminFaqPage() {
             <Button variant="outline" onClick={() => setFaqDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={saveFaq} className="gap-2">
+            <Button onClick={() => void saveFaq()} className="gap-2" disabled={isSaving}>
               <Save className="h-4 w-4" />
               {editingFaq ? "Save Changes" : "Add Question"}
             </Button>
@@ -671,7 +764,8 @@ export default function AdminFaqPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={confirmDelete}
+              onClick={() => void confirmDelete()}
+              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
