@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import {
@@ -193,8 +193,14 @@ function HeaderNavDropdown({
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
   const { user, logout, isAuthenticated } = useAuth()
   const { savedSuppliers, savedProducts, removeSupplierFromFavorites, removeProductFromFavorites } = useFavorites()
+  
+  // Ensure hydration happens only after client-side mount
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   
   // savedSuppliers and savedProducts already contain full details from context
   const savedSupplierDetails = savedSuppliers.slice(0, 5)
@@ -238,7 +244,7 @@ export function Header() {
         </nav>
 
         {/* Desktop Actions */}
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-3 lg:flex" suppressHydrationWarning>
           <Button variant="ghost" size="icon" aria-label="Search" asChild>
             <Link href="/search">
               <Search className="h-5 w-5" />
@@ -409,7 +415,7 @@ export function Header() {
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-secondary" />
             </Link>
           </Button>
-          {isAuthenticated && user ? (
+          {mounted && isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
@@ -461,7 +467,7 @@ export function Header() {
         </div>
 
         {/* Mobile Menu */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 lg:hidden" suppressHydrationWarning>
           <Button variant="ghost" size="icon" aria-label="Saved Items" className="relative" asChild>
             <Link href="/dashboard/buyer/saved">
               <Heart className={cn("h-5 w-5", totalSaved > 0 && "text-rose-500")} />
@@ -583,7 +589,7 @@ export function Header() {
                 <div className="my-4 border-t border-border" />
 
                 {/* Auth Actions */}
-                {isAuthenticated && user ? (
+                {mounted && (isAuthenticated && user) ? (
                   <>
                     <div className="mb-2 flex items-center gap-3 px-3 py-2">
                       <Avatar className="h-10 w-10">

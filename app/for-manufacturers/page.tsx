@@ -58,28 +58,33 @@ const features = [
 const steps = [
   {
     step: 1,
-    title: "Create Account & Choose Plan",
-    description: "Sign up and select the subscription plan that fits your business needs.",
+    title: "Create Your Account",
+    description: "Sign up as a manufacturer and choose the subscription plan that fits your business needs and growth goals.",
   },
   {
     step: 2,
-    title: "Complete Payment",
-    description: "Securely pay for your subscription. Your account is created but pending approval.",
+    title: "Submit for Approval",
+    description: "Once ready, submit your account for review. Our team will review your business before granting access to the platform.",
   },
   {
     step: 3,
-    title: "Build Your Profile",
-    description: "Add company details, certifications, capabilities, and upload your product catalog.",
+    title: "Complete Payment",
+    description: "Once your account is reviewed and approved, complete your payment to activate your account and start using the platform.",
   },
   {
     step: 4,
-    title: "Submit for Review",
-    description: "Once ready, submit your profile for our review team to assess.",
+    title: "Build Your Profile",
+    description: "Complete your factory profile with details, certifications, capabilities, and upload your product catalog and brochures.",
   },
   {
     step: 5,
-    title: "Get Approved & Go Live",
-    description: "After approval, your profile becomes visible and you can start receiving inquiries.",
+    title: "Upload Products",
+    description: "Add your products with images, specifications, MOQ, lead times, and packaging details to showcase your full range.",
+  },
+  {
+    step: 6,
+    title: "Go Global",
+    description: "After approval, your profile goes live. Start receiving inquiries and quote requests from buyers worldwide.",
   },
 ]
 
@@ -168,7 +173,7 @@ export default function ForManufacturersPage() {
               </p>
             </div>
 
-            <div className="mt-16 grid gap-6 md:grid-cols-5">
+            <div className="mt-16 grid gap-6 md:grid-cols-6">
               {steps.map((step, index) => (
                 <div key={step.step} className="relative text-center">
                   {index < steps.length - 1 && (
@@ -186,10 +191,10 @@ export default function ForManufacturersPage() {
             <div className="mx-auto mt-12 max-w-2xl rounded-xl bg-secondary/10 p-6 text-center">
               <Shield className="mx-auto h-8 w-8 text-secondary" />
               <p className="mt-4 font-medium text-secondary">
-                Important: All manufacturer accounts require admin approval before going live.
+                Important: Review comes before payment. You won't be charged until your account is approved.
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                This review process helps maintain quality standards for buyers on the platform.
+                Once approved, complete payment to activate your account and start using the platform.
               </p>
             </div>
           </div>

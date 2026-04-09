@@ -56,28 +56,29 @@ export function HowItWorksSection() {
     },
     {
       step: 2,
+      title: t.landing.howItWorks.mfgStep5Title,
+      description: t.landing.howItWorks.mfgStep5Desc,
+      icon: CheckCircle,
+    },
+    {
+      step: 3,
       title: t.landing.howItWorks.mfgStep2Title,
       description: t.landing.howItWorks.mfgStep2Desc,
       icon: CreditCard,
     },
     {
-      step: 3,
+      step: 4,
       title: t.landing.howItWorks.mfgStep3Title,
       description: t.landing.howItWorks.mfgStep3Desc,
       icon: Settings,
     },
     {
-      step: 4,
+      step: 5,
       title: t.landing.howItWorks.mfgStep4Title,
       description: t.landing.howItWorks.mfgStep4Desc,
       icon: Upload,
     },
-    {
-      step: 5,
-      title: t.landing.howItWorks.mfgStep5Title,
-      description: t.landing.howItWorks.mfgStep5Desc,
-      icon: CheckCircle,
-    },
+    
     {
       step: 6,
       title: t.landing.howItWorks.mfgStep6Title,

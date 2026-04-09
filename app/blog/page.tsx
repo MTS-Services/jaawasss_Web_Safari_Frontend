@@ -62,7 +62,7 @@ const posts = [
   {
     slug: "sustainable-manufacturing-guide",
     title: "Sustainable Manufacturing: Finding Eco-Friendly Suppliers",
-    excerpt: "Consumer demand for sustainability is rising. Discover how to identify, verify, and partner with manufacturers committed to environmental responsibility and ethical practices.",
+    excerpt: "Consumer demand for sustainability is rising. Discover how to identify, review, and partner with manufacturers committed to environmental responsibility and ethical practices.",
     category: "Manufacturing",
     author: "Sarah Chen",
     date: "March 6, 2026",
@@ -145,7 +145,7 @@ const posts = [
   },
   {
     slug: "supplier-audit-checklist",
-    title: "Complete Supplier Audit Checklist: What to Verify Before Ordering",
+    title: "Complete Supplier Audit Checklist: What to Review Before Ordering",
     excerpt: "A comprehensive guide to conducting supplier audits, from factory capabilities and certifications to financial stability and ethical compliance.",
     category: "B2B Trade",
     author: "Lisa Zhang",
