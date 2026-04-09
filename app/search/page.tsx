@@ -181,7 +181,7 @@ export default function SearchPage() {
                           className="group block rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md"
                         >
                           <div className="flex items-start gap-4">
-                            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-muted">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-muted">
                               <Factory className="h-7 w-7 text-muted-foreground" />
                             </div>
                             <div className="flex-1">
@@ -189,10 +189,10 @@ export default function SearchPage() {
                                 <h3 className="font-medium text-foreground group-hover:text-secondary">
                                   {supplier.name}
                                 </h3>
-                                {supplier.verified && (
+                                {supplier.reviewed && (
                                   <Badge variant="secondary" className="text-xs">
                                     <CheckCircle className="mr-1 h-3 w-3" />
-                                    Verified
+                                    Reviewed
                                   </Badge>
                                 )}
                               </div>
@@ -258,7 +258,7 @@ export default function SearchPage() {
                       href={`/products/${product.slug}`}
                       className="group rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-md"
                     >
-                      <div className="aspect-[4/3] bg-muted flex items-center justify-center">
+                      <div className="aspect-4/3 bg-muted flex items-center justify-center">
                         <Package className="h-12 w-12 text-muted-foreground/30" />
                       </div>
                       <div className="p-4">
@@ -293,7 +293,7 @@ export default function SearchPage() {
                       className="group block rounded-xl border border-border bg-card p-5 transition-all hover:shadow-md"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-muted">
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-muted">
                           <Factory className="h-8 w-8 text-muted-foreground" />
                         </div>
                         <div className="flex-1">
@@ -301,10 +301,10 @@ export default function SearchPage() {
                             <h3 className="font-semibold text-foreground group-hover:text-secondary">
                               {supplier.name}
                             </h3>
-                            {supplier.verified && (
+                            {supplier.reviewed && (
                               <Badge variant="secondary" className="text-xs">
                                 <CheckCircle className="mr-1 h-3 w-3" />
-                                Verified
+                                Reviewed
                               </Badge>
                             )}
                           </div>

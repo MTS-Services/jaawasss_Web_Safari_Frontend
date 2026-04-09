@@ -353,7 +353,7 @@ export const defaultAboutPage: AboutPageData = {
     title: "Why SourceNest is Different",
     points: [
       {
-        id: "verified",
+        id: "reviewed",
         title: "Reviewed-Only Marketplace",
         description: "Unlike open platforms where anyone can list, every manufacturer on SourceNest goes through our review and approval process based on submitted information. This means buyers know that suppliers have been screened, and manufacturers know they're in good company.",
         enabled: true

@@ -82,7 +82,7 @@ const initialArticles: InsightArticle[] = [
     excerpt: "Learn the essential strategies for identifying and vetting trustworthy manufacturing partners.",
     content: "Finding reliable manufacturers is crucial for business success...",
     category: "Sourcing Tips",
-    tags: ["sourcing", "manufacturers", "verification"],
+    tags: ["sourcing", "manufacturers", "review"],
     author: "Editorial Team",
     publishedAt: "2024-01-15",
     status: "published",

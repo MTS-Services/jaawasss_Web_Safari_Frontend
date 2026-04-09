@@ -186,7 +186,7 @@ function SocialCompleteProfileContent() {
       <p className="mt-2 text-muted-foreground">
         {role === "buyer"
           ? "Finish your buyer profile to continue."
-          : "Finish your manufacturer verification details to continue."}
+          : "Finish your manufacturer review details to continue."}
       </p>
 
       {error && (

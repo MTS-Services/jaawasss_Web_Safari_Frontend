@@ -221,7 +221,7 @@ export function SocialCompleteProfileModal({
             <DialogDescription>
               {role === "buyer"
                 ? "Finish your buyer profile to continue."
-                : "Finish your manufacturer verification details to continue."}
+                : "Finish your manufacturer review details to continue."}
             </DialogDescription>
           </DialogHeader>
 

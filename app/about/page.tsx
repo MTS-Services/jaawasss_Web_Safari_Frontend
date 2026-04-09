@@ -68,7 +68,7 @@ export default function AboutPage() {
               </h2>
               <div className="mt-8 space-y-6 text-muted-foreground leading-relaxed">
                 <p>
-                  Global sourcing has always been challenging. Buyers struggle to find reliable suppliers, verify their legitimacy, and communicate effectively across borders. Manufacturers, especially quality-focused ones, have difficulty standing out among countless options and reaching serious buyers.
+                  Global sourcing has always been challenging. Buyers struggle to find reliable suppliers, review their legitimacy, and communicate effectively across borders. Manufacturers, especially quality-focused ones, have difficulty standing out among countless options and reaching serious buyers.
                 </p>
                 <p>
                   SourceNest was born from a simple idea: what if there was a platform that only featured reviewed, approved manufacturers? A place where buyers could know that every supplier had been screened based on submitted information before being listed?
