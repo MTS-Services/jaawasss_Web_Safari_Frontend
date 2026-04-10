@@ -78,7 +78,7 @@ export function Footer() {
           <div className="md:col-span-2 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2">
               <Image
-                src="/images/logo.png"
+                src="/images/logoFooter.png"
                 alt="SourceNest"
                 width={120}
                 height={120}
