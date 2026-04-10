@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Factory, Linkedin, Twitter, Facebook, Youtube } from "lucide-react"
+import Image from "next/image"
+import { Linkedin, Twitter, Facebook, Youtube } from "lucide-react"
 import { useTranslation } from "@/lib/i18n"
 
 export function Footer() {
@@ -76,10 +77,13 @@ export function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-2 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-                <Factory className="h-5 w-5 text-secondary-foreground" />
-              </div>
-              <span className="font-serif text-xl font-medium">SourceNest</span>
+              <Image
+                src="/images/logo.avif"
+                alt="SourceNest"
+                width={48}
+                height={48}
+                className="rounded-lg object-contain h-10 w-10 sm:h-12 sm:w-12"
+              />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-primary-foreground/80">
               {t.landing.footer.slogan}

@@ -191,10 +191,10 @@ export default function ForManufacturersPage() {
             <div className="mx-auto mt-12 max-w-2xl rounded-xl bg-secondary/10 p-6 text-center">
               <Shield className="mx-auto h-8 w-8 text-secondary" />
               <p className="mt-4 font-medium text-secondary">
-                Important: Review comes before payment. You won't be charged until your account is approved.
+                Important: No payment is required upfront. Your account will be reviewed first, and you will only be charged after approval.
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Once approved, complete payment to activate your account and start using the platform.
+                Once approved, complete your payment to activate your account and unlock full access to the platform.
               </p>
             </div>
           </div>

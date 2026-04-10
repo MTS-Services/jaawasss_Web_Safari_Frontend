@@ -124,8 +124,10 @@ const faqs = [
   },
 ]
 
+import { useRouter } from "next/navigation"
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly")
+  const router = useRouter()
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -247,11 +249,12 @@ export default function PricingPage() {
                     <span className="text-foreground font-medium">Multiple team users (3)</span>
                   </li>
                 </ul>
-                <Button className="w-full gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90" asChild>
-                  <Link href="/auth/signup?role=manufacturer&plan=founding">
-                    Apply as Founding Member
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+                <Button
+                  className="w-full gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                  onClick={() => router.push('/auth/signup?role=manufacturer&plan=founding')}
+                >
+                  Apply as Founding Member
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
                 <p className="mt-3 text-xs text-center text-muted-foreground">
                   Subject to admin review and approval
@@ -348,12 +351,10 @@ export default function PricingPage() {
                       plan.popular && "bg-secondary text-secondary-foreground hover:bg-secondary/90"
                     )}
                     variant={plan.popular ? "default" : "outline"}
-                    asChild
+                    onClick={() => router.push(plan.monthlyPrice ? `/auth/signup?role=manufacturer&plan=${plan.name.toLowerCase()}` : "/contact?type=sales")}
                   >
-                    <Link href={plan.monthlyPrice ? `/auth/signup?role=manufacturer&plan=${plan.name.toLowerCase()}` : "/contact?type=sales"}>
-                      {plan.cta}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                    {plan.cta}
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
                   <ul className="mt-8 space-y-3">
                     {plan.features.map((feature) => (

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -25,18 +25,14 @@ import { decodeGoogleIdTokenPayload, getGoogleIdToken } from "@/lib/google-ident
 
 export default function SignUpPage() {
   const router = useRouter()
-  const defaultRole =
-    typeof window !== "undefined"
-      ? (new URLSearchParams(window.location.search).get("role") as "buyer" | "manufacturer" | null)
-      : null
   const { signup, loginWithGoogle } = useAuth()
   
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [step, setStep] = useState<"role" | "details">(defaultRole ? "details" : "role")
+  const [step, setStep] = useState<"role" | "details">("role")
   const [formData, setFormData] = useState({
-    role: defaultRole || ("buyer" as "buyer" | "manufacturer"),
+    role: ("buyer" as "buyer" | "manufacturer"),
     firstName: "",
     lastName: "",
     email: "",
@@ -78,6 +74,21 @@ export default function SignUpPage() {
     setFormData({ ...formData, role })
     setStep("details")
   }
+
+  // Respect ?role=manufacturer (client-side only) without causing SSR hydration mismatch.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const roleParam = new URLSearchParams(window.location.search).get("role") as
+      | "buyer"
+      | "manufacturer"
+      | null
+    if (roleParam) {
+      setFormData((prev) => ({ ...prev, role: roleParam }))
+      setStep("details")
+    }
+    // run only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
