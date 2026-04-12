@@ -24,29 +24,29 @@ const verificationSteps = [
   {
     icon: FileCheck,
     title: "Document Review",
-    description: "We review submitted business registration documents, export licenses, and company certifications to assess legitimacy based on provided information.",
+    description: "We may review company information and available documents to support verification and build trust.",
     items: [
       "Business registration certificate",
-      "Export/import licenses",
+      "Export/import licenses (when applicable)",
       "Industry certifications (ISO, CE, FDA, etc.)",
-      "Tax registration documents",
+      "Tax registration documents (when applicable)"
     ],
   },
   {
     icon: Building2,
     title: "Factory Information Review",
-    description: "We review the submitted manufacturing facility information and declared production capabilities.",
+    description: "Basic factory information and production capabilities may be reviewed.",
     items: [
-      "Factory location information reviewed",
-      "Production capacity details assessed",
-      "Equipment and machinery information reviewed",
-      "Workforce and facility size details evaluated",
+      "Factory location information",
+      "Production capabilities",
+      "Equipment and machinery",
+      "Facility size and workforce"
     ],
   },
   {
     icon: Eye,
     title: "Profile Review",
-    description: "Our team manually reviews all profile content to assess accuracy and professionalism based on submitted materials.",
+    description: "Profile content may be reviewed for quality and accuracy.",
     items: [
       "Company description reviewed",
       "Product information quality assessed",
@@ -57,12 +57,12 @@ const verificationSteps = [
   {
     icon: CheckCircle,
     title: "Ongoing Monitoring",
-    description: "Even after approval, we continue monitoring supplier performance and buyer feedback.",
+    description: "Supplier activity and buyer feedback may be monitored over time.",
     items: [
-      "Response time tracking",
-      "Buyer feedback monitoring",
-      "Regular compliance checks",
-      "Quality assurance reviews",
+      "Response time",
+      "Buyer feedback",
+      "General performance",
+      "Quality checks"
     ],
   },
 ]
@@ -71,19 +71,19 @@ const badges = [
   {
     icon: Shield,
     name: "SourceNest Reviewed",
-    description: "The supplier has completed our review process based on submitted information and is approved to list on the platform.",
+    description: "Supplier has submitted company information and completed a basic review to be listed on the platform.",
     color: "bg-secondary",
   },
   {
     icon: Award,
     name: "Featured Supplier",
-    description: "A premium supplier with excellent ratings, response times, and buyer feedback.",
+    description: "A supplier highlighted based on activity, responsiveness, and buyer feedback.",
     color: "bg-primary",
   },
   {
     icon: Globe,
     name: "Export Ready",
-    description: "The supplier has declared experience and capability in international shipping.",
+    description: "Supplier indicates experience with international shipping",
     color: "bg-blue-600",
   },
 ]
@@ -120,16 +120,19 @@ export default function VerificationPage() {
               </h2>
               <div className="mt-8 space-y-6 text-muted-foreground leading-relaxed">
                 <p>
-                  In the world of B2B sourcing, trust is everything. Buyers need confidence that the suppliers they find have been screened and assessed. Traditional platforms often allow anyone to list, creating a sea of unreviewed options that puts the burden of due diligence entirely on the buyer.
+                  In the world of B2B sourcing, trust is essential. Buyers need confidence when connecting with suppliers. Traditional platforms often allow anyone to list, which can make it harder to evaluate options and requires more effort from buyers.
                 </p>
                 <p>
-                  SourceNest takes a different approach. We require every manufacturer to go through our review and approval process based on submitted information before they can appear on the platform. This means:
+                  SourceNest takes a different approach. We aim to review manufacturer profiles and submitted information to help improve transparency and support better decision-making before suppliers appear on the platform.
                 </p>
                 <ul className="ml-6 list-disc space-y-2">
-                  <li>Buyers know that supplier information has been reviewed based on submitted documents</li>
-                  <li>Manufacturers benefit from being in a quality-focused marketplace</li>
-                  <li>The entire platform maintains a higher standard</li>
-                  <li>Initial screening helps reduce time spent on due diligence</li>
+                  <li>Buyers can access supplier information with greater clarity</li>
+
+
+
+                  <li>Manufacturers benefit from being part of a quality-focused marketplace</li>
+                  <li>The platform encourages higher standards</li>
+                  <li>The process helps simplify supplier discovery</li>
                 </ul>
               </div>
             </div>
@@ -210,16 +213,16 @@ export default function VerificationPage() {
                   </h2>
                   <div className="mt-4 space-y-4 text-muted-foreground leading-relaxed">
                     <p>
-                      If your manufacturer application doesn&apos;t meet our requirements, we&apos;ll provide specific feedback on what needs to be addressed. Common reasons for rejection include:
+                      If your manufacturer application cannot be approved based on the information provided, we may share feedback on what can be improved. You can update your details and resubmit your application at any time. Please note that no payment is required during the application process, and payment will only be requested after approval.
                     </p>
                     <ul className="ml-6 list-disc space-y-2">
-                      <li>Incomplete or unclear documentation</li>
-                      <li>Unable to review business registration documents</li>
+                      <li>Incomplete or unclear information</li>
+                      <li>Missing business details</li>
                       <li>Profile content quality issues</li>
-                      <li>Inconsistencies in provided information</li>
+                      <li>Inconsistent information</li>
                     </ul>
                     <p>
-                      You can address the issues and resubmit your application. If approval is ultimately not possible, we offer a full refund within 30 days of your initial payment.
+                      You can address the issues and resubmit your application.
                     </p>
                   </div>
                 </div>

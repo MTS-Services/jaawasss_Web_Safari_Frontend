@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Factory, CheckCircle2, Globe2, Shield, TrendingUp } from "lucide-react"
+import Image from "next/image"
+import { CheckCircle2, Globe2, Shield, TrendingUp } from "lucide-react"
 
 export default function AuthLayout({
   children,
@@ -10,11 +11,14 @@ export default function AuthLayout({
     <div className="flex min-h-screen">
       {/* Left Side - Branding */}
       <div className="hidden w-1/2 bg-primary lg:flex lg:flex-col lg:justify-between lg:p-12">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-foreground/20">
-            <Factory className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="font-serif text-xl font-medium text-primary-foreground">SourceNest</span>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/images/logoFooter.png"
+            alt="SourceNest"
+            width={150}
+            height={50}
+            className="h-12 w-auto object-contain"
+          />
         </Link>
         
         <div className="space-y-8">
@@ -78,11 +82,14 @@ export default function AuthLayout({
       <div className="flex w-full flex-col lg:w-1/2">
         {/* Mobile Logo */}
         <div className="flex items-center justify-between p-6 lg:hidden">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Factory className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="font-serif text-xl font-medium text-foreground">SourceNest</span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/images/logoFooter.png"
+              alt="SourceNest"
+              width={120}
+              height={40}
+              className="h-10 w-auto object-contain"
+            />
           </Link>
         </div>
 

@@ -38,16 +38,25 @@ function RestoredAccountNotifier() {
 
 export default function SignInPage() {
   const router = useRouter()
-  const defaultTab =
-    typeof window !== "undefined"
-      ? ((new URLSearchParams(window.location.search).get("role") || "buyer") as UserRole)
-      : "buyer"
   const { login, loginWithGoogle } = useAuth()
 
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [activeTab, setActiveTab] = useState<UserRole>(defaultTab)
+  // Start with a stable default on both server and client to avoid hydration mismatch.
+  const [activeTab, setActiveTab] = useState<UserRole>("buyer")
+
+  // After mount, read the `role` query param (if present) and update the tab.
+  useEffect(() => {
+    try {
+      const role = new URLSearchParams(window.location.search).get("role") as UserRole | null
+      if (role === "buyer" || role === "manufacturer" || role === "admin") {
+        setActiveTab(role)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
   const [socialSetupState, setSocialSetupState] = useState<{
     setupToken: string
     role: "buyer" | "manufacturer"
