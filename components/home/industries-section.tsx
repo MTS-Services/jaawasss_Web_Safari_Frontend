@@ -70,7 +70,7 @@ const iconColors: Record<string, string> = {
 export function IndustriesSection() {
   const { t } = useTranslation()
 
-  if (!t || !t.landing?.industries) {
+  if (!t || !t.landing?.featured) {
     return null
   }
   
@@ -81,7 +81,7 @@ export function IndustriesSection() {
         <div className="flex flex-col items-center text-center mb-12 lg:mb-16">
           <span className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-2 text-sm font-medium text-secondary mb-4">
             <Package className="h-4 w-4" />
-            {t.landing.featured.industriesTitle}
+            {t.landing.featured.industriesBadge}
           </span>
           <h2 className="font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl lg:text-5xl">
             {t.landing.featured.industriesTitle}

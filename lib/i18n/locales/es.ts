@@ -275,8 +275,9 @@ const es: TranslationKeys = {
       viewAllSuppliers: "Ver todos los proveedores",
       productsTitle: "Categorías en Tendencia",
       productsSubtitle: "Obtenga los productos más vendidos directamente de fabricantes verificados",
-      industriesTitle: "Industrias Populares",
-      industriesSubtitle: "Encuentre fabricantes especializados en los principales sectores de fabricación"
+      industriesBadge: "Popular Industries",
+      industriesTitle: "Find Suppliers by Industry",
+      industriesSubtitle: "Discover reviewed manufacturers across major industrial sectors. Each category features vetted suppliers ready to fulfill your requirements."
     },
     trust: {
       title: "Abastecimiento Basado en la Confianza",

@@ -275,8 +275,9 @@ const he: TranslationKeys = {
       viewAllSuppliers: "צפה בכל הספקים",
       productsTitle: "קטגוריות פופולריות",
       productsSubtitle: "השג מוצרים נמכרים ביותר ישירות מיצרנים מאומתים",
-      industriesTitle: "תעשיות מבוקשות",
-      industriesSubtitle: "מצא יצרנים מתמחים ברחבי מגזרי ייצור מרכזיים"
+      industriesBadge: "Popular Industries",
+      industriesTitle: "Find Suppliers by Industry",
+      industriesSubtitle: "Discover reviewed manufacturers across major industrial sectors. Each category features vetted suppliers ready to fulfill your requirements."
     },
     trust: {
       title: "רכש המבוסס על אמון",

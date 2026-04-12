@@ -301,8 +301,9 @@ const en = {
       viewAllSuppliers: "View All Suppliers",
       productsTitle: "Trending Categories",
       productsSubtitle: "Source top-selling products directly from reviewed manufacturers",
-      industriesTitle: "Popular Industries",
-      industriesSubtitle: "Find specialized manufacturers across major manufacturing sectors"
+      industriesBadge: "Popular Industries",
+      industriesTitle: "Find Suppliers by Industry",
+      industriesSubtitle: "Discover reviewed manufacturers across major industrial sectors. Each category features vetted suppliers ready to fulfill your requirements."
     },
     trust: {
       title: "Sourcing Built on Trust",
