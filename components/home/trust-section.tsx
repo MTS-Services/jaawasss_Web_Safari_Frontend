@@ -76,26 +76,32 @@ export function TrustSection() {
                 <Shield className="h-10 w-10" />
                 <span className="font-serif text-2xl">SourceNest Reviewed</span>
               </div>
+              Please update the list to the following:
+
+
+
+
+
               <div className="mt-8 space-y-4">
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Business Registration Documents Reviewed</span>
+                  <span>Business information provided</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Factory Location Information Provided</span>
+                  <span>Factory details provided</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Certifications Submitted</span>
+                  <span>Certifications (if provided)</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Export Experience Declared</span>
+                  <span>Export experience (if provided)</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Profile Content Reviewed</span>
+                  <span>Profile information reviewed</span>
                 </div>
               </div>
             </div>
