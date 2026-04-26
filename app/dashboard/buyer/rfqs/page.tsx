@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import Swal from "sweetalert2"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -20,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { getBuyerRfqById, getBuyerRfqs, type BuyerRfqItem, type BuyerRfqMeta } from "@/lib/api/buyer-rfqs"
+import { getBuyerRfqById, getBuyerRfqs, respondToRfqQuote, type BuyerRfqItem, type BuyerRfqMeta } from "@/lib/api/buyer-rfqs"
 import { 
   Plus,
   Search,
@@ -29,7 +30,9 @@ import {
   Clock,
   AlertCircle,
   Eye,
-  MessageSquare
+  MessageSquare,
+  Check,
+  X
 } from "lucide-react"
 
 const statusConfig: Record<string, { color: string; icon: typeof CheckCircle; label: string }> = {
@@ -38,6 +41,7 @@ const statusConfig: Record<string, { color: string; icon: typeof CheckCircle; la
   in_review: { color: "bg-blue-100 text-blue-700", icon: Eye, label: "In Review" },
   expired: { color: "bg-gray-100 text-gray-700", icon: AlertCircle, label: "Expired" },
   completed: { color: "bg-green-100 text-green-700", icon: CheckCircle, label: "Completed" },
+  cancelled: { color: "bg-red-100 text-red-700", icon: X, label: "Cancelled" },
 }
 
 function formatDate(value: string | null): string {
@@ -65,6 +69,26 @@ function getStatusMeta(status: string) {
     icon: Clock,
     label: normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : "Unknown",
   }
+}
+
+/**
+ * Get the display status for frontend rendering
+ * Shows "Quoted" for both "quoted" and "accepted" statuses
+ */
+function getDisplayStatus(actualStatus: string): string {
+  const normalized = actualStatus.trim().toLowerCase()
+  if (normalized === "accepted" || normalized === "quoted") {
+    return "quoted"
+  }
+  return normalized
+}
+
+/**
+ * Check if RFQ can be accepted or rejected (only if status is "quoted")
+ */
+function canRespondToQuote(status: string): boolean {
+  const normalized = status.trim().toLowerCase()
+  return normalized === "quoted"
 }
 
 export default function BuyerRFQsPage() {
@@ -135,10 +159,70 @@ export default function BuyerRFQsPage() {
     setIsDetailLoading(false)
   }
 
+  const handleAccept = async (rfqId: number) => {
+    try {
+      const response = await respondToRfqQuote(rfqId, "accept")
+
+      if (!response.success) {
+        throw new Error(response.message || "Failed to accept RFQ")
+      }
+
+      await Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: response.message || "RFQ accepted successfully",
+        confirmButtonText: "OK",
+      })
+
+      // Refresh the list
+      setCurrentPage(1)
+      setSearchQuery("")
+      setStatusFilter("all")
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred"
+      await Swal.fire({
+        icon: "error",
+        title: "Error!",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      })
+    }
+  }
+
+  const handleReject = async (rfqId: number) => {
+    try {
+      const response = await respondToRfqQuote(rfqId, "cancel")
+
+      if (!response.success) {
+        throw new Error(response.message || "Failed to reject RFQ")
+      }
+
+      await Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: response.message || "RFQ rejected successfully",
+        confirmButtonText: "OK",
+      })
+
+      // Refresh the list
+      setCurrentPage(1)
+      setSearchQuery("")
+      setStatusFilter("all")
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred"
+      await Swal.fire({
+        icon: "error",
+        title: "Error!",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      })
+    }
+  }
+
   const totalRfqs = meta?.total ?? rfqs.length
   const quotedCount = rfqs.filter((r) => r.status === "quoted").length
   const pendingCount = rfqs.filter((r) => r.status === "pending").length
-  const inReviewCount = rfqs.filter((r) => r.status === "in_review").length
+  const cancelledCount = rfqs.filter((r) => r.status === "cancelled").length
   const from = meta?.from ?? 0
   const to = meta?.to ?? rfqs.length
   const canGoPrev = (meta?.currentPage ?? currentPage) > 1
@@ -189,8 +273,8 @@ export default function BuyerRFQsPage() {
           <p className="text-sm text-muted-foreground">Pending</p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4">
-          <div className="text-2xl font-bold text-blue-600">{inReviewCount}</div>
-          <p className="text-sm text-muted-foreground">In Review</p>
+          <div className="text-2xl font-bold text-red-600">{cancelledCount}</div>
+          <p className="text-sm text-muted-foreground">Cancelled</p>
         </div>
       </div>
 
@@ -250,7 +334,7 @@ export default function BuyerRFQsPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {rfqs.map((rfq) => {
-                    const statusMeta = getStatusMeta(rfq.status)
+                    const statusMeta = getStatusMeta(getDisplayStatus(rfq.status))
                     const StatusIcon = statusMeta.icon
                     return (
                       <tr key={rfq.id} className="hover:bg-muted/50 transition-colors">
@@ -291,7 +375,7 @@ export default function BuyerRFQsPage() {
             {rfqs.length > 0 && (
               <div className="md:hidden p-4 space-y-3">
                 {rfqs.map((rfq) => {
-                  const statusMeta = getStatusMeta(rfq.status)
+                  const statusMeta = getStatusMeta(getDisplayStatus(rfq.status))
                   const StatusIcon = statusMeta.icon
                   return (
                     <div key={rfq.id} className="rounded-lg border border-border p-3">
@@ -454,7 +538,32 @@ export default function BuyerRFQsPage() {
             <div className="py-8 text-center text-sm text-muted-foreground">No details found.</div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex gap-2">
+            {detailData && canRespondToQuote(detailData.status) && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsDetailOpen(false)
+                    void handleReject(detailData.id)
+                  }}
+                  className="text-red-600 border-red-200 cursor-pointer"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Reject
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsDetailOpen(false)
+                    void handleAccept(detailData.id)
+                  }}
+                  className="gap-2"
+                >
+                  <Check className="h-4 w-4" />
+                  Accept
+                </Button>
+              </>
+            )}
             <Button variant="outline" onClick={() => setIsDetailOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>

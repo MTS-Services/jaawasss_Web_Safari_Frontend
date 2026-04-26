@@ -304,12 +304,11 @@ export async function previewManufacturerCatalog(
       }
     }
 
-    // Construct the file URL based on your API
-    const fileUrl = `/api/download/${filePath}`
+    // Use the file path directly from the backend (it's a full URL)
     return {
       success: true,
       message: "Preview URL retrieved",
-      url: fileUrl,
+      url: filePath,
     }
   } catch (error: unknown) {
     return {

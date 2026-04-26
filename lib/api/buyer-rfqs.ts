@@ -46,6 +46,12 @@ export interface BuyerRfqDetailResponse {
   data: BuyerRfqItem | null
 }
 
+export interface RespondQuoteResponse {
+  success: boolean
+  message?: string
+  data?: Record<string, unknown>
+}
+
 export interface GetBuyerRfqsInput {
   page?: number
   perPage?: number
@@ -199,6 +205,35 @@ export async function getBuyerRfqById(id: number): Promise<BuyerRfqDetailRespons
       success: false,
       message: getApiErrorMessage(error, "Failed to fetch RFQ details."),
       data: null,
+    }
+  }
+}
+
+export async function respondToRfqQuote(
+  id: number,
+  action: "accept" | "cancel"
+): Promise<RespondQuoteResponse> {
+  try {
+    const response = await apiClient.post(`/buyer/rfqs/${id}/respond-quote`, {
+      action,
+    })
+
+    const root = toRecord(response.data)
+
+    return {
+      success: typeof root.success === "boolean" ? root.success : true,
+      message: typeof root.message === "string" ? root.message : undefined,
+      data: root.data as Record<string, unknown> | undefined,
+    }
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message: getApiErrorMessage(
+        error,
+        action === "accept"
+          ? "Failed to accept RFQ."
+          : "Failed to reject RFQ."
+      ),
     }
   }
 }
