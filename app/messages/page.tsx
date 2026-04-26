@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { ChatView, ChatConversation, ChatMessage, ChatParticipant } from "@/components/chat/chat-view"
@@ -10,12 +11,20 @@ import { getEcho } from "@/lib/echo"
 import { Loader2 } from "lucide-react"
 
 export default function MessagesPage() {
+  const router = useRouter()
   const { user, isAuthenticated } = useAuth()
   const [selectedConvId, setSelectedConvId] = useState<string | undefined>()
   const [conversations, setConversations] = useState<ChatConversation[]>([])
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isMessagesLoading, setIsMessagesLoading] = useState(false)
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/auth/signin")
+    }
+  }, [isAuthenticated, router])
 
   const buildIncomingMessage = (data: any): ChatMessage | null => {
     const msg = data?.message
@@ -167,7 +176,7 @@ export default function MessagesPage() {
             </p>
           </div>
 
-          <div className="h-[calc(100vh-16rem)] min-h-[500px]">
+          <div className="h-[calc(100vh-16rem)] min-h-125">
             {isLoading ? (
               <div className="flex h-full items-center justify-center rounded-xl border border-border bg-card">
                 <Loader2 className="h-8 w-8 animate-spin text-secondary" />

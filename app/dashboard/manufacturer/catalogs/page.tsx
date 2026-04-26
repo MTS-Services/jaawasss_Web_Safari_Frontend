@@ -69,6 +69,8 @@ export default function ManufacturerCatalogsPage() {
   const [selectedCatalog, setSelectedCatalog] = useState<ManufacturerCatalog | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [uploadingCatalog, setUploadingCatalog] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewingId, setPreviewingId] = useState<number | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -221,32 +223,67 @@ export default function ManufacturerCatalogsPage() {
 
   // Handle preview catalog
   const handlePreview = async (id: number) => {
+    setSelectedCatalog(null)
+    setPreviewUrl(null)
+    setPreviewingId(id)
+    
     const catalog = catalogs.find(c => c.id === id)
     if (catalog) {
       setSelectedCatalog(catalog)
+      
+      // Try to get preview URL from API
+      const response = await previewManufacturerCatalog(id)
+      if (response.success && response.url) {
+        setPreviewUrl(response.url)
+      } else {
+        // Fallback to file_path if available
+        setPreviewUrl(catalog.file_path)
+      }
+      
       setShowDetailsModal(true)
     }
+    
+    setPreviewingId(null)
   }
 
   // Handle download catalog
   const handleDownload = async (id: number) => {
     setDownloadingIds((prev) => new Set([...prev, id]))
-    const response = await downloadManufacturerCatalog(id)
-
-    if (response.success && response.blob) {
-      const url = window.URL.createObjectURL(response.blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `catalog-${id}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } else {
+    
+    const catalog = catalogs.find(c => c.id === id)
+    if (!catalog) {
       await Swal.fire({
         icon: "error",
         title: "Error",
-        text: response.message || "Failed to download catalog",
+        text: "Catalog not found",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#6366f1",
+      })
+      setDownloadingIds((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(id)
+        return newSet
+      })
+      return
+    }
+
+    try {
+      // Use the file_path directly as it's a full URL from backend
+      const fileUrl = catalog.file_path
+      const fileName = `${catalog.name}.pdf`
+      
+      const a = document.createElement("a")
+      a.href = fileUrl
+      a.download = fileName
+      a.target = "_blank"
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    } catch (error) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to download catalog",
         confirmButtonText: "OK",
         confirmButtonColor: "#6366f1",
       })
@@ -513,17 +550,26 @@ export default function ManufacturerCatalogsPage() {
 
       {/* Catalog Details Modal */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Catalog Details</DialogTitle>
+            <DialogTitle>Catalog Preview & Details</DialogTitle>
             <DialogDescription>
-              Complete information about the catalog
+              View and manage catalog information
             </DialogDescription>
           </DialogHeader>
           {selectedCatalog && (
             <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
+              {/* PDF Preview Info */}
+              {previewUrl && (
+                <div className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded">
+                  <p className="text-sm text-blue-900">
+                    📄 Click "Open in New Tab" to preview the PDF in a new window, or "Download" to save it locally.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex items-start gap-4 border-t pt-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted flex-shrink-0">
                   <File className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div className="flex-1">
@@ -537,7 +583,9 @@ export default function ManufacturerCatalogsPage() {
               <div className="space-y-3 border-t pt-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">File Path</p>
-                  <p className="mt-1 break-all text-sm text-foreground">{selectedCatalog.file_path}</p>
+                  <p className="mt-1 break-all text-sm text-foreground font-mono text-xs bg-muted p-2 rounded">
+                    {selectedCatalog.file_path}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -568,9 +616,19 @@ export default function ManufacturerCatalogsPage() {
               </div>
 
               <div className="flex gap-2 border-t pt-4">
+                {previewUrl && (
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => window.open(previewUrl, '_blank')}
+                  >
+                    <Eye className="h-4 w-4" />
+                    Open in New Tab
+                  </Button>
+                )}
                 <Button
                   variant="outline"
-                  className="flex-1 gap-2"
+                  className="gap-2 flex-1"
                   onClick={() => handleDownload(selectedCatalog.id)}
                   disabled={downloadingIds.has(selectedCatalog.id)}
                 >
