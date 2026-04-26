@@ -32,8 +32,8 @@ import { useState } from "react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard/manufacturer", icon: LayoutDashboard },
-  { name: "Inquiries", href: "/dashboard/manufacturer/inquiries", icon: FileText, badge: "5" },
-  { name: "Messages", href: "/dashboard/manufacturer/messages", icon: MessageSquare, badge: "3" },
+  { name: "Inquiries", href: "/dashboard/manufacturer/inquiries", icon: FileText },
+  { name: "Messages", href: "/dashboard/manufacturer/messages", icon: MessageSquare },
   { name: "Products", href: "/dashboard/manufacturer/products", icon: Package },
   { name: "Catalogs", href: "/dashboard/manufacturer/catalogs", icon: FileBox },
   { name: "Certifications", href: "/dashboard/manufacturer/certifications", icon: Award },
@@ -166,11 +166,6 @@ export default function ManufacturerDashboardLayout({
                     <item.icon className={cn("h-5 w-5", navItem.highlight && !isActive && "text-secondary")} />
                     {item.name}
                   </div>
-                  {item.badge && (
-                    <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary-foreground text-xs">
-                      {item.badge}
-                    </Badge>
-                  )}
                   {navItem.highlight && !isActive && (
                     <Badge className="bg-secondary text-secondary-foreground text-xs">
                       Required

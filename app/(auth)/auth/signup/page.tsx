@@ -318,7 +318,7 @@ export default function SignUpPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First name</Label>
+              <Label htmlFor="firstName">First name <span className="text-destructive">*</span></Label>
               <Input
                 id="firstName"
                 placeholder="John"
@@ -329,7 +329,7 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last name</Label>
+              <Label htmlFor="lastName">Last name <span className="text-destructive">*</span></Label>
               <Input
                 id="lastName"
                 placeholder="Doe"
@@ -342,7 +342,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Work email</Label>
+            <Label htmlFor="email">Work email <span className="text-destructive">*</span></Label>
             <Input
               id="email"
               type="email"
@@ -355,7 +355,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="company">Company name</Label>
+            <Label htmlFor="company">Company name <span className="text-destructive">*</span></Label>
             <Input
               id="company"
               placeholder="Your company"
@@ -367,10 +367,11 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="country">Country</Label>
+            <Label htmlFor="country">Country <span className="text-destructive">*</span></Label>
             <Select 
               value={formData.country} 
               onValueChange={(value) => setFormData({ ...formData, country: value })}
+              required
             >
               <SelectTrigger id="country">
                 <SelectValue placeholder="Select your country" />
@@ -386,7 +387,7 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Password <span className="text-destructive">*</span></Label>
             <div className="relative">
               <Input
                 id="password"
@@ -528,7 +529,7 @@ export default function SignUpPage() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-1">
                   <Camera className="h-4 w-4 text-secondary" />
-                  Factory Photos <span className="text-muted-foreground text-xs">(optional, max 5)</span>
+                  Factory Photos <span className="text-destructive">*</span> <span className="text-muted-foreground text-xs">(max 5)</span>
                 </Label>
                 <p className="text-xs text-muted-foreground mb-2">
                   Upload photos of your production line or factory building to support your application
@@ -541,6 +542,7 @@ export default function SignUpPage() {
                   onChange={handleFactoryPhotosChange}
                   className="hidden"
                   disabled={isLoading || formData.factoryPhotos.length >= 5}
+                  required={formData.factoryPhotos.length === 0}
                 />
                 
                 {formData.factoryPhotos.length > 0 && (
