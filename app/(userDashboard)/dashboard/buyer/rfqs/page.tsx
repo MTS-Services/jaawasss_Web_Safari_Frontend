@@ -460,7 +460,7 @@ export default function BuyerRFQsPage() {
       </div>
 
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent className="w-[95vw] max-w-2xl sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>RFQ Details</DialogTitle>
             <DialogDescription>
@@ -475,7 +475,7 @@ export default function BuyerRFQsPage() {
               {detailError}
             </div>
           ) : detailData ? (
-            <div className="grid gap-4 py-2 sm:grid-cols-2">
+            <div className="grid gap-4 py-2 grid-cols-1 sm:grid-cols-2">
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">RFQ Number</p>
                 <p className="mt-1 text-sm font-medium text-foreground">{detailData.rfqNumber}</p>
@@ -538,7 +538,7 @@ export default function BuyerRFQsPage() {
             <div className="py-8 text-center text-sm text-muted-foreground">No details found.</div>
           )}
 
-          <DialogFooter className="flex gap-2">
+          <DialogFooter className="flex flex-wrap gap-2 sm:justify-end">
             {detailData && canRespondToQuote(detailData.status) && (
               <>
                 <Button
@@ -547,7 +547,7 @@ export default function BuyerRFQsPage() {
                     setIsDetailOpen(false)
                     void handleReject(detailData.id)
                   }}
-                  className="text-red-600 border-red-200 cursor-pointer"
+                  className="text-red-600 border-red-200 cursor-pointer flex-1 sm:flex-none"
                 >
                   <X className="mr-2 h-4 w-4" />
                   Reject
@@ -557,14 +557,14 @@ export default function BuyerRFQsPage() {
                     setIsDetailOpen(false)
                     void handleAccept(detailData.id)
                   }}
-                  className="gap-2"
+                  className="gap-2 flex-1 sm:flex-none"
                 >
                   <Check className="h-4 w-4" />
                   Accept
                 </Button>
               </>
             )}
-            <Button variant="outline" onClick={() => setIsDetailOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setIsDetailOpen(false)} className="flex-1 sm:flex-none">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
