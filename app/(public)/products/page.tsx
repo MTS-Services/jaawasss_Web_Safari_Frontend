@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -16,8 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { products } from "@/lib/data/products"
-import { industries } from "@/lib/data/industries"
+import { getProducts, type Product } from "@/lib/api/products"
 import { ProductActionButtons } from "@/components/products/product-action-buttons"
 import { 
   Search, 
@@ -26,37 +25,113 @@ import {
   ChevronRight,
   X,
   Factory,
-  CheckCircle
+  CheckCircle,
+  Loader2
 } from "lucide-react"
 
 export default function ProductsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedIndustry, setSelectedIndustry] = useState<string>("all")
-  const [sampleAvailable, setSampleAvailable] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [sortBy, setSortBy] = useState("relevance")
   const [showFilters, setShowFilters] = useState(false)
 
-  const filteredProducts = products.filter(product => {
-    if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !product.category.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false
+  // Get unique categories from products
+  const categories = useMemo(() => {
+    const cats = new Map<string, string>()
+    products.forEach(p => {
+      cats.set(p.category.slug, p.category.name)
+    })
+    return Array.from(cats.entries()).map(([slug, name]) => ({ slug, name }))
+  }, [products])
+
+  // Fetch products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true)
+      setError(null)
+      
+      const response = await getProducts(1, {})
+      
+      if (response.success) {
+        setProducts(response.data)
+      } else {
+        setError(response.message || "Failed to load products")
+        setProducts([])
+      }
+      
+      setLoading(false)
     }
-    if (selectedIndustry && selectedIndustry !== "all" && product.industrySlug !== selectedIndustry) {
-      return false
+
+    fetchProducts()
+  }, [])
+
+  // Filter and sort products
+  const filteredAndSortedProducts = useMemo(() => {
+    let result = [...products]
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.category.name.toLowerCase().includes(query)
+      )
     }
-    if (sampleAvailable && !product.sampleAvailable) {
-      return false
+
+    // Apply category filter
+    if (selectedCategory !== "all") {
+      result = result.filter(p => p.category.slug === selectedCategory)
     }
-    return true
-  })
+
+    // Apply sorting
+    switch (sortBy) {
+      case "price-low":
+        result.sort((a, b) => {
+          const priceA = parseFloat(a.pricing_quantities.min_price.price.amount)
+          const priceB = parseFloat(b.pricing_quantities.min_price.price.amount)
+          return priceA - priceB
+        })
+        break
+      case "price-high":
+        result.sort((a, b) => {
+          const priceA = parseFloat(a.pricing_quantities.max_price.price.amount)
+          const priceB = parseFloat(b.pricing_quantities.max_price.price.amount)
+          return priceB - priceA
+        })
+        break
+      case "moq-low":
+        result.sort((a, b) =>
+          a.pricing_quantities.minimum_order_quantity - b.pricing_quantities.minimum_order_quantity
+        )
+        break
+      case "newest":
+        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        break
+      case "popularity":
+        result.sort((a, b) => b.inquiry_count - a.inquiry_count)
+        break
+      default:
+        // Relevance: by inquiry count
+        result.sort((a, b) => b.inquiry_count - a.inquiry_count)
+    }
+
+    return result
+  }, [products, searchQuery, selectedCategory, sortBy])
 
   const clearFilters = () => {
     setSearchQuery("")
-    setSelectedIndustry("all")
-    setSampleAvailable(false)
+    setSelectedCategory("all")
+    setSortBy("relevance")
   }
 
-  const hasActiveFilters = searchQuery || selectedIndustry !== "all" || sampleAvailable
+  const hasActiveFilters = searchQuery || selectedCategory !== "all" || sortBy !== "relevance"
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -120,34 +195,40 @@ export default function ProductsPage() {
                   </div>
 
                   <div className="mt-6 space-y-6">
-                    {/* Industry Filter */}
+                    {/* Category Filter */}
                     <div>
-                      <label className="text-sm font-medium text-foreground">Industry</label>
-                      <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                      <label className="text-sm font-medium text-foreground">Category</label>
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                         <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="All Industries" />
+                          <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Industries</SelectItem>
-                          {industries.map((industry) => (
-                            <SelectItem key={industry.slug} value={industry.slug}>
-                              {industry.name}
+                          <SelectItem value="all">All Categories</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category.slug} value={category.slug}>
+                              {category.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    {/* Sample Available */}
-                    <div className="flex items-center gap-2">
-                      <Checkbox 
-                        id="sample" 
-                        checked={sampleAvailable}
-                        onCheckedChange={(checked) => setSampleAvailable(checked as boolean)}
-                      />
-                      <label htmlFor="sample" className="text-sm text-foreground cursor-pointer">
-                        Sample available
-                      </label>
+                    {/* Sort */}
+                    <div>
+                      <label className="text-sm font-medium text-foreground">Sort By</label>
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger className="mt-2">
+                          <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="relevance">Relevance</SelectItem>
+                          <SelectItem value="price-low">Price: Low to High</SelectItem>
+                          <SelectItem value="price-high">Price: High to Low</SelectItem>
+                          <SelectItem value="moq-low">Lowest MOQ</SelectItem>
+                          <SelectItem value="newest">Newest First</SelectItem>
+                          <SelectItem value="popularity">Most Popular</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -158,19 +239,8 @@ export default function ProductsPage() {
                 {/* Results Header */}
                 <div className="mb-6 flex items-center justify-between">
                   <p className="text-muted-foreground">
-                    <span className="font-medium text-foreground">{filteredProducts.length}</span> products found
+                    <span className="font-medium text-foreground">{filteredAndSortedProducts.length}</span> products found
                   </p>
-                  <Select defaultValue="relevance">
-                    <SelectTrigger className="w-44">
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="relevance">Relevance</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
-                      <SelectItem value="moq-low">Lowest MOQ</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 {/* Active Filters */}
@@ -185,18 +255,18 @@ export default function ProductsPage() {
                         </button>
                       </Badge>
                     )}
-                    {selectedIndustry !== "all" && (
+                    {selectedCategory !== "all" && (
                       <Badge variant="secondary" className="gap-1">
-                        {industries.find(i => i.slug === selectedIndustry)?.name}
-                        <button onClick={() => setSelectedIndustry("all")}>
+                        {categories.find(c => c.slug === selectedCategory)?.name}
+                        <button onClick={() => setSelectedCategory("all")}>
                           <X className="h-3 w-3" />
                         </button>
                       </Badge>
                     )}
-                    {sampleAvailable && (
+                    {sortBy !== "relevance" && (
                       <Badge variant="secondary" className="gap-1">
-                        Sample Available
-                        <button onClick={() => setSampleAvailable(false)}>
+                        Sort: {sortBy}
+                        <button onClick={() => setSortBy("relevance")}>
                           <X className="h-3 w-3" />
                         </button>
                       </Badge>
@@ -204,65 +274,78 @@ export default function ProductsPage() {
                   </div>
                 )}
 
+                {/* Loading State */}
+                {loading && (
+                  <div className="flex items-center justify-center py-24">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+
+                {/* Error State */}
+                {error && !loading && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
+                    <p className="font-semibold">Error loading products</p>
+                    <p className="mt-1">{error}</p>
+                  </div>
+                )}
+
                 {/* Product Cards */}
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      onClick={() => router.push(`/products/${product.slug}`)}
-                      className="group cursor-pointer overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-md"
-                    >
-                      {/* Product Image */}
-                      <div className="relative aspect-4/3 bg-muted">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Package className="h-12 w-12 text-muted-foreground/30" />
-                        </div>
-                        <Badge className="absolute left-3 top-3">{product.category}</Badge>
-                        <div className="absolute right-3 top-3 flex items-center gap-2">
-                          {product.sampleAvailable && (
-                            <Badge variant="secondary" className="text-xs">
-                              Sample
+                {!loading && !error && (
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredAndSortedProducts.map((product) => (
+                      <div
+                        key={product.id}
+                        onClick={() => router.push(`/products/${product.id}`)}
+                        className="group cursor-pointer overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-md"
+                      >
+                        {/* Product Image */}
+                        <div className="relative aspect-4/3 bg-muted">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Package className="h-12 w-12 text-muted-foreground/30" />
+                          </div>
+                          <Badge className="absolute left-3 top-3">{product.category.name}</Badge>
+                          {product.is_approved && (
+                            <Badge className="absolute right-3 top-3 bg-green-500/20 text-green-700 border-green-200">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Verified
                             </Badge>
                           )}
-                          <ProductActionButtons product={product} variant="icon" />
                         </div>
-                      </div>
 
-                      <div className="p-4">
-                        <h3 className="font-semibold text-foreground group-hover:text-secondary line-clamp-2">
-                          {product.name}
-                        </h3>
-                        
-                        <Link 
-                          href={`/suppliers/${product.supplierSlug}`}
-                          className="mt-2 flex items-center gap-1 text-sm text-muted-foreground hover:text-secondary"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Factory className="h-3 w-3" />
-                          {product.supplierName}
-                          <CheckCircle className="h-3 w-3 text-secondary" />
-                        </Link>
+                        <div className="p-4">
+                          <h3 className="font-semibold text-foreground group-hover:text-secondary line-clamp-2">
+                            {product.name}
+                          </h3>
+                          
+                          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                            {product.description}
+                          </p>
 
-                        {product.price && (
                           <div className="mt-3">
                             <span className="text-lg font-semibold text-foreground">
-                              ${product.price.min.toFixed(2)} - ${product.price.max.toFixed(2)}
+                              ${parseFloat(product.pricing_quantities.min_price.price.amount).toFixed(2)} - ${parseFloat(product.pricing_quantities.max_price.price.amount).toFixed(2)}
                             </span>
-                            <span className="text-sm text-muted-foreground"> / {product.price.unit}</span>
+                            <span className="text-sm text-muted-foreground"> / {product.pricing_quantities.unit}</span>
                           </div>
-                        )}
 
-                        <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
-                          <span>MOQ: {product.moq} {product.moqUnit}</span>
-                          <span>{product.leadTime}</span>
+                          <div className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+                            <span>MOQ: {product.pricing_quantities.minimum_order_quantity}</span>
+                            <span>{product.pricing_quantities.lead_time} days</span>
+                          </div>
+
+                          {product.inquiry_count > 0 && (
+                            <div className="mt-2 text-xs text-amber-600">
+                              ⭐ {product.inquiry_count} inquiries
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Empty State */}
-                {filteredProducts.length === 0 && (
+                {!loading && !error && filteredAndSortedProducts.length === 0 && (
                   <div className="rounded-xl border border-dashed border-border py-16 text-center">
                     <Package className="mx-auto h-12 w-12 text-muted-foreground/50" />
                     <h3 className="mt-4 font-semibold text-foreground">No products found</h3>

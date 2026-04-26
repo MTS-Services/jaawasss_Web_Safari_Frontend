@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Header } from "@/components/layout/header"
@@ -8,65 +8,168 @@ import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import {
+import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { suppliers, getSupplierBySlug } from "@/lib/data/suppliers"
-import { products, getProductBySlug } from "@/lib/data/products"
+import { getProduct, type Product } from "@/lib/api/products"
+import { createRFQ } from "@/lib/api/rfqs"
 import { countries } from "@/lib/data/countries"
+import { useToast } from "@/hooks/use-toast"
 import { 
   ArrowLeft,
-  Factory,
-  CheckCircle,
-  FileText,
   Package,
-  Star
+  FileText,
+  Loader2,
+  AlertCircle
 } from "lucide-react"
 
 function NewRFQForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const supplierSlug = searchParams.get('supplier')
-  const productSlug = searchParams.get('product')
+  const { toast } = useToast()
+  const productId = searchParams.get('product_id')
   
-  const initialSupplier = supplierSlug ? getSupplierBySlug(supplierSlug) : null
-  const initialProduct = productSlug ? getProductBySlug(productSlug) : null
-  const productSupplier = initialProduct ? getSupplierBySlug(initialProduct.supplierSlug) : null
-
-  const [selectedSupplier, setSelectedSupplier] = useState(initialSupplier || productSupplier)
-  const [selectedProduct, setSelectedProduct] = useState(initialProduct)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [showSupplierSearch, setShowSupplierSearch] = useState(!initialSupplier && !productSupplier)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(!!productId)
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
-    productName: initialProduct?.name || "",
     quantity: "",
-    unit: "pieces",
-    targetPrice: "",
-    currency: "USD",
-    deliveryDate: "",
-    shippingTerms: "FOB",
-    destinationCountry: "",
-    destinationPort: "",
-    packaging: "",
-    requirements: "",
-    attachments: false
+    quantity_unit: "pieces",
+    target_price: "",
+    target_currency_code: "USD",
+    required_delivery_date: "",
+    shipping_terms: "FOB",
+    destination_country: "",
+    destination_port_city: "",
+    packaging_details: "",
+    additional_requirements: "",
   })
 
-  const filteredSuppliers = suppliers.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.industry.toLowerCase().includes(searchQuery.toLowerCase())
-  ).slice(0, 5)
+  // Fetch product if product_id provided
+  useEffect(() => {
+    if (!productId) {
+      setLoading(false)
+      return
+    }
 
-  const handleSubmit = (e: React.FormEvent) => {
+    const fetchProduct = async () => {
+      setLoading(true)
+      setError(null)
+      
+      const response = await getProduct(productId)
+      
+      if (response.success && response.data) {
+        setProduct(response.data)
+      } else {
+        setError(response.message || "Product not found")
+      }
+      
+      setLoading(false)
+    }
+
+    fetchProduct()
+  }, [productId])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would submit the RFQ via API
-    router.push('/dashboard/buyer/rfqs')
+    
+    if (!product) {
+      toast({
+        title: "Error",
+        description: "Product is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!formData.quantity || !formData.required_delivery_date || !formData.destination_country) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields (Quantity, Delivery Date, Destination)",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setSubmitting(true)
+    setSubmitError(null)
+
+    const rfqPayload = {
+      product_id: product.id,
+      quantity: parseInt(formData.quantity),
+      quantity_unit: formData.quantity_unit,
+      target_price: formData.target_price ? parseFloat(formData.target_price) : 0,
+      target_currency_code: formData.target_currency_code,
+      required_delivery_date: formData.required_delivery_date,
+      shipping_terms: formData.shipping_terms,
+      destination_country: formData.destination_country,
+      destination_port_city: formData.destination_port_city,
+      packaging_details: formData.packaging_details,
+      additional_requirements: formData.additional_requirements || undefined,
+    }
+
+    const response = await createRFQ(rfqPayload)
+    
+    if (response.success) {
+      // Show success toast
+      toast({
+        title: "Success! 🎉",
+        description: `Your RFQ for "${product.name}" has been sent successfully. Suppliers will review your request shortly.`,
+      })
+      
+      // Redirect after short delay to let user see the toast
+      setTimeout(() => {
+        router.push('/dashboard/buyer/rfqs')
+      }, 1500)
+    } else {
+      const errorMsg = response.message || "Failed to submit RFQ"
+      setSubmitError(errorMsg)
+      toast({
+        title: "Submission Failed",
+        description: errorMsg,
+        variant: "destructive",
+      })
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6">
+          <div className="flex gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-red-900">Error</h3>
+              <p className="mt-1 text-sm text-red-700">{error}</p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="mt-3"
+                onClick={() => router.push('/products')}
+              >
+                Back to Products
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -74,11 +177,11 @@ function NewRFQForm() {
       {/* Header */}
       <div className="mb-8">
         <Link 
-          href="/dashboard/buyer/rfqs" 
+          href="/products" 
           className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to My RFQs
+          Back to Products
         </Link>
         <h1 className="font-serif text-2xl font-medium text-foreground sm:text-3xl">
           Request for Quotation
@@ -89,108 +192,8 @@ function NewRFQForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Supplier Selection */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <label className="text-sm font-medium text-foreground">
-            Supplier
-          </label>
-          
-          {selectedSupplier ? (
-            <div className="mt-3 flex items-center justify-between rounded-lg border border-border bg-muted/50 p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <Factory className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{selectedSupplier.name}</span>
-                    {selectedSupplier.verified && (
-                      <CheckCircle className="h-4 w-4 text-secondary" />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>{selectedSupplier.location.city}, {selectedSupplier.location.country}</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      {selectedSupplier.rating}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <Button 
-                type="button"
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
-                  setSelectedSupplier(null)
-                  setSelectedProduct(null)
-                  setShowSupplierSearch(true)
-                }}
-              >
-                Change
-              </Button>
-            </div>
-          ) : (
-            <div className="mt-3">
-              <Input
-                type="text"
-                placeholder="Search suppliers by name or industry..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value)
-                  setShowSupplierSearch(true)
-                }}
-                onFocus={() => setShowSupplierSearch(true)}
-              />
-              
-              {showSupplierSearch && searchQuery && (
-                <div className="mt-2 rounded-lg border border-border bg-card shadow-lg">
-                  {filteredSuppliers.length === 0 ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      No suppliers found
-                    </div>
-                  ) : (
-                    filteredSuppliers.map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedSupplier(s)
-                          setShowSupplierSearch(false)
-                          setSearchQuery("")
-                        }}
-                        className="flex w-full items-center gap-3 border-b border-border p-3 text-left last:border-b-0 hover:bg-muted/50"
-                      >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                          <Factory className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-foreground">{s.name}</span>
-                            {s.verified && (
-                              <CheckCircle className="h-3 w-3 text-secondary" />
-                            )}
-                          </div>
-                          <span className="text-sm text-muted-foreground">
-                            {s.industry} • {s.location.country}
-                          </span>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          <Star className="mr-1 h-3 w-3 fill-amber-400 text-amber-400" />
-                          {s.rating}
-                        </Badge>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Selected Product (if from product page) */}
-        {selectedProduct && (
+        {/* Selected Product */}
+        {product && (
           <div className="rounded-xl border border-border bg-card p-6">
             <label className="text-sm font-medium text-foreground">
               Product Reference
@@ -199,14 +202,12 @@ function NewRFQForm() {
               <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
                 <Package className="h-8 w-8 text-muted-foreground" />
               </div>
-              <div>
-                <h3 className="font-medium text-foreground">{selectedProduct.name}</h3>
-                <p className="text-sm text-muted-foreground">{selectedProduct.category}</p>
-                {selectedProduct.price && (
-                  <p className="text-sm text-muted-foreground">
-                    ${selectedProduct.price.min} - ${selectedProduct.price.max} / {selectedProduct.price.unit}
-                  </p>
-                )}
+              <div className="flex-1">
+                <h3 className="font-medium text-foreground">{product.name}</h3>
+                <p className="text-sm text-muted-foreground">{product.category.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  ${parseFloat(product.pricing_quantities.min_price.price.amount).toFixed(2)} - ${parseFloat(product.pricing_quantities.max_price.price.amount).toFixed(2)} / {product.pricing_quantities.unit}
+                </p>
               </div>
             </div>
           </div>
@@ -216,39 +217,25 @@ function NewRFQForm() {
         <div className="rounded-xl border border-border bg-card p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Product Details</h2>
           
-          <div>
-            <label htmlFor="productName" className="text-sm font-medium text-foreground">
-              Product Name / Description
-            </label>
-            <Input
-              id="productName"
-              type="text"
-              placeholder="e.g., TWS Wireless Earbuds with ANC"
-              value={formData.productName}
-              onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
-              className="mt-2"
-              required
-            />
-          </div>
-
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="quantity" className="text-sm font-medium text-foreground">
-                Quantity
+                Quantity <span className="text-red-500">*</span>
               </label>
               <div className="mt-2 flex gap-2">
                 <Input
                   id="quantity"
                   type="number"
-                  placeholder="5000"
+                  placeholder="e.g., 5000"
                   value={formData.quantity}
                   onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                   className="flex-1"
                   required
+                  min="1"
                 />
                 <Select 
-                  value={formData.unit} 
-                  onValueChange={(value) => setFormData({ ...formData, unit: value })}
+                  value={formData.quantity_unit} 
+                  onValueChange={(value) => setFormData({ ...formData, quantity_unit: value })}
                 >
                   <SelectTrigger className="w-28">
                     <SelectValue />
@@ -266,13 +253,13 @@ function NewRFQForm() {
             </div>
 
             <div>
-              <label htmlFor="targetPrice" className="text-sm font-medium text-foreground">
+              <label htmlFor="target_price" className="text-sm font-medium text-foreground">
                 Target Price (Optional)
               </label>
               <div className="mt-2 flex gap-2">
                 <Select 
-                  value={formData.currency} 
-                  onValueChange={(value) => setFormData({ ...formData, currency: value })}
+                  value={formData.target_currency_code} 
+                  onValueChange={(value) => setFormData({ ...formData, target_currency_code: value })}
                 >
                   <SelectTrigger className="w-20">
                     <SelectValue />
@@ -285,13 +272,14 @@ function NewRFQForm() {
                   </SelectContent>
                 </Select>
                 <Input
-                  id="targetPrice"
+                  id="target_price"
                   type="number"
                   placeholder="15.00"
-                  value={formData.targetPrice}
-                  onChange={(e) => setFormData({ ...formData, targetPrice: e.target.value })}
+                  value={formData.target_price}
+                  onChange={(e) => setFormData({ ...formData, target_price: e.target.value })}
                   className="flex-1"
                   step="0.01"
+                  min="0"
                 />
               </div>
             </div>
@@ -304,25 +292,26 @@ function NewRFQForm() {
           
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="deliveryDate" className="text-sm font-medium text-foreground">
-                Required Delivery Date
+              <label htmlFor="required_delivery_date" className="text-sm font-medium text-foreground">
+                Required Delivery Date <span className="text-red-500">*</span>
               </label>
               <Input
-                id="deliveryDate"
+                id="required_delivery_date"
                 type="date"
-                value={formData.deliveryDate}
-                onChange={(e) => setFormData({ ...formData, deliveryDate: e.target.value })}
+                value={formData.required_delivery_date}
+                onChange={(e) => setFormData({ ...formData, required_delivery_date: e.target.value })}
                 className="mt-2"
+                required
               />
             </div>
 
             <div>
-              <label htmlFor="shippingTerms" className="text-sm font-medium text-foreground">
+              <label htmlFor="shipping_terms" className="text-sm font-medium text-foreground">
                 Shipping Terms
               </label>
               <Select 
-                value={formData.shippingTerms} 
-                onValueChange={(value) => setFormData({ ...formData, shippingTerms: value })}
+                value={formData.shipping_terms} 
+                onValueChange={(value) => setFormData({ ...formData, shipping_terms: value })}
               >
                 <SelectTrigger className="mt-2">
                   <SelectValue />
@@ -337,39 +326,41 @@ function NewRFQForm() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="destinationCountry" className="text-sm font-medium text-foreground">
-              Destination Country
-            </label>
-            <Select 
-              value={formData.destinationCountry} 
-              onValueChange={(value) => setFormData({ ...formData, destinationCountry: value })}
-            >
-              <SelectTrigger className="mt-2">
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {countries.map((country) => (
-                  <SelectItem key={country.code} value={country.code}>
-                    {country.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="destination_country" className="text-sm font-medium text-foreground">
+                Destination Country <span className="text-red-500">*</span>
+              </label>
+              <Select 
+                value={formData.destination_country} 
+                onValueChange={(value) => setFormData({ ...formData, destination_country: value })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {countries.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <label htmlFor="destinationPort" className="text-sm font-medium text-foreground">
-              Destination Port / City
-            </label>
-            <Input
-              id="destinationPort"
-              type="text"
-              placeholder="e.g., Los Angeles Port"
-              value={formData.destinationPort}
-              onChange={(e) => setFormData({ ...formData, destinationPort: e.target.value })}
-              className="mt-2"
-            />
+            <div>
+              <label htmlFor="destination_port_city" className="text-sm font-medium text-foreground">
+                Destination Port / City
+              </label>
+              <Input
+                id="destination_port_city"
+                type="text"
+                placeholder="e.g., Chattogram"
+                value={formData.destination_port_city}
+                onChange={(e) => setFormData({ ...formData, destination_port_city: e.target.value })}
+                className="mt-2"
+              />
+            </div>
           </div>
         </div>
 
@@ -378,56 +369,57 @@ function NewRFQForm() {
           <h2 className="font-semibold text-foreground">Packaging Requirements</h2>
           
           <div>
-            <label htmlFor="packaging" className="text-sm font-medium text-foreground">
+            <label htmlFor="packaging_details" className="text-sm font-medium text-foreground">
               Packaging Details
             </label>
-            <Select 
-              value={formData.packaging} 
-              onValueChange={(value) => setFormData({ ...formData, packaging: value })}
-            >
-              <SelectTrigger className="mt-2">
-                <SelectValue placeholder="Select packaging type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="standard">Standard Packaging</SelectItem>
-                <SelectItem value="oem">OEM Packaging (Custom Brand)</SelectItem>
-                <SelectItem value="white-label">White Label / Neutral</SelectItem>
-                <SelectItem value="retail">Retail Ready Packaging</SelectItem>
-                <SelectItem value="bulk">Bulk / No Retail Packaging</SelectItem>
-                <SelectItem value="gift">Gift Box Packaging</SelectItem>
-                <SelectItem value="eco">Eco-Friendly Packaging</SelectItem>
-                <SelectItem value="other">Other (Specify in requirements)</SelectItem>
-              </SelectContent>
-            </Select>
+            <Textarea
+              id="packaging_details"
+              placeholder="e.g., Standard Packaging, OEM logo required, export carton needed..."
+              value={formData.packaging_details}
+              onChange={(e) => setFormData({ ...formData, packaging_details: e.target.value })}
+              className="mt-2 min-h-25"
+            />
           </div>
         </div>
 
         {/* Additional Requirements */}
         <div className="rounded-xl border border-border bg-card p-6">
-          <label htmlFor="requirements" className="text-sm font-medium text-foreground">
+          <label htmlFor="additional_requirements" className="text-sm font-medium text-foreground">
             Additional Requirements
           </label>
           <Textarea
-            id="requirements"
-            placeholder="Include any specific requirements such as customization, packaging, certifications, etc."
-            value={formData.requirements}
-            onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-            className="mt-3 min-h-[120px]"
+            id="additional_requirements"
+            placeholder="Include any specific requirements such as customization, certifications, quality standards, etc."
+            value={formData.additional_requirements}
+            onChange={(e) => setFormData({ ...formData, additional_requirements: e.target.value })}
+            className="mt-3 min-h-30"
           />
+          <p className="mt-2 text-xs text-muted-foreground">
+            Fields marked with * are required
+          </p>
         </div>
 
         {/* Submit */}
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" asChild>
-            <Link href="/dashboard/buyer/rfqs">Cancel</Link>
+            <Link href="/products">Cancel</Link>
           </Button>
           <Button 
             type="submit" 
             className="gap-2"
-            disabled={!selectedSupplier || !formData.productName || !formData.quantity}
+            disabled={!product || !formData.quantity || !formData.required_delivery_date || submitting}
           >
-            <FileText className="h-4 w-4" />
-            Submit RFQ
+            {submitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <FileText className="h-4 w-4" />
+                Submit RFQ
+              </>
+            )}
           </Button>
         </div>
       </form>
@@ -442,7 +434,7 @@ export default function NewRFQPage() {
       <main className="flex-1">
         <Suspense fallback={
           <div className="flex min-h-[50vh] items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         }>
           <NewRFQForm />

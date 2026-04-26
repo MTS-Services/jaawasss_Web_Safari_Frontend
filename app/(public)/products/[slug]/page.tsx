@@ -1,62 +1,150 @@
-import { Metadata } from "next"
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { notFound } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { products, getProductBySlug, getProductsBySupplier } from "@/lib/data/products"
-import { getSupplierBySlug } from "@/lib/data/suppliers"
-import { ProductPageActions } from "@/components/products/product-page-actions"
-import { CompareBar } from "@/components/suppliers/compare-bar"
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { getProduct, type Product } from "@/lib/api/products"
+import { useFavorites } from "@/lib/favorites-context"
 import { 
   Package,
   ChevronRight,
   MessageSquare,
-  FileText,
   Clock,
   CheckCircle,
-  Factory,
-  Star,
-  Shield,
   Truck,
-  FlaskConical,
   Sparkles,
   BoxIcon,
-  Download,
-  Zap
+  Zap,
+  Loader2,
+  AlertCircle,
+  FileText,
+  Heart,
+  Scale
 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-export async function generateStaticParams() {
-  return products.map((product) => ({
-    slug: product.slug,
-  }))
-}
-
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params
-  const product = getProductBySlug(slug)
+export default function ProductPage() {
+  const params = useParams()
+  const router = useRouter()
+  const slug = params.slug as string // This is the product ID in the URL
+  const { 
+    addProductToFavorites, 
+    removeProductFromFavorites, 
+    isProductSaved,
+    addToCompare,
+    removeFromCompare,
+    isInCompare,
+    compareCount,
+    maxCompare
+  } = useFavorites()
   
-  if (!product) {
-    return { title: "Product Not Found" }
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fetch product data
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true)
+      setError(null)
+      
+      const response = await getProduct(slug)
+      
+      if (response.success && response.data) {
+        setProduct(response.data)
+      } else {
+        setError(response.message || "Product not found")
+      }
+      
+      setLoading(false)
+    }
+
+    if (slug) {
+      fetchProduct()
+    }
+  }, [slug])
+
+  const handleFavoriteClick = () => {
+    if (!product) return
+    if (isSaved(product.id)) {
+      removeProductFromFavorites(product.id.toString())
+    } else {
+      // Create a compatible object for favorites context
+      addProductToFavorites({
+        id: product.id.toString(),
+        name: product.name,
+        slug: product.slug,
+        category: product.category.name,
+        price: {
+          min: parseFloat(product.pricing_quantities.min_price.price.amount),
+          max: parseFloat(product.pricing_quantities.max_price.price.amount),
+          unit: product.pricing_quantities.unit,
+          currency: product.pricing_quantities.currency.code
+        },
+        supplierId: "0", // Placeholder - not available from API yet
+        supplierSlug: "", // Placeholder
+        supplierName: "", // Placeholder
+        image: product.image || "/placeholder-product.png",
+        rating: 0,
+        verified: product.is_approved
+      } as any)
+    }
   }
 
-  return {
-    title: product.name,
-    description: product.shortDescription,
-  }
-}
-
-export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  const product = getProductBySlug(slug)
-
-  if (!product) {
-    notFound()
+  function isSaved(productId: number): boolean {
+    return isProductSaved(productId.toString())
   }
 
-  const supplier = getSupplierBySlug(product.supplierSlug)
-  const relatedProducts = getProductsBySupplier(product.supplierSlug).filter(p => p.id !== product.id).slice(0, 3)
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <Header />
+        <main className="flex-1">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                <div>
+                  <p className="font-semibold">Product Not Found</p>
+                  <p className="text-sm mt-1">{error || "The product you're looking for doesn't exist."}</p>
+                </div>
+              </div>
+              <Button className="mt-4" variant="outline" onClick={() => router.push("/products")}>
+                Back to Products
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  const minPrice = parseFloat(product.pricing_quantities.min_price.price.amount)
+  const maxPrice = parseFloat(product.pricing_quantities.max_price.price.amount)
+  const isSavedProduct = isSaved(product.id)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -74,8 +162,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 Products
               </Link>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              <Link href={`/industries/${product.industrySlug}`} className="text-muted-foreground hover:text-foreground">
-                {product.industry}
+              <Link href={`/industries/${product.category.slug}`} className="text-muted-foreground hover:text-foreground">
+                {product.category.name}
               </Link>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium text-foreground line-clamp-1">{product.name}</span>
@@ -108,12 +196,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               {/* Product Info */}
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge>{product.category}</Badge>
-                  {product.customizable && (
+                  <Badge>{product.category.name}</Badge>
+                  {product.customization_options && product.customization_options.length > 0 && (
                     <Badge variant="outline">Customizable</Badge>
                   )}
-                  {product.sampleAvailable && (
-                    <Badge variant="secondary">Sample Available</Badge>
+                  {product.is_approved && (
+                    <Badge variant="secondary">
+                      <CheckCircle className="mr-1 h-3 w-3" />
+                      Verified
+                    </Badge>
                   )}
                 </div>
 
@@ -121,43 +212,25 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   {product.name}
                 </h1>
 
-                {/* Supplier Link */}
-                <Link 
-                  href={`/suppliers/${product.supplierSlug}`}
-                  className="mt-3 flex items-center gap-2 text-muted-foreground hover:text-secondary"
-                >
-                  <Factory className="h-4 w-4" />
-                  <span>{product.supplierName}</span>
-                  <CheckCircle className="h-4 w-4 text-secondary" />
-                  {supplier && (
-                    <span className="flex items-center gap-1 text-sm">
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      {supplier.rating}
-                    </span>
-                  )}
-                </Link>
-
                 <p className="mt-4 text-muted-foreground">
                   {product.description}
                 </p>
 
                 {/* Pricing */}
-                {product.price && (
-                  <div className="mt-6 rounded-xl border border-border bg-card p-4">
-                    <div className="flex items-baseline justify-between">
-                      <div>
-                        <span className="text-2xl font-bold text-foreground">
-                          ${product.price.min.toFixed(2)} - ${product.price.max.toFixed(2)}
-                        </span>
-                        <span className="ml-2 text-muted-foreground">/ {product.price.unit}</span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">{product.price.currency}</span>
+                <div className="mt-6 rounded-xl border border-border bg-card p-4">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <span className="text-2xl font-bold text-foreground">
+                        ${minPrice.toFixed(2)} - ${maxPrice.toFixed(2)}
+                      </span>
+                      <span className="ml-2 text-muted-foreground">/ {product.pricing_quantities.unit}</span>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Price varies based on quantity and customization
-                    </p>
+                    <span className="text-sm text-muted-foreground">USD</span>
                   </div>
-                )}
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Price varies based on quantity and customization
+                  </p>
+                </div>
 
                 {/* Key Info */}
                 <div className="mt-6 grid grid-cols-2 gap-4">
@@ -167,7 +240,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                       <span className="text-sm">Minimum Order</span>
                     </div>
                     <div className="mt-1 font-semibold text-foreground">
-                      {product.moq} {product.moqUnit}
+                      {product.pricing_quantities.minimum_order_quantity} {product.pricing_quantities.unit}
                     </div>
                   </div>
                   <div className="rounded-lg border border-border bg-card p-4">
@@ -176,33 +249,90 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                       <span className="text-sm">Lead Time</span>
                     </div>
                     <div className="mt-1 font-semibold text-foreground">
-                      {product.leadTime}
+                      {product.pricing_quantities.lead_time} days
                     </div>
                   </div>
-                  {product.sampleAvailable && product.samplePrice && (
-                    <div className="rounded-lg border border-border bg-card p-4">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <FlaskConical className="h-4 w-4" />
-                        <span className="text-sm">Sample Price</span>
-                      </div>
-                      <div className="mt-1 font-semibold text-foreground">
-                        ${product.samplePrice}
-                      </div>
-                    </div>
-                  )}
                   <div className="rounded-lg border border-border bg-card p-4">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Truck className="h-4 w-4" />
-                      <span className="text-sm">Shipping</span>
+                      <span className="text-sm">Production</span>
                     </div>
                     <div className="mt-1 font-semibold text-foreground">
-                      FOB / CIF / DDP
+                      {product.pricing_quantities.production_duration} {product.pricing_quantities.production_unit}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Package className="h-4 w-4" />
+                      <span className="text-sm">Capacity</span>
+                    </div>
+                    <div className="mt-1 font-semibold text-foreground">
+                      {product.pricing_quantities.production_capacity} units
                     </div>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <ProductPageActions product={product} />
+                {/* Action Buttons */}
+                <div className="mt-6 space-y-3">
+                  {/* Primary Actions */}
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button 
+                      className="flex-1" 
+                      size="lg"
+                      onClick={() => router.push(`/rfq/new?product_id=${product.id}`)}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Request Quote
+                    </Button>
+                    <Button variant="outline" size="lg" className="flex-1" asChild>
+                      <Link href={`/messages/new?product=${product.slug}`}>
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Contact Supplier
+                      </Link>
+                    </Button>
+                  </div>
+
+                  {/* Secondary Actions */}
+                  <div className="flex gap-3">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="lg"
+                            variant={isSavedProduct ? "secondary" : "outline"}
+                            className="flex-1 gap-2"
+                            onClick={handleFavoriteClick}
+                          >
+                            <Heart className={cn("h-4 w-4", isSavedProduct && "fill-current")} />
+                            {isSavedProduct ? "Saved" : "Save"}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {isSavedProduct ? "Remove from favorites" : "Save to favorites"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            className="flex-1 gap-2"
+                            disabled={true}
+                          >
+                            <Scale className="h-4 w-4" />
+                            Compare
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Compare this product with others
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -214,52 +344,38 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <h2 className="font-serif text-2xl font-medium text-foreground">
               Product Specifications
             </h2>
-            <div className="mt-6 rounded-xl border border-border bg-card overflow-hidden">
-              <table className="w-full">
-                <tbody>
-                  {Object.entries(product.specifications).map(([key, value], index) => (
-                    <tr key={key} className={index % 2 === 0 ? "bg-muted/50" : ""}>
-                      <td className="px-4 py-3 text-sm font-medium text-foreground w-1/3">
-                        {key}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {value}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Certifications */}
-            {product.certifications.length > 0 && (
-              <div className="mt-8">
-                <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Product Certifications
-                </h3>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {product.certifications.map((cert) => (
-                    <Badge key={cert} variant="outline" className="text-sm">
-                      {cert}
-                    </Badge>
-                  ))}
-                </div>
+            
+            {product.specifications && product.specifications.length > 0 && (
+              <div className="mt-6 rounded-xl border border-border bg-card overflow-hidden">
+                <table className="w-full">
+                  <tbody>
+                    {product.specifications.map((spec, index) => (
+                      <tr key={spec.id} className={index % 2 === 0 ? "bg-muted/50" : ""}>
+                        <td className="px-4 py-3 text-sm font-medium text-foreground w-1/3">
+                          {spec.specification_title}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {spec.specification_value}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
             {/* Key Features */}
-            {product.keyFeatures && product.keyFeatures.length > 0 && (
+            {product.product_key_features && product.product_key_features.length > 0 && (
               <div className="mt-8">
                 <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
                   <Zap className="h-5 w-5" />
                   Key Features
                 </h3>
                 <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {product.keyFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-secondary" />
-                      <span className="text-muted-foreground">{feature}</span>
+                  {product.product_key_features.map((feature) => (
+                    <li key={feature.id} className="flex items-start gap-2">
+                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                      <span className="text-muted-foreground">{feature.value}</span>
                     </li>
                   ))}
                 </ul>
@@ -267,16 +383,16 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             )}
 
             {/* Customization Options */}
-            {product.customizable && product.customizationOptions && product.customizationOptions.length > 0 && (
+            {product.customization_options && product.customization_options.length > 0 && (
               <div className="mt-8">
                 <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
                   Customization Options
                 </h3>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {product.customizationOptions.map((option) => (
-                    <Badge key={option} variant="secondary" className="text-sm">
-                      {option}
+                  {product.customization_options.map((option) => (
+                    <Badge key={option.id} variant="secondary" className="text-sm">
+                      {option.option}
                     </Badge>
                   ))}
                 </div>
@@ -284,7 +400,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             )}
 
             {/* Packaging Details */}
-            {product.packagingDetails && (
+            {product.shipping_packaging && (
               <div className="mt-8">
                 <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
                   <BoxIcon className="h-5 w-5" />
@@ -294,148 +410,53 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   <table className="w-full">
                     <tbody>
                       <tr className="bg-muted/50">
-                        <td className="px-4 py-3 text-sm font-medium text-foreground w-1/3">Packaging Type</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{product.packagingDetails.type}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-foreground w-1/3">Type</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{product.shipping_packaging.packaging_type}</td>
                       </tr>
-                      {product.packagingDetails.dimensions && (
-                        <tr>
-                          <td className="px-4 py-3 text-sm font-medium text-foreground">Dimensions</td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">{product.packagingDetails.dimensions}</td>
-                        </tr>
-                      )}
-                      {product.packagingDetails.weight && (
-                        <tr className="bg-muted/50">
-                          <td className="px-4 py-3 text-sm font-medium text-foreground">Weight</td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">{product.packagingDetails.weight}</td>
-                        </tr>
-                      )}
-                      {product.packagingDetails.unitsPerCarton && (
-                        <tr>
-                          <td className="px-4 py-3 text-sm font-medium text-foreground">Units per Carton</td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">{product.packagingDetails.unitsPerCarton}</td>
-                        </tr>
-                      )}
-                      {product.packagingDetails.description && (
-                        <tr className="bg-muted/50">
-                          <td className="px-4 py-3 text-sm font-medium text-foreground">Description</td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">{product.packagingDetails.description}</td>
-                        </tr>
-                      )}
+                      <tr>
+                        <td className="px-4 py-3 text-sm font-medium text-foreground">Dimensions</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{product.shipping_packaging.packaging_dimensions}</td>
+                      </tr>
+                      <tr className="bg-muted/50">
+                        <td className="px-4 py-3 text-sm font-medium text-foreground">Weight</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{product.shipping_packaging.packaging_weight}</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 text-sm font-medium text-foreground">Port</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{product.shipping_packaging.port_of_loading}</td>
+                      </tr>
+                      <tr className="bg-muted/50">
+                        <td className="px-4 py-3 text-sm font-medium text-foreground">Cost/Unit</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          ${parseFloat(product.shipping_packaging.packaging_cost_per_unit.price.amount).toFixed(2)}
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
             )}
 
-            {/* Product Brochure Download */}
-            {product.brochureUrl && (
+            {/* Shipping Methods */}
+            {product.shipping_methods && product.shipping_methods.length > 0 && (
               <div className="mt-8">
                 <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Product Documentation
+                  <Truck className="h-5 w-5" />
+                  Available Shipping Methods
                 </h3>
-                <div className="mt-4">
-                  <Button variant="outline" className="gap-2" asChild>
-                    <a href={product.brochureUrl} download>
-                      <Download className="h-4 w-4" />
-                      Download Product Brochure (PDF)
-                    </a>
-                  </Button>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {product.shipping_methods.map((method) => (
+                    <Badge key={method.id} variant="outline" className="text-sm">
+                      {method.name}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             )}
           </div>
         </section>
-
-        {/* Supplier Info */}
-        {supplier && (
-          <section className="border-t border-border bg-muted/50 py-8 lg:py-12">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <h2 className="font-serif text-2xl font-medium text-foreground">
-                About the Supplier
-              </h2>
-              <div className="mt-6 rounded-xl border border-border bg-card p-6">
-                <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-muted">
-                      <Factory className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg text-foreground">{supplier.name}</h3>
-                        <Badge variant="secondary" className="text-xs">
-                          <CheckCircle className="mr-1 h-3 w-3" />
-                          Reviewed
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {supplier.location.city}, {supplier.location.country} • Est. {supplier.yearEstablished}
-                      </p>
-                      <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
-                        <span className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span className="font-medium">{supplier.rating}</span>
-                          <span className="text-muted-foreground">({supplier.reviewCount} reviews)</span>
-                        </span>
-                        <span className="text-muted-foreground">
-                          {supplier.responseTime} response
-                        </span>
-                        <span className="text-muted-foreground">
-                          {supplier.onTimeDelivery}% on-time
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="outline" asChild>
-                    <Link href={`/suppliers/${supplier.slug}`}>
-                      View Profile
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <section className="border-t border-border py-8 lg:py-12">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <h2 className="font-serif text-2xl font-medium text-foreground">
-                More from this Supplier
-              </h2>
-              <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {relatedProducts.map((relatedProduct) => (
-                  <Link
-                    key={relatedProduct.id}
-                    href={`/products/${relatedProduct.slug}`}
-                    className="group rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-md"
-                  >
-                    <div className="aspect-[4/3] bg-muted flex items-center justify-center">
-                      <Package className="h-12 w-12 text-muted-foreground/30" />
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-foreground group-hover:text-secondary line-clamp-2">
-                        {relatedProduct.name}
-                      </h3>
-                      {relatedProduct.price && (
-                        <div className="mt-2 text-sm">
-                          <span className="font-semibold text-foreground">
-                            ${relatedProduct.price.min.toFixed(2)} - ${relatedProduct.price.max.toFixed(2)}
-                          </span>
-                          <span className="text-muted-foreground"> / {relatedProduct.price.unit}</span>
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
       </main>
       <Footer />
-      <CompareBar />
     </div>
   )
 }
