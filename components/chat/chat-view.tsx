@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Search, Send, Paperclip, MoreVertical, ArrowLeft, MessageSquare, User, Factory, Globe, CheckCircle } from "lucide-react"
+import { Search, Send, MoreVertical, ArrowLeft, MessageSquare, User, Factory, Globe, CheckCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -242,9 +242,7 @@ export function ChatView({
             {/* Input Area */}
             <div className="border-t border-border p-4 bg-card">
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-secondary shrink-0">
-                  <Paperclip className="h-5 w-5" />
-                </Button>
+                {/* Attachment disabled: removed Paperclip button as requested */}
                 <div className="relative flex-1">
                   <Input
                     placeholder="Type a message..."

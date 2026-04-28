@@ -323,6 +323,55 @@ export default function BuyerSettingsPage() {
             </CardContent>
           </Card>
 
+          {/* Language & Region */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                {t.settings.languageRegion}
+              </CardTitle>
+              <CardDescription>
+                {t.settings.languageRegionDesc}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground">{t.settings.language}</label>
+                  <LanguageSelector />
+                </div>
+                {/* <div>
+                  <label className="text-sm font-medium text-foreground">{t.settings.timezone}</label>
+                  <Select defaultValue="asia-shanghai">
+                    <SelectTrigger className="mt-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="asia-shanghai">Asia/Shanghai (GMT+8)</SelectItem>
+                      <SelectItem value="america-los-angeles">America/Los Angeles (GMT-8)</SelectItem>
+                      <SelectItem value="europe-london">Europe/London (GMT+0)</SelectItem>
+                      <SelectItem value="europe-berlin">Europe/Berlin (GMT+1)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div> */}
+              </div>
+              {/* <div>
+                <label className="text-sm font-medium text-foreground">{t.settings.currencyDisplay}</label>
+                <Select defaultValue="usd">
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="usd">USD - US Dollar</SelectItem>
+                    <SelectItem value="eur">EUR - Euro</SelectItem>
+                    <SelectItem value="gbp">GBP - British Pound</SelectItem>
+                    <SelectItem value="cny">CNY - Chinese Yuan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div> */}
+            </CardContent>
+          </Card>
+
           {/* Company Profile - simplified fields from backend */}
           <Card>
             <CardHeader>

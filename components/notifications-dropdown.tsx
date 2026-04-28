@@ -284,7 +284,7 @@ export function NotificationsDropdown({ className }: NotificationsDropdownProps)
         collisionPadding={16}
         avoidCollisions
         sticky="always"
-        className="z-[80] w-[calc(100vw-2rem)] max-w-[24rem] overflow-hidden rounded-3xl border border-primary/10 bg-background/98 p-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] backdrop-blur-xl sm:w-[24rem] animate-in fade-in zoom-in-95 duration-200"
+        className="z-80 w-[calc(100vw-2rem)] max-w-[24rem] overflow-hidden rounded-3xl border border-primary/10 bg-background/98 p-0 shadow-[0_20px_50px_rgba(0,0,0,0.15)] backdrop-blur-xl sm:w-[24rem] animate-in fade-in zoom-in-95 duration-200"
         forceMount
       >
         {/* Header */}
@@ -381,7 +381,7 @@ export function NotificationsDropdown({ className }: NotificationsDropdownProps)
             </div>
           </div>
         ) : !filteredNotifications.length ? (
-          <div className="flex h-[22rem] flex-col items-center justify-center px-6 text-center">
+          <div className="flex h-88 flex-col items-center justify-center px-6 text-center">
             <div className="relative mb-6">
               {/* Background Glow */}
               <div className="absolute inset-0 blur-3xl opacity-20 bg-primary/40 rounded-full animate-pulse" />
@@ -398,7 +398,7 @@ export function NotificationsDropdown({ className }: NotificationsDropdownProps)
               </div>
             </div>
 
-            <div className="max-w-[240px] space-y-2.5">
+            <div className="max-w-60 space-y-2.5">
               <h3 className="text-base font-bold tracking-tight text-foreground">
                 {activeFilter === "unread" ? "No unread alerts" : "You're all caught up"}
               </h3>
