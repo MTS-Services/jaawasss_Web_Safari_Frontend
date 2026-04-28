@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { PayPalButton } from "@/components/payment/paypal-button"
 import {
   Accordion,
   AccordionContent,
@@ -13,7 +14,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { cn } from "@/lib/utils"
-import { Check, X, ArrowRight, Shield, HelpCircle, Sparkles, Users } from "lucide-react"
+import { Check, X, ArrowRight, Shield, HelpCircle, Sparkles, Users, CheckCircle, AlertCircle, X as XIcon } from "lucide-react"
 
 const plans = [
   {
@@ -125,9 +126,51 @@ const faqs = [
 ]
 
 import { useRouter } from "next/navigation"
+
+interface PlanOption {
+  name: string;
+  price: number;
+  cycle: "monthly" | "yearly";
+}
+
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly")
+  const [selectedPlan, setSelectedPlan] = useState<PlanOption | null>(null)
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "success" | "error">("idle")
+  const [transactionId, setTransactionId] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const router = useRouter()
+
+  const handlePlanSelect = (planName: string, price: number) => {
+    setSelectedPlan({
+      name: planName,
+      price,
+      cycle: billingCycle,
+    })
+    setPaymentStatus("idle")
+    setTransactionId(null)
+    setErrorMessage(null)
+  }
+
+  const handlePaymentSuccess = (id: string) => {
+    setPaymentStatus("success")
+    setTransactionId(id)
+    setTimeout(() => {
+      router.push(`/dashboard/manufacturer/subscription?transactionId=${id}`)
+    }, 3000)
+  }
+
+  const handlePaymentError = (error: string) => {
+    setPaymentStatus("error")
+    setErrorMessage(error)
+  }
+
+  const handleClosePayment = () => {
+    setSelectedPlan(null)
+    setPaymentStatus("idle")
+    setTransactionId(null)
+    setErrorMessage(null)
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -351,7 +394,14 @@ export default function PricingPage() {
                       plan.popular && "bg-secondary text-secondary-foreground hover:bg-secondary/90"
                     )}
                     variant={plan.popular ? "default" : "outline"}
-                    onClick={() => router.push(plan.monthlyPrice ? `/auth/signup?role=manufacturer&plan=${plan.name.toLowerCase()}` : "/contact?type=sales")}
+                    onClick={() => {
+                      if (plan.monthlyPrice) {
+                        const price = billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice!
+                        handlePlanSelect(plan.name, price)
+                      } else {
+                        router.push("/contact?type=sales")
+                      }
+                    }}
                   >
                     {plan.cta}
                     <ArrowRight className="h-4 w-4" />
@@ -507,6 +557,95 @@ export default function PricingPage() {
             </div>
           </div>
         </section>
+
+        {/* Payment Modal */}
+        {selectedPlan && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
+            <div className="w-full max-w-sm rounded-lg bg-white shadow-xl overflow-hidden">
+              <div className="border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Complete Your Payment</h2>
+                    <p className="mt-1 text-xs sm:text-sm text-gray-600">{selectedPlan.name} Plan</p>
+                  </div>
+                  <button
+                    onClick={handleClosePayment}
+                    className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <XIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="px-4 sm:px-6 py-4 sm:py-6">
+                {/* Success State */}
+                {paymentStatus === "success" && (
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
+                    <CheckCircle className="mx-auto h-8 w-8 text-green-600" />
+                    <h3 className="mt-3 font-semibold text-green-900 text-sm sm:text-base">Payment Successful!</h3>
+                    <p className="mt-2 text-xs sm:text-sm text-green-700 break-all">
+                      Transaction ID: <span className="font-mono text-xs">{transactionId}</span>
+                    </p>
+                    <p className="mt-4 text-xs text-green-600">
+                      Redirecting to sign up...
+                    </p>
+                  </div>
+                )}
+
+                {/* Error State */}
+                {paymentStatus === "error" && (
+                  <div>
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 sm:p-4 mb-4">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-red-600 mt-0.5" />
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-red-900 text-sm">Payment Failed</h3>
+                          <p className="mt-1 text-xs sm:text-sm text-red-700 break-word">{errorMessage}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setPaymentStatus("idle")}
+                      className="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-300 transition-colors"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                )}
+
+                {/* Payment Form */}
+                {paymentStatus === "idle" && (
+                  <div className="space-y-4">
+                    {/* Price Summary */}
+                    <div className="rounded-lg bg-gray-50 p-3 sm:p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs sm:text-sm text-gray-600">{selectedPlan.name} Plan ({selectedPlan.cycle})</span>
+                        <span className="text-lg sm:text-xl font-bold text-gray-900 shrink-0">
+                          ${selectedPlan.price.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* PayPal Button */}
+                    <PayPalButton
+                      amount={selectedPlan.price}
+                      currency="USD"
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                    />
+
+                    {/* Info Text */}
+                    <div className="rounded-lg bg-blue-50 p-2 sm:p-3 border border-blue-200">
+                      <p className="text-xs text-blue-900 leading-relaxed">
+                        💡 This typically takes 2-5 business days.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </div>
