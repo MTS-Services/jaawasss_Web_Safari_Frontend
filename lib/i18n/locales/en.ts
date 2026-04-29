@@ -315,14 +315,25 @@ const en = {
       t3Title: "Global Standards",
       t3Desc: "We review submitted compliance documentation against international manufacturing and quality control standards.",
       t4Title: "Dedicated Support",
-      t4Desc: "Our sourcing experts are available to guide you through complex manufacturing requirements."
+      t4Desc: "Our sourcing experts are available to guide you through complex manufacturing requirements.",
+      badge: "Trust & Review",
+      learnMore: "Learn About Our Review Process",
+      reviewedBadge: "SourceNest Reviewed",
+      point1: "Business information provided",
+      point2: "Factory details provided",
+      point3: "Certifications (if provided)",
+      point4: "Export experience (if provided)",
+      point5: "Profile information reviewed"
     },
     testimonials: {
       title: "What Our Community Says",
       subtitle: "Join thousands of successful businesses scaling globally"
     },
     faq: {
-      title: "Frequently Asked Questions"
+      title: "Frequently Asked Questions",
+      subtitle: "Everything you need to know about using SourceNest",
+      moreQuestions: "Have more questions?",
+      viewFull: "View Full FAQ"
     },
     cta: {
       buyerTitle: "Ready to Find Your Manufacturer?",
@@ -361,6 +372,67 @@ const en = {
       popular: "Popular Industries",
       viewAll: "View All Industries",
       rights: "All rights reserved."
+    }
+  },
+  forManufacturers: {
+    hero: {
+      badge: "Grow Your Export Business",
+      title: "Reach Global Buyers, Grow Your Factory",
+      subtitle: "Create your digital booth, showcase products, and connect with importers and sourcing professionals worldwide through SourceNest's premium B2B platform.",
+      viewPricing: "View Pricing Plans",
+      getStarted: "Get Started"
+    },
+    features: {
+      title: "Everything You Need to Succeed",
+      subtitle: "Powerful tools to present your factory and connect with the right buyers",
+      f1Title: "Professional Company Profile",
+      f1Desc: "Create a comprehensive digital booth showcasing your factory, capabilities, certifications, and production capacity.",
+      f2Title: "Global Visibility",
+      f2Desc: "Get discovered by importers and sourcing professionals from around the world actively looking for suppliers.",
+      f3Title: "Direct Buyer Communication",
+      f3Desc: "Receive and respond to inquiries directly through our platform. Chat with serious buyers without intermediaries.",
+      f4Title: "RFQ Management",
+      f4Desc: "Receive detailed quote requests with specifications. Respond with competitive offers to win new business.",
+      f5Title: "Performance Analytics",
+      f5Desc: "Track profile views, inquiry rates, and engagement metrics. Understand what buyers are looking for.",
+      f6Title: "Reviewed Badge",
+      f6Desc: "After approval, receive the SourceNest Reviewed badge — a trust signal that helps you stand out to buyers."
+    },
+    howItWorks: {
+      title: "How to Get Started",
+      subtitle: "A simple process to get your factory on SourceNest",
+      step1Title: "Create Your Account",
+      step1Desc: "Sign up as a manufacturer and choose the subscription plan that fits your business needs and growth goals.",
+      step2Title: "Submit for Approval",
+      step2Desc: "Once ready, submit your account for review. Our team will review your business before granting access to the platform.",
+      step3Title: "Complete Payment",
+      step3Desc: "Once your account is reviewed and approved, complete your payment to activate your account and start using the platform.",
+      step4Title: "Build Your Profile",
+      step4Desc: "Complete your factory profile with details, certifications, capabilities, and upload your product catalog and brochures.",
+      step5Title: "Upload Products",
+      step5Desc: "Add your products with images, specifications, MOQ, lead times, and packaging details to showcase your full range.",
+      step6Title: "Go Global",
+      step6Desc: "After approval, your profile goes live. Start receiving inquiries and quote requests from buyers worldwide.",
+      important: "Important: No payment is required upfront. Your account will be reviewed first, and you will only be charged after approval.",
+      afterApproval: "Once approved, complete your payment to activate your account and unlock full access to the platform."
+    },
+    benefits: {
+      whyChoose: "Why Manufacturers Choose SourceNest",
+      desc1: "Unlike general B2B platforms, SourceNest is built specifically for connecting quality manufacturers with serious buyers. Our review process helps ensure you're surrounded by screened businesses, and our premium positioning attracts professional sourcing teams.",
+      desc2: "With affordable subscription plans and no commission on deals, SourceNest offers exceptional value for factories looking to expand their global reach.",
+      title: "Benefits of Joining",
+      b1: "Reach qualified buyers actively searching for suppliers",
+      b2: "Present your factory with a professional, polished profile",
+      b3: "Receive quality leads and RFQs directly in your inbox",
+      b4: "Showcase certifications and build credibility",
+      b5: "Expand into new markets and regions",
+      b6: "No commission fees — pay only your subscription"
+    },
+    cta: {
+      title: "Ready to Reach Global Buyers?",
+      subtitle: "Join SourceNest today and start receiving inquiries from importers worldwide.",
+      choosePlan: "Choose Your Plan",
+      contactSales: "Contact Sales"
     }
   }
 } as const;

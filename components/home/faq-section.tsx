@@ -89,7 +89,7 @@ export function FaqSection() {
               {t.landing.faq.title}
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Everything you need to know about using SourceNest
+              {t.landing.faq.subtitle}
             </p>
           </div>
 
@@ -108,11 +108,11 @@ export function FaqSection() {
 
           <div className="mt-12 text-center">
             <p className="text-muted-foreground">
-              Have more questions?
+              {t.landing.faq.moreQuestions}
             </p>
             <Button variant="outline" className="mt-4 gap-2" asChild>
               <Link href="/faq">
-                View Full FAQ
+                {t.landing.faq.viewFull}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>

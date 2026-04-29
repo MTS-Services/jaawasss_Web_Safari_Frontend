@@ -38,7 +38,7 @@ export function TrustSection() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-1.5 text-sm text-secondary">
               <Shield className="h-4 w-4" />
-              <span>Trust & Review</span>
+              <span>{t.landing.trust.badge}</span>
             </div>
             <h2 className="mt-6 font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl lg:text-4xl">
               {t.landing.trust.title}
@@ -63,7 +63,7 @@ export function TrustSection() {
 
             <Button className="mt-10 gap-2" asChild>
               <Link href="/verification">
-                Learn About Our Review Process
+                {t.landing.trust.learnMore}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -74,34 +74,29 @@ export function TrustSection() {
             <div className="rounded-2xl bg-primary p-8 text-primary-foreground lg:p-12">
               <div className="flex items-center gap-3">
                 <Shield className="h-10 w-10" />
-                <span className="font-serif text-2xl">SourceNest Reviewed</span>
+                <span className="font-serif text-2xl">{t.landing.trust.reviewedBadge}</span>
               </div>
-              Please update the list to the following:
-
-
-
-
 
               <div className="mt-8 space-y-4">
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Business information provided</span>
+                  <span>{t.landing.trust.point1}</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Factory details provided</span>
+                  <span>{t.landing.trust.point2}</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Certifications (if provided)</span>
+                  <span>{t.landing.trust.point3}</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Export experience (if provided)</span>
+                  <span>{t.landing.trust.point4}</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Profile information reviewed</span>
+                  <span>{t.landing.trust.point5}</span>
                 </div>
               </div>
             </div>
