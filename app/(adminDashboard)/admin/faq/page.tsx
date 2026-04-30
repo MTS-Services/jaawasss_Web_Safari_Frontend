@@ -49,6 +49,40 @@ import {
   updateAdminFaqCategory,
 } from "@/lib/api/admin-faqs"
 import Swal from "sweetalert2"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+
+function SortableItem(props: { id: string; children: (props: any) => React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+    position: "relative" as const,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      {props.children({ attributes, listeners })}
+    </div>
+  )
+}
 
 interface FAQ {
   id: string
@@ -130,6 +164,17 @@ export default function AdminFaqPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<DeleteTarget | null>(null)
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
   const loadCategories = useCallback(async (silent = false) => {
     if (!silent) {
       setIsLoading(true)
@@ -137,18 +182,24 @@ export default function AdminFaqPage() {
 
     const response = await getAdminFaqCategories()
     if (response.success) {
-      const normalizedCategories: FAQCategory[] = response.data.map((category, categoryIndex) => ({
-        id: String(category.id || categoryIndex + 1),
-        name: category.name.trim().length > 0 ? category.name : "None",
-        slug: category.slug,
-        sort: Number.isFinite(category.sort) ? category.sort : categoryIndex,
-        faqs: category.faqs.map((faq, faqIndex) => ({
-          id: String(faq.id || `${category.id}-${faqIndex + 1}`),
-          question: faq.question.trim().length > 0 ? faq.question : "None",
-          answer: faq.answer.trim().length > 0 ? faq.answer : "None",
-          sort: Number.isFinite(faq.sort) ? faq.sort : faqIndex,
-        })),
-      }))
+      const normalizedCategories: FAQCategory[] = response.data
+        .map((category, index) => ({ ...category, tempOrder: index }))
+        .sort((a: any, b: any) => (a.sort ?? 0) - (b.sort ?? 0) || a.tempOrder - b.tempOrder)
+        .map((category, categoryIndex) => ({
+          id: String(category.id),
+          name: (category.name || "").trim().length > 0 ? category.name : "None",
+          slug: category.slug,
+          sort: Number.isFinite(category.sort) ? category.sort : categoryIndex,
+          faqs: (category.faqs || [])
+            .map((faq, faqIndex) => ({ ...faq, tempOrder: faqIndex }))
+            .sort((a: any, b: any) => (a.sort ?? 0) - (b.sort ?? 0) || a.tempOrder - b.tempOrder)
+            .map((faq, faqIndex) => ({
+              id: String(faq.id),
+              question: (faq.question || "").trim().length > 0 ? faq.question : "None",
+              answer: (faq.answer || "").trim().length > 0 ? faq.answer : "None",
+              sort: Number.isFinite(faq.sort) ? faq.sort : faqIndex,
+            })),
+        }))
 
       setCategories(normalizedCategories)
     } else {
@@ -330,22 +381,30 @@ export default function AdminFaqPage() {
   }
 
   // Reorder categories
-  const moveCategoryUp = async (index: number) => {
-    if (index === 0 || isReordering) {
-      return
-    }
+  const moveCategoryUp = async (categoryId: string) => {
+    if (isReordering) return
+
+    const index = categories.findIndex((c) => String(c.id) === String(categoryId))
+    if (index <= 0) return
 
     const category = categories[index]
-    if (!category) {
-      return
-    }
+    const newIndex = index - 1
+    const targetCategory = categories[newIndex]
+    const currentPosition = category.sort
+    const newPosition = targetCategory?.sort
 
+    setCategories((prev) => arrayMove(prev, index, newIndex))
     setIsReordering(true)
     try {
-      const response = await moveAdminFaqCategoryPosition(category.id, index, index - 1)
+      if (!Number.isFinite(currentPosition) || !Number.isFinite(newPosition)) {
+        showErrorAlert("Invalid category positions for reordering")
+        await loadCategories(true)
+        return
+      }
+
+      const response = await moveAdminFaqCategoryPosition(category.id, currentPosition, newPosition)
       if (!response.success) {
         showErrorAlert(response.message || "Failed to reorder category")
-        return
       }
       await loadCategories(true)
     } finally {
@@ -353,22 +412,31 @@ export default function AdminFaqPage() {
     }
   }
 
-  const moveCategoryDown = async (index: number) => {
-    if (index === categories.length - 1 || isReordering) {
-      return
-    }
+
+  const moveCategoryDown = async (categoryId: string) => {
+    if (isReordering) return
+
+    const index = categories.findIndex((c) => String(c.id) === String(categoryId))
+    if (index === -1 || index === categories.length - 1) return
 
     const category = categories[index]
-    if (!category) {
-      return
-    }
+    const newIndex = index + 1
+    const targetCategory = categories[newIndex]
+    const currentPosition = category.sort
+    const newPosition = targetCategory?.sort
 
+    setCategories((prev) => arrayMove(prev, index, newIndex))
     setIsReordering(true)
     try {
-      const response = await moveAdminFaqCategoryPosition(category.id, index, index + 1)
+      if (!Number.isFinite(currentPosition) || !Number.isFinite(newPosition)) {
+        showErrorAlert("Invalid category positions for reordering")
+        await loadCategories(true)
+        return
+      }
+
+      const response = await moveAdminFaqCategoryPosition(category.id, currentPosition, newPosition)
       if (!response.success) {
         showErrorAlert(response.message || "Failed to reorder category")
-        return
       }
       await loadCategories(true)
     } finally {
@@ -377,61 +445,142 @@ export default function AdminFaqPage() {
   }
 
   // Reorder FAQs
-  const moveFaqUp = async (categoryId: string, faqIndex: number) => {
-    if (faqIndex === 0 || isReordering) {
-      return
-    }
+  const moveFaqUp = async (categoryId: string, faqId: string) => {
+    if (isReordering) return
 
     const category = categories.find((cat) => cat.id === categoryId)
-    if (!category) {
-      return
-    }
+    if (!category) return
+
+    const faqIndex = category.faqs.findIndex((f) => String(f.id) === String(faqId))
+    if (faqIndex <= 0) return
 
     const faq = category.faqs[faqIndex]
-    if (!faq) {
-      return
-    }
+    const newIndex = faqIndex - 1
+
+    setCategories((prev) =>
+      prev.map((c) => {
+        if (c.id === categoryId) {
+          return { ...c, faqs: arrayMove(c.faqs, faqIndex, newIndex) }
+        }
+        return c
+      })
+    )
 
     setIsReordering(true)
     try {
-      const response = await moveAdminFaqPosition(faq.id, faqIndex, faqIndex - 1, categoryId)
+      const response = await moveAdminFaqPosition(faq.id, faqIndex + 1, newIndex + 1, categoryId)
       if (!response.success) {
         showErrorAlert(response.message || "Failed to reorder FAQ")
-        return
+        await loadCategories(true)
       }
-      await loadCategories(true)
     } finally {
       setIsReordering(false)
     }
   }
 
-  const moveFaqDown = async (categoryId: string, faqIndex: number) => {
-    if (isReordering) {
-      return
-    }
+  const moveFaqDown = async (categoryId: string, faqId: string) => {
+    if (isReordering) return
 
     const category = categories.find((cat) => cat.id === categoryId)
-    if (!category || faqIndex >= category.faqs.length - 1) {
-      return
-    }
+    if (!category) return
+
+    const faqIndex = category.faqs.findIndex((f) => String(f.id) === String(faqId))
+    if (faqIndex === -1 || faqIndex === category.faqs.length - 1) return
 
     const faq = category.faqs[faqIndex]
-    if (!faq) {
-      return
-    }
+    const newIndex = faqIndex + 1
+
+    setCategories((prev) =>
+      prev.map((c) => {
+        if (c.id === categoryId) {
+          return { ...c, faqs: arrayMove(c.faqs, faqIndex, newIndex) }
+        }
+        return c
+      })
+    )
 
     setIsReordering(true)
     try {
-      const response = await moveAdminFaqPosition(faq.id, faqIndex, faqIndex + 1, categoryId)
+      const response = await moveAdminFaqPosition(faq.id, faqIndex + 1, newIndex + 1, categoryId)
       if (!response.success) {
         showErrorAlert(response.message || "Failed to reorder FAQ")
-        return
+        await loadCategories(true)
       }
-      await loadCategories(true)
     } finally {
       setIsReordering(false)
     }
   }
+
+  const handleDragEndCategory = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = categories.findIndex((c) => c.id === active.id)
+    const newIndex = categories.findIndex((c) => c.id === over.id)
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const activeCategory = categories[oldIndex]
+      const targetCategory = categories[newIndex]
+      const currentPosition = activeCategory?.sort
+      const newPosition = targetCategory?.sort
+
+      setCategories((items) => arrayMove(items, oldIndex, newIndex))
+      setIsReordering(true)
+      try {
+        if (!Number.isFinite(currentPosition) || !Number.isFinite(newPosition)) {
+          showErrorAlert("Invalid category positions for reordering")
+          await loadCategories(true)
+          return
+        }
+
+        const response = await moveAdminFaqCategoryPosition(String(active.id), currentPosition, newPosition)
+        if (!response.success) {
+          showErrorAlert(response.message || "Failed to reorder category")
+        }
+        await loadCategories(true)
+      } finally {
+        setIsReordering(false)
+      }
+    }
+  }
+
+  const handleDragEndFaq = async (event: DragEndEvent, categoryId: string) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const category = categories.find((c) => c.id === categoryId)
+    if (!category) return
+
+    const oldIndex = category.faqs.findIndex((f) => f.id === active.id)
+    const newIndex = category.faqs.findIndex((f) => f.id === over.id)
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      setCategories((prev) =>
+        prev.map((c) => {
+          if (c.id === categoryId) {
+            return {
+              ...c,
+              faqs: arrayMove(c.faqs, oldIndex, newIndex),
+            }
+          }
+          return c
+        })
+      )
+
+      setIsReordering(true)
+      try {
+        // Use 1-based positions (index + 1) as many backends treat 'position' as 1-indexed
+        const response = await moveAdminFaqPosition(String(active.id), oldIndex + 1, newIndex + 1, categoryId)
+        if (!response.success) {
+          showErrorAlert(response.message || "Failed to reorder FAQ")
+          await loadCategories(true)
+        }
+      } finally {
+        setIsReordering(false)
+      }
+    }
+  }
+
 
   return (
     <div className="space-y-6">
@@ -515,155 +664,173 @@ export default function AdminFaqPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {categories.map((category, categoryIndex) => (
-                <div key={category.id} className="rounded-lg border border-border">
-                  {/* Category Header */}
-                  <div className="flex items-center gap-3 bg-muted/50 p-4">
-                    <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                    
-                    <button
-                      onClick={() => toggleCategory(category.id)}
-                      className="flex-1 flex items-center gap-2 text-left"
-                    >
-                      <ChevronDown 
-                        className={`h-4 w-4 text-muted-foreground transition-transform ${
-                          expandedCategories.includes(category.id) ? "rotate-180" : ""
-                        }`}
-                      />
-                      <span className="font-medium text-foreground">{category.name}</span>
-                      <Badge variant="secondary" className="ml-2">
-                        {category.faqs.length} {category.faqs.length === 1 ? "question" : "questions"}
-                      </Badge>
-                    </button>
-
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => moveCategoryUp(categoryIndex)}
-                        disabled={categoryIndex === 0 || isReordering || isSaving || isDeleting}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => moveCategoryDown(categoryIndex)}
-                        disabled={categoryIndex === categories.length - 1 || isReordering || isSaving || isDeleting}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => openCategoryDialog(category)}
-                        disabled={isSaving || isReordering || isDeleting}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        onClick={() => openDeleteDialog("category", category.id)}
-                        disabled={isSaving || isReordering || isDeleting}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Category Content (FAQs) */}
-                  {expandedCategories.includes(category.id) && (
-                    <div className="border-t border-border p-4">
-                      {category.faqs.length === 0 ? (
-                        <div className="py-8 text-center">
-                          <p className="text-sm text-muted-foreground">No questions in this category</p>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="mt-3 gap-2"
-                            onClick={() => openFaqDialog(category.id)}
-                            disabled={isSaving || isReordering || isDeleting}
-                          >
-                            <Plus className="h-4 w-4" />
-                            Add Question
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {category.faqs.map((faq, faqIndex) => (
-                            <div 
-                              key={faq.id} 
-                              className="flex items-start gap-3 rounded-lg border border-border bg-background p-4"
-                            >
-                              <GripVertical className="mt-1 h-4 w-4 shrink-0 text-muted-foreground cursor-move" />
-                              
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-foreground">{faq.question}</p>
-                                <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{faq.answer}</p>
-                              </div>
-
-                              <div className="flex items-center gap-1 shrink-0">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={() => moveFaqUp(category.id, faqIndex)}
-                                  disabled={faqIndex === 0 || isReordering || isSaving || isDeleting}
-                                >
-                                  <ChevronUp className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={() => moveFaqDown(category.id, faqIndex)}
-                                  disabled={faqIndex === category.faqs.length - 1 || isReordering || isSaving || isDeleting}
-                                >
-                                  <ChevronDown className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={() => openFaqDialog(category.id, faq)}
-                                  disabled={isSaving || isReordering || isDeleting}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive hover:text-destructive"
-                                  onClick={() => openDeleteDialog("faq", faq.id, category.id)}
-                                  disabled={isSaving || isReordering || isDeleting}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndCategory}>
+                <SortableContext items={categories.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                  {categories.map((category, categoryIndex) => (
+                    <SortableItem key={category.id} id={category.id}>
+                      {({ attributes, listeners }) => (
+                        <div className="rounded-lg border border-border">
+                          {/* Category Header */}
+                          <div className="flex items-center gap-3 bg-muted/50 p-4">
+                            <div {...attributes} {...listeners} className="cursor-move">
+                              <GripVertical className="h-4 w-4 text-muted-foreground" />
                             </div>
-                          ))}
-                          
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="mt-2 gap-2"
-                            onClick={() => openFaqDialog(category.id)}
-                            disabled={isSaving || isReordering || isDeleting}
-                          >
-                            <Plus className="h-4 w-4" />
-                            Add Question
-                          </Button>
+
+                            <button onClick={() => toggleCategory(category.id)} className="flex-1 flex items-center gap-2 text-left">
+                              <ChevronDown
+                                className={`h-4 w-4 text-muted-foreground transition-transform ${
+                                  expandedCategories.includes(category.id) ? "rotate-180" : ""
+                                }`}
+                              />
+                              <span className="font-medium text-foreground">{category.name}</span>
+                              <Badge variant="secondary" className="ml-2">
+                                {category.faqs.length} {category.faqs.length === 1 ? "question" : "questions"}
+                              </Badge>
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => moveCategoryUp(category.id)}
+                                disabled={categoryIndex === 0 || isReordering || isSaving || isDeleting}
+                              >
+                                <ChevronUp className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => moveCategoryDown(category.id)}
+                                disabled={categoryIndex === categories.length - 1 || isReordering || isSaving || isDeleting}
+                              >
+                                <ChevronDown className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => openCategoryDialog(category)}
+                                disabled={isSaving || isReordering || isDeleting}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                onClick={() => openDeleteDialog("category", category.id)}
+                                disabled={isSaving || isReordering || isDeleting}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Category Content (FAQs) */}
+                          {expandedCategories.includes(category.id) && (
+                            <div className="border-t border-border p-4">
+                              {category.faqs.length === 0 ? (
+                                <div className="py-8 text-center">
+                                  <p className="text-sm text-muted-foreground">No questions in this category</p>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-3 gap-2"
+                                    onClick={() => openFaqDialog(category.id)}
+                                    disabled={isSaving || isReordering || isDeleting}
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                    Add Question
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="space-y-3">
+                                  <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={(e) => handleDragEndFaq(e, category.id)}
+                                  >
+                                    <SortableContext items={category.faqs.map((f) => f.id)} strategy={verticalListSortingStrategy}>
+                                      {category.faqs.map((faq, faqIndex) => (
+                                        <SortableItem key={faq.id} id={faq.id}>
+                                          {({ attributes, listeners }) => (
+                                            <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
+                                              <div {...attributes} {...listeners} className="cursor-move mt-1">
+                                                <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                              </div>
+
+                                              <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-foreground">{faq.question}</p>
+                                                <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{faq.answer}</p>
+                                              </div>
+
+                                              <div className="flex items-center gap-1 shrink-0">
+                                                <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="h-8 w-8"
+                                                  onClick={() => moveFaqUp(category.id, faq.id)}
+                                                  disabled={faqIndex === 0 || isReordering || isSaving || isDeleting}
+                                                >
+                                                  <ChevronUp className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="h-8 w-8"
+                                                  onClick={() => moveFaqDown(category.id, faq.id)}
+                                                  disabled={faqIndex === category.faqs.length - 1 || isReordering || isSaving || isDeleting}
+                                                >
+                                                  <ChevronDown className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="h-8 w-8"
+                                                  onClick={() => openFaqDialog(category.id, faq)}
+                                                  disabled={isSaving || isReordering || isDeleting}
+                                                >
+                                                  <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="h-8 w-8 text-destructive hover:text-destructive"
+                                                  onClick={() => openDeleteDialog("faq", faq.id, category.id)}
+                                                  disabled={isSaving || isReordering || isDeleting}
+                                                >
+                                                  <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </SortableItem>
+                                      ))}
+                                    </SortableContext>
+                                  </DndContext>
+
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-2 gap-2"
+                                    onClick={() => openFaqDialog(category.id)}
+                                    disabled={isSaving || isReordering || isDeleting}
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                    Add Question
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                    </SortableItem>
+                  ))}
+                </SortableContext>
+              </DndContext>
             </div>
           )}
         </CardContent>

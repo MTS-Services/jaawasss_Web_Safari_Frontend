@@ -178,6 +178,14 @@ export function IndustriesSection() {
 
         {/* View All Button */}
         <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          {/* View All Industries Button */}
+          <Button size="lg" variant="default" className="gap-2" asChild>
+            <Link href="/industries">
+              <Package className="h-4 w-4" />
+              View All Industries
+            </Link>
+          </Button>
+          {/* Explore Global Map Button */}
           <Button size="lg" variant="outline" className="gap-2" asChild>
             <Link href="/suppliers/map">
               <Globe className="h-4 w-4" />
