@@ -172,6 +172,63 @@ const ar = {
     quickFilters: "فلاتر سريعة",
     createManufacturer: "إنشاء مصنّع",
     mfgRegistrations: "تسجيلات المصنّعين",
+    
+    // Header navigation
+    headerDiscover: "اكتشف",
+    headerPlatform: "المنصة",
+    headerResources: "الموارد",
+    headerInsights: "الرؤى",
+    
+    // Discover items
+    browseIndustries: "تصفح الصناعات",
+    browseIndustriesDesc: "ابحث عن الموردين حسب قطاع الصناعة والتخصص",
+    browseSuppliers: "تصفح الموردين",
+    browseSuppliersDesc: "اكتشف الشركات المصنعة المراجعة من جميع أنحاء العالم",
+    browseProducts: "تصفح المنتجات",
+    browseProductsDesc: "استكشف المنتجات عبر جميع الفئات والصناعات",
+    featuredManufacturers: "المصنعون المميزون",
+    featuredManufacturersDesc: "أفضل الشركات المصنعة المراجعة على المنصة",
+    globalSupplierMap: "خريطة الموردين العالمية",
+    globalSupplierMapDesc: "استكشف الموردين حسب البلد والمنطقة",
+    compareSuppliers: "مقارنة الموردين",
+    compareSuppliersDesc: "قارن الشركات المصنعة جنباً إلى جنب",
+    newSuppliers: "موردون جدد",
+    newSuppliersDesc: "الشركات المصنعة التي انضمت مؤخراً إلى SourceNest",
+    
+    // Platform items
+    forBuyers: "للمشترين",
+    forBuyersDesc: "ابحث وقارن واتصل بالموردين مجاناً",
+    forManufacturers: "للمصنعين",
+    forManufacturersDesc: "اعرض مصنعك واصل إلى المشترين العالميين",
+    
+    // Resource items
+    review: "المراجعة",
+    reviewDesc: "تعرف على كيفية مراجعة والموافقة على الموردين",
+    helpCenter: "مركز المساعدة",
+    helpCenterDesc: "ابحث عن إجابات الأسئلة الشائعة",
+    aboutUs: "معلومات عنا",
+    aboutUsDesc: "تعرف أكثر عن SourceNest",
+    
+    // Header favorites dropdown
+    savedTabSuppliers: "الموردون",
+    savedTabProducts: "المنتجات",
+    noSavedSuppliers: "لا توجد موردون محفوظون حتى الآن",
+    saveSupplierHint: "انقر على رمز القلب على أي مورد لحفظه",
+    browseSuppliersCTA: "تصفح الموردين",
+    viewAllSavedSuppliers: "عرض جميع الموردين المحفوظين",
+    noSavedProducts: "لا توجد منتجات محفوظة حتى الآن",
+    saveProductHint: "انقر على رمز القلب على أي منتج لحفظه",
+    browseProductsCTA: "تصفح المنتجات",
+    viewAllSavedProducts: "عرض جميع المنتجات المحفوظة",
+    moreSuppliersCount: "موردون آخرون",
+    moreProductsCount: "منتجات أخرى",
+    
+    // Auth menu dropdown
+    userMenuDashboard: "لوحة التحكم",
+    userMenuSettings: "الإعدادات",
+    userMenuSignOut: "تسجيل الخروج",
+    userMenuSignIn: "تسجيل الدخول",
+    userMenuGetStarted: "ابدأ الآن",
   },
   settings: {
     title: "الإعدادات",
@@ -400,9 +457,11 @@ const ar = {
       viewAllSuppliers: "عرض جميع الموردين",
       productsTitle: "فئات رائجة",
       productsSubtitle: "احصل على المنتجات الأكثر مبيعاً مباشرة من المصنعين المعتمدين",
-      industriesBadge: "Popular Industries",
-      industriesTitle: "Find Suppliers by Industry",
-      industriesSubtitle: "Discover reviewed manufacturers across major industrial sectors. Each category features vetted suppliers ready to fulfill your requirements."
+      industriesBadge: "الصناعات الشائعة",
+      industriesTitle: "ابحث عن الموردين حسب الصناعة",
+      industriesSubtitle: "اكتشف المصنعين المراجعين عبر قطاعات صناعية رئيسية. تتميز كل فئة بموردين معتمدين مستعدين لتلبية احتياجاتك.",
+      suppliersLabel: "موردون",
+      exploreButton: "استكشاف",
     },
     trust: {
       title: "مصادر مبنية على الثقة",

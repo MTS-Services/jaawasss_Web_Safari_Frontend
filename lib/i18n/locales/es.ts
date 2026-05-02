@@ -172,6 +172,63 @@ const es = {
     quickFilters: "快速筛选",
     createManufacturer: "创建制造商",
     mfgRegistrations: "制造商注册",
+    
+    // Header navigation
+    headerDiscover: "发现",
+    headerPlatform: "平台",
+    headerResources: "资源",
+    headerInsights: "洞察",
+    
+    // Discover items
+    browseIndustries: "浏览行业",
+    browseIndustriesDesc: "按行业部门和专业领域查找供应商",
+    browseSuppliers: "浏览供应商",
+    browseSuppliersDesc: "从世界各地发现经过审查的制造商",
+    browseProducts: "浏览产品",
+    browseProductsDesc: "探索所有类别和行业的产品",
+    featuredManufacturers: "精选制造商",
+    featuredManufacturersDesc: "平台上排名靠前的经过审查的制造商",
+    globalSupplierMap: "全球供应商地图",
+    globalSupplierMapDesc: "按国家和地区浏览供应商",
+    compareSuppliers: "比较供应商",
+    compareSuppliersDesc: "并排比较制造商",
+    newSuppliers: "新供应商",
+    newSuppliersDesc: "最近加入SourceNest的制造商",
+    
+    // Platform items
+    forBuyers: "对于买家",
+    forBuyersDesc: "免费搜索、比较和连接供应商",
+    forManufacturers: "对于制造商",
+    forManufacturersDesc: "展示您的工厂并吸引全球买家",
+    
+    // Resource items
+    review: "评价",
+    reviewDesc: "了解我们如何审查和批准供应商",
+    helpCenter: "帮助中心",
+    helpCenterDesc: "查找常见问题的答案",
+    aboutUs: "关于我们",
+    aboutUsDesc: "了解更多关于SourceNest的信息",
+    
+    // Header favorites dropdown
+    savedTabSuppliers: "供应商",
+    savedTabProducts: "产品",
+    noSavedSuppliers: "还没有保存的供应商",
+    saveSupplierHint: "点击任何供应商上的心形图标进行保存",
+    browseSuppliersCTA: "浏览供应商",
+    viewAllSavedSuppliers: "查看所有保存的供应商",
+    noSavedProducts: "还没有保存的产品",
+    saveProductHint: "点击任何产品上的心形图标进行保存",
+    browseProductsCTA: "浏览产品",
+    viewAllSavedProducts: "查看所有保存的产品",
+    moreSuppliersCount: "更多供应商",
+    moreProductsCount: "更多产品",
+    
+    // Auth menu dropdown
+    userMenuDashboard: "仪表板",
+    userMenuSettings: "设置",
+    userMenuSignOut: "退出",
+    userMenuSignIn: "登录",
+    userMenuGetStarted: "开始使用",
   },
   settings: {
     title: "设置",
@@ -402,7 +459,9 @@ const es = {
       productsSubtitle: "直接从已审核制造商获取畅销产品",
       industriesBadge: "热门行业",
       industriesTitle: "按行业查找供应商",
-      industriesSubtitle: "发现各主要工业领域中经过审核的制造商。每个类别均包含准备履约的合格供应商。"
+      industriesSubtitle: "发现各主要工业领域中经过审核的制造商。每个类别均包含准备履约的合格供应商。",
+      suppliersLabel: "供应商",
+      exploreButton: "浏览",
     },
     trust: {
       title: "基于信任的采购",

@@ -141,7 +141,7 @@ export function IndustriesSection() {
                     <div className="flex items-center gap-1">
                       <Factory className="h-4 w-4" />
                       <span className="font-semibold">{industry.supplier_count?.toLocaleString() || 0}</span>
-                      <span>suppliers</span>
+                      <span>{t?.landing?.featured?.suppliersLabel || "suppliers"}</span>
                     </div>
                   </div>
 
@@ -150,7 +150,7 @@ export function IndustriesSection() {
                     className="mt-5 flex items-center text-sm font-medium transition-colors"
                     style={{ color: industry.btn_color || undefined }}
                   >
-                    <span>Explore</span>
+                    <span>{t?.landing?.featured?.exploreButton || "Explore"}</span>
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-2" />
                   </div>
                 </div>

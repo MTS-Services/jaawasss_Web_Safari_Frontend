@@ -172,6 +172,63 @@ const en = {
     quickFilters: "Quick Filters",
     createManufacturer: "Create Manufacturer",
     mfgRegistrations: "Mfg registrations",
+    
+    // Header navigation
+    headerDiscover: "Discover",
+    headerPlatform: "Platform",
+    headerResources: "Resources",
+    headerInsights: "Insights",
+    
+    // Discover items
+    browseIndustries: "Browse Industries",
+    browseIndustriesDesc: "Find suppliers by industry sector and specialization",
+    browseSuppliers: "Browse Suppliers",
+    browseSuppliersDesc: "Discover reviewed manufacturers from around the world",
+    browseProducts: "Browse Products",
+    browseProductsDesc: "Explore products across all categories and industries",
+    featuredManufacturers: "Featured Manufacturers",
+    featuredManufacturersDesc: "Top-rated reviewed manufacturers on the platform",
+    globalSupplierMap: "Global Supplier Map",
+    globalSupplierMapDesc: "Explore suppliers by country and region",
+    compareSuppliers: "Compare Suppliers",
+    compareSuppliersDesc: "Compare manufacturers side by side",
+    newSuppliers: "New Suppliers",
+    newSuppliersDesc: "Recently joined manufacturers on SourceNest",
+    
+    // Platform items
+    forBuyers: "For Buyers",
+    forBuyersDesc: "Search, compare, and connect with suppliers for free",
+    forManufacturers: "For Manufacturers",
+    forManufacturersDesc: "Showcase your factory and reach global buyers",
+    
+    // Resource items
+    review: "Review",
+    reviewDesc: "Learn how we review and approve suppliers",
+    helpCenter: "Help Center",
+    helpCenterDesc: "Find answers to common questions",
+    aboutUs: "About Us",
+    aboutUsDesc: "Learn more about SourceNest",
+    
+    // Header favorites dropdown
+    savedTabSuppliers: "Suppliers",
+    savedTabProducts: "Products",
+    noSavedSuppliers: "No saved suppliers yet",
+    saveSupplierHint: "Click the heart icon on any supplier to save them",
+    browseSuppliersCTA: "Browse Suppliers",
+    viewAllSavedSuppliers: "View All Saved Suppliers",
+    noSavedProducts: "No saved products yet",
+    saveProductHint: "Click the heart icon on any product to save it",
+    browseProductsCTA: "Browse Products",
+    viewAllSavedProducts: "View All Saved Products",
+    moreSuppliersCount: "more suppliers",
+    moreProductsCount: "more products",
+    
+    // Auth menu dropdown
+    userMenuDashboard: "Dashboard",
+    userMenuSettings: "Settings",
+    userMenuSignOut: "Sign Out",
+    userMenuSignIn: "Sign In",
+    userMenuGetStarted: "Get Started",
   },
 
   // ── Settings Page ────────────────────────────────────────────────────
@@ -416,7 +473,9 @@ const en = {
       productsSubtitle: "Source top-selling products directly from reviewed manufacturers",
       industriesBadge: "Popular Industries",
       industriesTitle: "Find Suppliers by Industry",
-      industriesSubtitle: "Discover reviewed manufacturers across major industrial sectors. Each category features vetted suppliers ready to fulfill your requirements."
+      industriesSubtitle: "Discover reviewed manufacturers across major industrial sectors. Each category features vetted suppliers ready to fulfill your requirements.",
+      suppliersLabel: "suppliers",
+      exploreButton: "Explore",
     },
     trust: {
       title: "Sourcing Built on Trust",

@@ -75,7 +75,6 @@ const he = {
     lastName: "שם משפחה",
     company: "שם החברה",
     country: "מדינה",
-    password: "סיסמה",
     confirmPassword: "אשר סיסמה",
     agreeToTerms: "אני מסכים לתנאי השירות ולמדיניות הפרטיות",
     createAccountButton: "צור חשבון",
@@ -106,8 +105,6 @@ const he = {
     accountCreated: "החשבון שלך נוצר",
     reviewPlans: "בדוק תוכניות קادימות, או עבור ישירות ללוח הבקרה שלך.",
     verifyEmail: "אנא אמת את הדוא\"ל שלך לפני שתמשיך.",
-    canceledDeletion: "ביטלת בקשת מחיקה?",
-    restoreAccount: "שחזר חשבון",
     
     // Restore Account
     restoreTitle: "שחזור החשבון שלך",
@@ -179,6 +176,63 @@ const he = {
     quickFilters: "מסננים מהירים",
     createManufacturer: "צור יצרן",
     mfgRegistrations: "רישומי יצרנים",
+    
+    // Header navigation
+    headerDiscover: "גלה",
+    headerPlatform: "הפלטפורמה",
+    headerResources: "משאבים",
+    headerInsights: "תובנות",
+    
+    // Discover items
+    browseIndustries: "עיין בתעשיות",
+    browseIndustriesDesc: "חפש ספקים לפי סקטור תעשיה והתמחות",
+    browseSuppliers: "עיין בספקים",
+    browseSuppliersDesc: "גלה יצרנים בדוקים מכל רחבי העולם",
+    browseProducts: "עיין במוצרים",
+    browseProductsDesc: "חקור מוצרים בכל הקטגוריות והתעשיות",
+    featuredManufacturers: "יצרנים מוצגים",
+    featuredManufacturersDesc: "יצרנים בדוקים מובילים בפלטפורמה",
+    globalSupplierMap: "מפת ספקים גלובלית",
+    globalSupplierMapDesc: "חקור ספקים לפי מדינה ואזור",
+    compareSuppliers: "השווה ספקים",
+    compareSuppliersDesc: "השווה יצרנים זה לזה",
+    newSuppliers: "ספקים חדשים",
+    newSuppliersDesc: "יצרנים שהצטרפו לאחרונה ל-SourceNest",
+    
+    // Platform items
+    forBuyers: "לקונים",
+    forBuyersDesc: "חפש, השווה והתחבר עם ספקים בחינם",
+    forManufacturers: "ליצרנים",
+    forManufacturersDesc: "הציג את המפעל שלך והשג גישה לקונים עולמיים",
+    
+    // Resource items
+    review: "ביקורת",
+    reviewDesc: "למד כיצד אנו בודקים ומאשרים ספקים",
+    helpCenter: "מרכז עזרה",
+    helpCenterDesc: "מצא תשובות לשאלות נפוצות",
+    aboutUs: "עלינו",
+    aboutUsDesc: "למד יותר על SourceNest",
+    
+    // Header favorites dropdown
+    savedTabSuppliers: "ספקים",
+    savedTabProducts: "מוצרים",
+    noSavedSuppliers: "אין ספקים שמורים עדיין",
+    saveSupplierHint: "לחץ על אייקון הלב בכל ספק כדי לשמור אותו",
+    browseSuppliersCTA: "עיין בספקים",
+    viewAllSavedSuppliers: "צפה בכל הספקים השמורים",
+    noSavedProducts: "אין מוצרים שמורים עדיין",
+    saveProductHint: "לחץ על אייקון הלב בכל מוצר כדי לשמור אותו",
+    browseProductsCTA: "עיין במוצרים",
+    viewAllSavedProducts: "צפה בכל המוצרים השמורים",
+    moreSuppliersCount: "ספקים נוספים",
+    moreProductsCount: "מוצרים נוספים",
+    
+    // Auth menu dropdown
+    userMenuDashboard: "לוח בקרה",
+    userMenuSettings: "הגדרות",
+    userMenuSignOut: "התנתקות",
+    userMenuSignIn: "התחברות",
+    userMenuGetStarted: "התחל עכשיו",
   },
   settings: {
     title: "הגדרות",
@@ -407,9 +461,11 @@ const he = {
       viewAllSuppliers: "צפה בכל הספקים",
       productsTitle: "קטגוריות פופולריות",
       productsSubtitle: "השג מוצרים נמכרים ביותר ישירות מיצרנים מאומתים",
-      industriesBadge: "Popular Industries",
-      industriesTitle: "Find Suppliers by Industry",
-      industriesSubtitle: "Discover reviewed manufacturers across major industrial sectors. Each category features vetted suppliers ready to fulfill your requirements."
+      industriesBadge: "תעשיות פופולריות",
+      industriesTitle: "חפש ספקים לפי תעשייה",
+      industriesSubtitle: "גלה יצרנים בדוקים על פני מגזרים תעשייתיים עיקריים. כל קטגוריה כוללת ספקים מאומתים המוכנים לעמוד בדרישות שלך.",
+      suppliersLabel: "מורדים",
+      exploreButton: "חקור",
     },
     trust: {
       title: "רכש המבוסס על אמון",
