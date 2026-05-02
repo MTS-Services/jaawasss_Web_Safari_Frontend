@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Cpu, Cog, Shirt, Home, Heart, Car, UtensilsCrossed, FlaskConical, Package, Lightbulb, Wrench, HardHat, Sofa, Stethoscope, Wheat, Box, FileText, Factory, ShoppingBag, Globe } from "lucide-react"
 import { useTranslation } from "@/lib/i18n"
 import { getPublicCategories, BackendCategory } from "@/lib/api/categories"
+import DynamicIcon from "@/components/dynamic-icon"
 
 // Map industry icons
 const industryIcons: Record<string, React.ReactNode> = {
@@ -74,14 +75,18 @@ export function IndustriesSection() {
           {categories.map((industry) => {
             const industryColor = industry.color || "#f8fafc"
             
-            // Fix image URL by stripping /api/vX from the base URL if present
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-            const baseUrl = apiUrl.replace(/\/api\/v[0-9]+$/, "");
-
-            const iconUrl = industry.icon_url 
-              ? (industry.icon_url.startsWith("http") 
-                  ? industry.icon_url 
-                  : `${baseUrl}${industry.icon_url.startsWith('/') ? '' : '/'}${industry.icon_url}`)
+            // Detect if icon is a file URL (has file extension) or lucide icon name
+            const isFileUrl = industry.icon && (
+              industry.icon.startsWith("http") || 
+              industry.icon.includes(".") || 
+              industry.icon.startsWith("/")
+            );
+            
+            // Build icon URL if it's a file path
+            const iconUrl = isFileUrl && industry.icon
+              ? (industry.icon.startsWith("http")
+                  ? industry.icon
+                  : `${process.env.NEXT_PUBLIC_API_URL || ""}${industry.icon.startsWith('/') ? '' : '/'}${industry.icon}`)
               : null;
 
             return (
@@ -95,12 +100,22 @@ export function IndustriesSection() {
                 <div className="relative p-6 lg:p-8">
                   {/* Icon */}
                   <div 
-                    className="flex h-16 w-16 lg:h-20 lg:w-20 items-center justify-center rounded-2xl bg-card shadow-md transition-transform duration-300 group-hover:scale-110 text-secondary"
+                    className="flex h-16 w-16 lg:h-20 lg:w-20 items-center justify-center rounded-2xl bg-card shadow-md transition-transform duration-300 group-hover:scale-110"
                   >
                     {iconUrl ? (
                       <img src={iconUrl} alt={industry.name} className="h-8 w-8 lg:h-10 lg:w-10 object-contain" />
+                    ) : industry.icon && (industry.icon.includes(".") || industry.icon.startsWith("/")) ? (
+                      <img src={industry.icon} alt={industry.name} className="h-8 w-8 lg:h-10 lg:w-10 object-contain" />
+                    ) : industry.icon ? (
+                      <DynamicIcon 
+                        name={industry.icon} 
+                        size={32} 
+                        color={industry.icon_color || undefined}
+                      />
                     ) : (
-                      industryIcons[industry.slug || ""] || <Package className="h-8 w-8 lg:h-10 lg:w-10" />
+                      <div style={{ color: industry.icon_color || "#64748b" }}>
+                        {industryIcons[industry.slug || ""] || <Package className="h-8 w-8 lg:h-10 lg:w-10" />}
+                      </div>
                     )}
                   </div>
 

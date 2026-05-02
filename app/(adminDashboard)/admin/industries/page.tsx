@@ -77,7 +77,6 @@ interface Industry {
   slug: string
   description: string
   icon?: string
-  icon_url?: string
   icon_color?: string
   color?: string
   title_color?: string
@@ -137,7 +136,7 @@ export default function AdminIndustriesPage() {
     btn_color: "#3b82f6",
     supplier_count_color: "#64748b",
     icon: "",
-    icon_color: "#000000"
+    icon_color: "#000000",
   })
   const [newCategory, setNewCategory] = useState({ name: "" })
   const [newSubcategory, setNewSubcategory] = useState({ name: "" })
@@ -171,11 +170,7 @@ export default function AdminIndustriesPage() {
         slug: category.slug || slugify(category.name || ""),
         description: category.description || "",
         icon: category.icon,
-        icon_url: category.icon_url 
-          ? (category.icon_url.startsWith("http") 
-              ? category.icon_url 
-              : `${process.env.NEXT_PUBLIC_API_URL || ""}${category.icon_url}`)
-          : undefined,
+        icon_color: category.icon_color,
         color: category.color,
         title_color: category.title_color,
         description_color: category.description_color,
@@ -271,7 +266,7 @@ export default function AdminIndustriesPage() {
         btn_color: newIndustry.btn_color,
         supplier_count_color: newIndustry.supplier_count_color,
         icon: newIndustry.icon || undefined,
-        icon_color: newIndustry.icon_color
+        icon_color: newIndustry.icon_color,
       })
 
       if (!result.success) {
@@ -290,7 +285,7 @@ export default function AdminIndustriesPage() {
         btn_color: "#3b82f6",
         supplier_count_color: "#64748b",
         icon: "",
-        icon_color: "#000000"
+        icon_color: "#000000",
       })
       setShowAddIndustryDialog(false)
       await loadFromBackend()
@@ -311,7 +306,7 @@ export default function AdminIndustriesPage() {
         btn_color: currentIndustry.btn_color,
         supplier_count_color: currentIndustry.supplier_count_color,
         icon: currentIndustry.icon || undefined,
-        icon_color: currentIndustry.icon_color
+        icon_color: currentIndustry.icon_color,
       })
 
       if (!result.success) {
@@ -360,7 +355,7 @@ export default function AdminIndustriesPage() {
       const result = await createAdminSubcategory({
         name: newCategory.name,
         slug,
-        categoryId: String(currentIndustry.id),
+        industry_id: String(currentIndustry.id),
       })
 
       if (!result.success) {
@@ -386,7 +381,7 @@ export default function AdminIndustriesPage() {
       const result = await updateAdminSubcategory(String(currentCategory.id), {
         name: currentCategory.name,
         slug: currentCategory.slug || slugify(currentCategory.name),
-        categoryId: String(currentIndustry.id),
+        industry_id: String(currentIndustry.id),
       })
 
       if (!result.success) {
@@ -926,6 +921,15 @@ export default function AdminIndustriesPage() {
                     />
                   </div>
                 </div>
+                <div>
+                  <Label>Icon URL</Label>
+                  <Input 
+                    placeholder="e.g., https://example.com/icon.png"
+                    value={newIndustry.icon}
+                    onChange={(e) => setNewIndustry({ ...newIndustry, icon: e.target.value })}
+                    className="mt-2"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1154,6 +1158,15 @@ export default function AdminIndustriesPage() {
                         className="flex-1"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <Label>Icon URL</Label>
+                    <Input 
+                      placeholder="e.g., https://example.com/icon.png"
+                      value={currentIndustry.icon || ""}
+                      onChange={(e) => setCurrentIndustry({ ...currentIndustry, icon: e.target.value })}
+                      className="mt-2"
+                    />
                   </div>
                 </div>
 

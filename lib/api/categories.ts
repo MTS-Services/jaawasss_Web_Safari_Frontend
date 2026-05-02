@@ -132,6 +132,7 @@ function normalizeCategory(raw: unknown): BackendCategory | null {
           : undefined,
     icon: typeof value.icon === "string" ? value.icon : undefined,
     icon_url: typeof value.icon_url === "string" ? value.icon_url : undefined,
+    icon_color: typeof value.icon_color === "string" ? value.icon_color : undefined,
     featured:
       value.featured === true || value.featured === 1 || value.featured === "1"
         ? 1
@@ -205,6 +206,7 @@ export async function createAdminCategory(input: {
   featured?: boolean
   icon?: string
   icon_color?: string
+  icon_url?: string
 }): Promise<ApiResult<null>> {
   try {
     const form = new FormData()
@@ -220,7 +222,8 @@ export async function createAdminCategory(input: {
     if (supplierColor) form.append("supplier_color", supplierColor)
     form.append("featured", input.featured ? "1" : "0")
     if (input.icon) form.append("icon", input.icon)
-    if (input.icon_color) form.append("icon_color", input.icon_color)
+    if (input.icon_color !== undefined) form.append("icon_color", input.icon_color || "")
+    if (input.icon_url) form.append("icon_url", input.icon_url)
 
     await apiClient.post("/admin/categories/create", form)
     return { success: true, data: null }
@@ -249,6 +252,7 @@ export async function updateAdminCategory(
     featured?: boolean;
     icon?: string;
     icon_color?: string;
+    icon_url?: string;
   }
 ): Promise<ApiResult<null>> {
   try {
@@ -265,7 +269,8 @@ export async function updateAdminCategory(
     if (supplierColor) form.append("supplier_color", supplierColor)
     if (input.featured !== undefined) form.append("featured", input.featured ? "1" : "0")
     if (input.icon) form.append("icon", input.icon)
-    if (input.icon_color) form.append("icon_color", input.icon_color)
+    if (input.icon_color !== undefined) form.append("icon_color", input.icon_color || "")
+    if (input.icon_url) form.append("icon_url", input.icon_url)
 
     await apiClient.put(`/admin/categories/${categoryId}`, form)
     return { success: true, data: null }
