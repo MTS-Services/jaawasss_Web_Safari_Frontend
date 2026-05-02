@@ -627,6 +627,36 @@ const en = {
       noSuppliersFound: "No suppliers found",
       adjustSearchFilters: "Try adjusting your search or filter criteria",
       clearAllFilters: "Clear all filters",
+      compare: {
+        pageTitle: "Compare Suppliers",
+        pageDescription: "Compare up to {max} suppliers side by side",
+        breadcrumbHome: "Home",
+        breadcrumbSuppliers: "Suppliers",
+        breadcrumbCompare: "Compare",
+        addSupplier: "Add supplier to compare",
+        maximumSuppliersAdded: "Maximum suppliers added",
+        noSuppliersSelected: "No Suppliers Selected",
+        noSuppliersMessage: "Select suppliers from the dropdown above or browse our supplier directory to start comparing.",
+        browseSuppliers: "Browse Suppliers",
+        comparing: "Comparing {count} suppliers",
+        rating: "Rating",
+        reviews: "reviews",
+        responseTime: "Response Time",
+        responseRate: "Response Rate",
+        onTimeDelivery: "On-Time Delivery",
+        established: "Established",
+        years: "years",
+        employees: "Employees",
+        productCount: "Product Count",
+        minOrderValue: "Min Order Value",
+        contactForMOQ: "Contact for MOQ",
+        exportMarkets: "Export Markets",
+        certifications: "Certifications",
+        contactSupplier: "Contact Supplier",
+        viewProfile: "View Profile",
+        addMore: "Add {count} more supplier{plural} to compare",
+        selectSupplier: "Select a supplier",
+      }
     },
     products: {
       pageTitle: "Discover Products",
@@ -677,6 +707,69 @@ const en = {
       cantFindDesc: "Submit a Request for Quotation and let reviewed manufacturers come to you with competitive offers.",
       submitRFQ: "Submit RFQ",
       browseAllSuppliers: "Browse All Suppliers",
+    },
+    forBuyers: {
+      hero: {
+        badge: "100% Free for Buyers",
+        title: "Source Globally, Completely Free",
+        subtitle: "Search reviewed suppliers, compare factories, request quotes, and communicate directly with manufacturers — all at no cost. SourceNest is free for buyers, forever.",
+        signupButton: "Create Free Account",
+        browseButton: "Browse Suppliers",
+      },
+      featuresTitle: "Everything You Need to Source Smarter",
+      featuresSubtitle: "Powerful tools designed to streamline your entire sourcing workflow",
+      features: {
+        search: {
+          title: "Search Suppliers",
+          description: "Access our global directory of reviewed manufacturers. Filter by industry, location, certifications, MOQ, and more to find the perfect partners.",
+        },
+        compare: {
+          title: "Compare Factories",
+          description: "Add suppliers to your comparison list and evaluate them side-by-side. Compare capabilities, certifications, lead times, and more.",
+        },
+        messaging: {
+          title: "Direct Messaging",
+          description: "Chat directly with factory representatives through our secure platform. No middlemen, no brokers — just direct communication.",
+        },
+        rfq: {
+          title: "Request Quotes",
+          description: "Submit detailed RFQs with specifications, quantities, and requirements. Receive competitive quotes directly from manufacturers.",
+        },
+        favorites: {
+          title: "Save Favorites",
+          description: "Save suppliers and products to your favorites for easy access. Build your preferred vendor list over time.",
+        },
+        catalogs: {
+          title: "Download Catalogs",
+          description: "Access and download product catalogs, specification sheets, and company brochures from reviewed suppliers.",
+        },
+        dashboard: {
+          title: "Organized Dashboard",
+          description: "Manage all your sourcing activity in one place. Track messages, RFQs, saved items, and supplier interactions.",
+        },
+        notifications: {
+          title: "Smart Notifications",
+          description: "Get notified when suppliers respond to your inquiries, when new suppliers match your preferences, and more.",
+        },
+      },
+      benefitsTitle: "Why Buyers Love SourceNest",
+      benefitsSubtitle: "Join thousands of procurement professionals, importers, and sourcing managers who trust SourceNest for their global sourcing needs.",
+      benefits: {
+        free: "Completely free to use — no subscription, no hidden fees",
+        reviewed: "Only reviewed and approved suppliers on the platform",
+        directComm: "Direct communication with factory representatives",
+        comparison: "Side-by-side supplier comparison tools",
+        secure: "Secure RFQ and messaging system",
+        catalogs: "Access to product catalogs and specifications",
+        dashboard: "Organized dashboard for all sourcing activity",
+        global: "Global reach across 50+ manufacturing countries",
+      },
+      benefitBoxTitle: "Why is it free for buyers?",
+      benefitBoxDescription1: "Our business model is simple: manufacturers pay a subscription to be listed on the platform, while buyers use it for free. This ensures maximum reach for factories while giving you access to a premium sourcing tool at no cost.",
+      benefitBoxDescription2: "By keeping the platform free for buyers, we attract more serious sourcing professionals — which in turn makes the platform more valuable for manufacturers. Everyone wins.",
+      ctaTitle: "Start Sourcing Today",
+      ctaSubtitle: "Create your free account in seconds and start connecting with reviewed manufacturers worldwide.",
+      ctaButton: "Create Free Buyer Account",
     }
   },
   forManufacturers: {
@@ -738,6 +831,539 @@ const en = {
       subtitle: "Join SourceNest today and start receiving inquiries from importers worldwide.",
       choosePlan: "Choose Your Plan",
       contactSales: "Contact Sales"
+    }
+  },
+  pricing: {
+    hero: {
+      title: "Simple, Transparent Pricing",
+      subtitle: "Choose the plan that fits your business. All plans include admin review and approval process.",
+      buyersNote: "Pricing is for manufacturers only. Buyers use SourceNest for free."
+    },
+    founding: {
+      badge: "Limited Time Offer",
+      title: "Join as a Founding Manufacturer",
+      subtitle: "Be among the first 300 manufacturers to join and get 6 months free access to our full {plan} plan - a $1,794 value.",
+      plan: "Growth",
+      freeFor: "for 6 months",
+      saveBadge: "Save $1,794",
+      noCardRequired: "No credit card required",
+      description: "Get full {plan} plan features free for 6 months. After the trial, continue with any paid plan to keep your account active.",
+      spotsRemaining: "Spots remaining:",
+      button: "Apply as Founding Member",
+      note: "Subject to admin review and approval",
+      badge2: "First 300 Only",
+      cardTitle: "Founding Manufacturer",
+      cardSubtitle: "Early Supplier Program",
+      cardFeatures: {
+        companyProfile: "Company profile",
+        products100: "Up to 100 products",
+        internalMessaging: "Internal messaging",
+        inquiryAndRfq: "Inquiry inbox & RFQ reception",
+        catalogUpload: "Catalog upload",
+        certificationsAndMarkets: "Certifications & Export markets",
+        advancedAnalytics: "Advanced analytics",
+        prioritySearch: "Priority search visibility",
+        featuredBadge: "Featured supplier badge",
+        teamUsers3: "Multiple team users (3)"
+      }
+    },
+    features: {
+      companyProfile: "Company profile",
+      products25: "Up to 25 products",
+      products100: "Up to 100 products",
+      productsUnlimited: "Unlimited products",
+      internalMessaging: "Internal messaging",
+      inquiryInbox: "Inquiry inbox",
+      rfqReception: "RFQ reception",
+      catalogUpload: "Catalog upload",
+      certificationsSection: "Certifications section",
+      exportMarketsSection: "Export markets section",
+      basicAnalytics: "Basic analytics",
+      advancedAnalytics: "Advanced analytics",
+      enterpriseAnalytics: "Enterprise analytics",
+      prioritySearchVisibility: "Priority search visibility",
+      premiumSearchPlacement: "Premium search placement",
+      featuredSupplierBadge: "Featured supplier badge",
+      multipleTeamUsers: "Multiple team users",
+      multipleTeamUsers3: "Multiple team users (3)",
+      unlimitedTeamUsers: "Unlimited team users",
+      premiumSupport: "Premium support",
+      dedicatedAccountManager: "Dedicated account manager",
+      prioritySupport: "Priority support",
+      customOnboarding: "Custom onboarding"
+    },
+    paidPlans: {
+      title: "Paid Plans",
+      subtitle: "For manufacturers ready to maximize their visibility and reach",
+      monthly: "Monthly",
+      yearly: "Yearly",
+      savePercentage: "Save 17%",
+      starter: {
+        name: "Starter",
+        description: "For small manufacturers starting their export journey",
+        monthlyPrice: 149,
+        yearlyPrice: 1490,
+        cta: "Get Started"
+      },
+      growth: {
+        name: "Growth",
+        description: "For established manufacturers seeking more exposure",
+        monthlyPrice: 299,
+        yearlyPrice: 2990,
+        cta: "Get Started",
+        badge: "Most Popular"
+      },
+      enterprise: {
+        name: "Enterprise",
+        description: "For large manufacturers with custom requirements",
+        price: "Custom",
+        cta: "Contact Sales"
+      },
+      billedAnnually: "Billed annually (${price}/month)",
+      pricePerCycle: "{cycle}"
+    },
+    approval: {
+      title: "Approval Required",
+      description: "Payment does not automatically publish your profile. All manufacturer accounts go through a review process before becoming visible to buyers. This ensures quality and trust on the platform."
+    },
+    comparison: {
+      title: "Compare All Features",
+      subtitle: "See exactly what's included in each plan",
+      feature: "Feature",
+      productsLimit: "Products limit",
+      teamMembers: "Team members",
+      searchVisibility: "Search visibility",
+      analytics: "Analytics",
+      featuredBadge: "Featured badge",
+      accountManager: "Account manager",
+      supportLevel: "Support level",
+      standard: "Standard",
+      priority: "Priority",
+      premium: "Premium",
+      basic: "Basic",
+      advanced: "Advanced",
+      enterpriseLevel: "Enterprise",
+      email: "Email",
+      priorityEmail: "Priority email",
+      dedicated: "Dedicated",
+      unlimited: "Unlimited",
+      notIncluded: "Not included"
+    },
+    faq: {
+      title: "Pricing FAQ",
+      q1: "Does payment automatically publish my profile?",
+      a1: "No. Payment creates your manufacturer account, but your profile must still go through our review and approval process before it becomes visible to buyers. This typically takes 2-5 business days after you submit your complete profile.",
+      q2: "What happens if my profile is not approved?",
+      a2: "If your profile doesn't meet our requirements, we'll provide specific feedback on what needs to be updated. You can make the necessary changes and resubmit. If approval is ultimately not possible, we offer a full refund within 30 days.",
+      q3: "Can I upgrade or downgrade my plan?",
+      a3: "Yes, you can change your plan at any time. When upgrading, you'll be charged the prorated difference. When downgrading, the new rate applies at your next billing cycle.",
+      q4: "What is the Founding Manufacturer program?",
+      a4: "The Founding Manufacturer program is a limited offer for the first 300 manufacturers who join SourceNest. As a founding member, you get 6 months of free access to our full Growth plan ($299/month value) - including up to 100 products, advanced analytics, priority search visibility, featured supplier badge, and multiple team users. No credit card required to start.",
+      q5: "What happens after my 6-month free period ends?",
+      a5: "After your 6-month free period ends, you'll need to choose and pay for one of our plans (Starter, Growth, or Enterprise) to continue using the platform. We'll send you reminders before your free period expires so you have plenty of time to choose the right plan for your business.",
+      q6: "Is the Founding Manufacturer program still available?",
+      a6: "The program is available until we reach 300 approved manufacturer registrations (pending applications don't count toward the limit). You can see the remaining spots on our pricing page. Once all spots are filled, the program will close and new manufacturers will need to choose a paid plan.",
+      q7: "Are there any commission fees on sales?",
+      a7: "No. SourceNest does not take any commission on deals you close through the platform. Your subscription fee is your only cost.",
+      q8: "What payment methods do you accept?",
+      a8: "We accept all major credit cards (Visa, Mastercard, American Express) and PayPal. For Enterprise plans, we also offer bank transfer options."
+    },
+    cta: {
+      title: "Ready to Get Started?",
+      subtitle: "Join SourceNest and start reaching global buyers today.",
+      createAccount: "Create Account",
+      talkToSales: "Talk to Sales"
+    },
+    payment: {
+      title: "Complete Your Payment",
+      plan: "Plan",
+      success: "Payment Successful!",
+      transactionId: "Transaction ID:",
+      redirecting: "Redirecting to sign up...",
+      failed: "Payment Failed",
+      tryAgain: "Try Again",
+      priceInfo: "{plan} Plan ({cycle})",
+      processingTime: "💡 This typically takes 2-5 business days."
+    }
+  },
+
+  // ── Verification / Review Process Page ──────────────────────────────
+  verification: {
+    hero: {
+      badge: "Trust & Quality",
+      title: "Our Review Process",
+      description: "Every manufacturer on SourceNest goes through a thorough review process based on submitted information before being approved. Here's how we maintain quality standards."
+    },
+    whyMatters: {
+      title: "Why Our Review Process Matters",
+      intro: "In the world of B2B sourcing, trust is essential. Buyers need confidence when connecting with suppliers. Traditional platforms often allow anyone to list, which can make it harder to evaluate options and requires more effort from buyers.",
+      approach: "SourceNest takes a different approach. We aim to review manufacturer profiles and submitted information to help improve transparency and support better decision-making before suppliers appear on the platform.",
+      benefits: "Benefits of Our Process",
+      benefit1: "Buyers can access supplier information with greater clarity",
+      benefit2: "Manufacturers benefit from being part of a quality-focused marketplace",
+      benefit3: "The platform encourages higher standards",
+      benefit4: "The process helps simplify supplier discovery"
+    },
+    steps: {
+      title: "How We Review Suppliers",
+      subtitle: "Our multi-step review process ensures comprehensive screening based on submitted information",
+      documentReview: {
+        title: "Document Review",
+        description: "We review company information and available documents to support transparency and build trust.",
+        item1: "Business registration certificate",
+        item2: "Export/import licenses (when applicable)",
+        item3: "Industry certifications (ISO, CE, FDA, etc.)",
+        item4: "Tax registration documents (when applicable)"
+      },
+      factoryReview: {
+        title: "Factory Information Review",
+        description: "We review basic factory information and production capabilities.",
+        item1: "Factory location information",
+        item2: "Production capabilities",
+        item3: "Equipment and machinery",
+        item4: "Facility size and workforce"
+      },
+      profileReview: {
+        title: "Profile Review",
+        description: "We review profile content for quality and accuracy.",
+        item1: "Company description reviewed",
+        item2: "Product information quality assessed",
+        item3: "Image and media reviewed",
+        item4: "Contact information checked"
+      },
+      monitoring: {
+        title: "Ongoing Monitoring",
+        description: "We monitor supplier activity and buyer feedback over time.",
+        item1: "Response time",
+        item2: "Buyer feedback",
+        item3: "General performance",
+        item4: "Quality checks"
+      }
+    },
+    badges: {
+      title: "Trust Badges Explained",
+      subtitle: "What our review badges mean for you",
+      reviewed: {
+        name: "SourceNest Reviewed",
+        description: "Supplier has submitted company information and completed a basic review to be listed on the platform."
+      },
+      featured: {
+        name: "Featured Supplier",
+        description: "A supplier highlighted based on activity, responsiveness, and buyer feedback."
+      },
+      exportReady: {
+        name: "Export Ready",
+        description: "Supplier indicates experience with international shipping."
+      }
+    },
+    rejected: {
+      title: "What If My Application is Not Approved?",
+      content: "If your manufacturer application cannot be approved based on the information provided, we may share feedback on what can be improved. You can update your details and resubmit your application at any time. Please note that no payment is required during the application process, and payment will only be requested after approval.",
+      reasons: "Common reasons for resubmission:",
+      reason1: "Incomplete or unclear information",
+      reason2: "Missing business details",
+      reason3: "Profile content quality issues",
+      reason4: "Inconsistent information",
+      resubmit: "You can address the issues and resubmit your application. If approval is ultimately not possible."
+    },
+    cta: {
+      title: "Ready to Get Reviewed?",
+      subtitle: "Join SourceNest and showcase your factory to buyers worldwide.",
+      viewPlans: "View Plans & Get Started",
+      readFaq: "Read FAQ"
+    }
+  },
+
+  // ── Help Center ─────────────────────────────────────────────────────
+  help: {
+    hero: {
+      title: "How Can We Help?",
+      subtitle: "Find answers to common questions or contact our support team.",
+      searchPlaceholder: "Search for help articles..."
+    },
+    contactSupport: {
+      title: "Still Need Help?",
+      subtitle: "Can't find what you're looking for? Our support team is here to help.",
+      contactButtonText: "Contact Support",
+      faqButtonText: "View FAQ"
+    },
+    browseCategoryTitle: "Browse by Category",
+    viewAllArticles: "View all articles",
+    popularArticlesTitle: "Popular Articles",
+    backToHelp: "Back to Help Center",
+    backToCategory: "Back to {category}",
+    wasHelpful: "Was this article helpful?",
+    contactSupportCta: "Contact Support",
+    categories: {
+      buyers: {
+        title: "For Buyers",
+        description: "Learn how to search, compare, and connect with suppliers",
+        articles: {
+          searchSuppliers: {
+            title: "How to search for suppliers",
+            content: "Finding the right manufacturing partner is crucial for your business success. SourceNest provides powerful search and filtering tools to help you discover reviewed suppliers worldwide.",
+            steps: [
+              "Use the main search bar to enter product names, categories, or keywords",
+              "Apply filters to narrow results by country, industry, review level, and MOQ range",
+              "Sort results by relevance, rating, or response time",
+              "Click on supplier cards to view detailed profiles",
+              "Use the 'Save' button to bookmark suppliers for later comparison"
+            ]
+          },
+          compareSave: {
+            title: "Comparing and saving suppliers",
+            content: "Our comparison tools help you evaluate multiple suppliers side-by-side to make informed decisions.",
+            steps: [
+              "Click the heart icon on any supplier card to save them",
+              "Access saved suppliers from your dashboard",
+              "Select up to 4 suppliers to compare",
+              "View side-by-side comparison of capabilities, pricing, and certifications",
+              "Export comparison reports for team review"
+            ]
+          },
+          sendMessages: {
+            title: "Sending messages to factories",
+            content: "Direct communication with suppliers is key to successful sourcing. Our messaging system makes it easy to inquire, negotiate, and build relationships.",
+            steps: [
+              "Visit any supplier profile and click 'Contact Supplier'",
+              "Write a clear, detailed message about your requirements",
+              "Attach relevant files like specifications or designs",
+              "Track all conversations in your Message Center",
+              "Enable notifications to respond quickly to supplier replies"
+            ]
+          },
+          requestQuotes: {
+            title: "Requesting quotes (RFQs)",
+            content: "The Request for Quotation (RFQ) system helps you get competitive quotes from multiple suppliers at once.",
+            steps: [
+              "Navigate to 'Submit RFQ' from the main menu or dashboard",
+              "Fill in product details, specifications, and requirements",
+              "Specify quantity, target price, and delivery timeline",
+              "Choose to send to specific suppliers or broadcast to relevant manufacturers",
+              "Review and compare incoming quotations in your dashboard"
+            ]
+          },
+          manageDashboard: {
+            title: "Managing your buyer dashboard",
+            content: "Your dashboard is the central hub for all your sourcing activities on SourceNest.",
+            steps: [
+              "View your active RFQs and their status",
+              "Access saved suppliers and recent searches",
+              "Manage message conversations with suppliers",
+              "Track order history and supplier interactions",
+              "Update your profile and notification preferences"
+            ]
+          },
+          createAccount: {
+            title: "How to create a buyer account",
+            content: "Creating a buyer account on SourceNest is free and gives you access to thousands of reviewed suppliers worldwide.",
+            steps: [
+              "Click 'Sign Up' or 'Join as Buyer' on the homepage",
+              "Enter your email address and create a secure password",
+              "Fill in your basic company information",
+              "Verify your email address through the confirmation link",
+              "Complete your buyer profile to get better supplier recommendations"
+            ]
+          },
+          sendRfq: {
+            title: "Sending your first RFQ",
+            content: "Learn how to create and send your first Request for Quotation to start getting quotes from manufacturers.",
+            steps: [
+              "Log in to your buyer account and go to 'Submit RFQ'",
+              "Select the product category that best matches your needs",
+              "Describe your product requirements in detail",
+              "Upload any relevant documents, drawings, or specifications",
+              "Set your quantity requirements, target price, and delivery expectations",
+              "Review and submit your RFQ to receive quotes from matching suppliers"
+            ]
+          }
+        }
+      },
+      manufacturers: {
+        title: "For Manufacturers",
+        description: "Guide to setting up and managing your factory profile",
+        articles: {
+          gettingStarted: {
+            title: "Getting started as a manufacturer",
+            content: "Welcome to SourceNest! This guide will help you set up your manufacturer account and start receiving inquiries from global buyers.",
+            steps: [
+              "Create your account by selecting 'Manufacturer' during signup",
+              "Complete your company profile with accurate business information",
+              "Upload your product catalog with detailed specifications",
+              "Apply for review to build trust with buyers",
+              "Optimize your profile to improve visibility in search results"
+            ]
+          },
+          createProfile: {
+            title: "Creating your company profile",
+            content: "A complete, compelling profile is essential for attracting quality buyers. Here's how to create an effective manufacturer profile.",
+            steps: [
+              "Add your official company name and registration details",
+              "Select your primary industry and product categories",
+              "Upload high-quality photos of your factory and products",
+              "Write a detailed company description highlighting your strengths",
+              "List your certifications, export markets, and production capacity"
+            ]
+          },
+          uploadProducts: {
+            title: "Uploading products",
+            content: "Showcase your products effectively to attract buyer inquiries.",
+            steps: [
+              "Go to Dashboard > Products > Add Product",
+              "Enter product name, category, and detailed specifications",
+              "Upload multiple high-quality product images",
+              "Set pricing range, MOQ, and lead time",
+              "Add relevant certifications and customization options"
+            ]
+          },
+          manageInquiries: {
+            title: "Managing inquiries and RFQs",
+            content: "Efficiently handling inquiries is key to converting leads into customers.",
+            steps: [
+              "Monitor your Inquiries dashboard regularly",
+              "Respond to new RFQs within 24 hours for best results",
+              "Provide detailed quotations with clear pricing breakdowns",
+              "Ask clarifying questions if requirements are unclear",
+              "Follow up professionally to build relationships"
+            ]
+          },
+          analytics: {
+            title: "Understanding your analytics",
+            content: "Use analytics to optimize your presence and improve conversion rates.",
+            steps: [
+              "Check profile views and visitor demographics",
+              "Monitor product inquiry rates and popular items",
+              "Track response time and message statistics",
+              "Analyze conversion rates from inquiry to quote",
+              "Identify trends and adjust your strategy accordingly"
+            ]
+          },
+          profileSetup: {
+            title: "Setting up your manufacturer profile",
+            content: "A well-optimized manufacturer profile is your digital storefront on SourceNest. Here's how to set it up for maximum visibility and buyer engagement.",
+            steps: [
+              "Navigate to your Dashboard and click 'Edit Profile'",
+              "Upload a professional company logo and banner image",
+              "Write a compelling company description (300-500 words recommended)",
+              "Add your factory photos, production line images, and certificates",
+              "Fill in all business details: year established, employee count, annual revenue",
+              "List your main products, export markets, and certifications",
+              "Set your response time and minimum order values accurately"
+            ]
+          }
+        }
+      },
+      billing: {
+        title: "Billing & Plans",
+        description: "Information about subscriptions, payments, and invoices",
+        articles: {
+          subscriptionPlans: {
+            title: "Understanding subscription plans",
+            content: "SourceNest offers flexible subscription plans for manufacturers. Choose the plan that best fits your business needs.",
+            steps: [
+              "Review all available plans on the Pricing page",
+              "Compare features, product limits, and support levels",
+              "Starter plan for new manufacturers",
+              "Growth plan with advanced analytics and priority support",
+              "Enterprise plan with dedicated account management"
+            ]
+          },
+          paymentMethods: {
+            title: "Payment methods and billing",
+            content: "We accept multiple payment methods to make your subscription easy and convenient.",
+            steps: [
+              "Choose your payment method during checkout",
+              "Credit card, Debit card, or PayPal accepted",
+              "Invoices are automatically generated and sent to your email",
+              "Update your payment method in your account settings",
+              "Cancel or change your plan anytime"
+            ]
+          },
+          invoices: {
+            title: "Managing invoices and receipts",
+            content: "Access your billing history and download invoices anytime.",
+            steps: [
+              "Go to Settings > Billing",
+              "View your complete invoice history",
+              "Download PDF copies of invoices for your records",
+              "Print or email invoices to your accounting department",
+              "Contact support if you need to dispute any charges"
+            ]
+          }
+        }
+      }
+    }
+  },
+
+  // ── About Page ──────────────────────────────────────────────────────
+  about: {
+    hero: {
+      title: "Making Global Sourcing Work Better",
+      subtitle: "SourceNest is on a mission to transform how businesses find and connect with manufacturing partners worldwide."
+    },
+    story: {
+      title: "Our Story",
+      p1: "Global sourcing has always been challenging. Buyers struggle to find reliable suppliers, review their legitimacy, and communicate effectively across borders. Manufacturers, especially quality-focused ones, have difficulty standing out among countless options and reaching serious buyers.",
+      p2: "SourceNest was born from a simple idea: what if there was a platform that only featured reviewed, approved manufacturers? A place where buyers could know that every supplier had been screened based on submitted information before being listed?",
+      p3: "We built SourceNest to be that platform. By requiring admin approval for every manufacturer and keeping the platform free for buyers, we've created an environment where quality prevails and trust is the foundation of every connection.",
+      p4: "Today, SourceNest connects thousands of buyers with reviewed manufacturers across 50+ countries, covering 45+ industries. We're proud to be making global trade more accessible, transparent, and efficient."
+    },
+    stats: {
+      countries: "Countries",
+      suppliers: "Reviewed Suppliers",
+      products: "Products Listed",
+      industries: "Industries Covered"
+    },
+    missionVision: {
+      missionTitle: "Our Mission",
+      missionDesc: "To make global sourcing more transparent, efficient, and trustworthy by connecting quality-focused buyers with reviewed manufacturers through a premium digital platform.",
+      visionTitle: "Our Vision",
+      visionDesc: "A world where finding the right manufacturing partner is simple, safe, and successful — regardless of geography, company size, or industry."
+    },
+    values: {
+      title: "Our Values",
+      subtitle: "The principles that guide everything we do",
+      trust: {
+        title: "Trust & Transparency",
+        description: "We believe sourcing should be built on trust. Every supplier is reviewed based on submitted information, and we strive to maintain platform quality."
+      },
+      global: {
+        title: "Global Accessibility",
+        description: "We're breaking down barriers in international trade, making it easier for businesses of all sizes to connect across borders."
+      },
+      community: {
+        title: "Community First",
+        description: "We're building more than a platform — we're creating a community of quality-focused buyers and manufacturers."
+      },
+      innovation: {
+        title: "Innovation",
+        description: "We continuously improve our platform with smart features that make sourcing more efficient and effective."
+      }
+    },
+    difference: {
+      title: "Why SourceNest is Different",
+      reviewed: {
+        title: "Reviewed-Only Marketplace:",
+        description: "Unlike open platforms where anyone can list, every manufacturer on SourceNest goes through our review and approval process based on submitted information. This means buyers know that suppliers have been screened, and manufacturers know they're in good company."
+      },
+      free: {
+        title: "Free for Buyers:",
+        description: "We believe buyers should have access to quality sourcing tools without barriers. By making the platform free for buyers, we ensure maximum reach for manufacturers and maximum access for sourcing professionals."
+      },
+      nocommission: {
+        title: "No Commission Model:",
+        description: "We don't take a cut of your deals. Manufacturers pay only their subscription fee, and all communication and negotiation happens directly between parties."
+      },
+      premium: {
+        title: "Premium Focus:",
+        description: "We're not trying to be the biggest platform — we're trying to be the most trusted. Quality over quantity is our guiding principle."
+      }
+    },
+    cta: {
+      title: "Join the SourceNest Community",
+      subtitle: "Whether you're sourcing products or manufacturing them, we'd love to have you.",
+      buyerButton: "Join as Buyer",
+      manufacturerButton: "Join as Manufacturer"
     }
   }
 } as const;

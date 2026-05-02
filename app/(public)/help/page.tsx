@@ -1,5 +1,7 @@
-import { Metadata } from "next"
+"use client"
+
 import Link from "next/link"
+import { useTranslation } from "@/lib/i18n"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Input } from "@/components/ui/input"
@@ -21,11 +23,6 @@ import {
   getEnabledPopularArticles 
 } from "@/lib/data/help-center"
 
-export const metadata: Metadata = {
-  title: "Help Center",
-  description: "Find answers to common questions about using SourceNest for buyers and manufacturers.",
-}
-
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Users,
@@ -37,6 +34,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 export default function HelpCenterPage() {
+  const { t } = useTranslation()
   const data = defaultHelpCenterData
   const categories = getEnabledCategories(data)
   const popularArticles = getEnabledPopularArticles(data)
@@ -51,10 +49,10 @@ export default function HelpCenterPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
               <h1 className="font-serif text-4xl font-medium tracking-tight text-primary-foreground sm:text-5xl">
-                {settings.hero.title}
+                {t?.help?.hero?.title}
               </h1>
               <p className="mt-4 text-lg text-primary-foreground/80">
-                {settings.hero.subtitle}
+                {t?.help?.hero?.subtitle}
               </p>
               
               {/* Search */}
@@ -63,7 +61,7 @@ export default function HelpCenterPage() {
                   <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     type="text"
-                    placeholder={settings.hero.searchPlaceholder}
+                    placeholder={t?.help?.hero?.searchPlaceholder}
                     className="h-14 border-0 bg-background pl-12 pr-4 text-base shadow-lg"
                   />
                 </div>
@@ -75,7 +73,7 @@ export default function HelpCenterPage() {
         {/* Categories */}
         <section className="py-16 lg:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="font-serif text-2xl font-medium text-foreground">Browse by Category</h2>
+            <h2 className="font-serif text-2xl font-medium text-foreground">{t?.help?.browseCategoryTitle}</h2>
             
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((category) => {
@@ -103,7 +101,7 @@ export default function HelpCenterPage() {
                       ))}
                     </ul>
                     <div className="mt-4 flex items-center gap-1 text-sm font-medium text-secondary">
-                      View all articles
+                      {t?.help?.viewAllArticles}
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </div>
                   </Link>
@@ -117,7 +115,7 @@ export default function HelpCenterPage() {
         {popularArticles.length > 0 && (
           <section className="bg-muted/50 py-16 lg:py-24">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <h2 className="font-serif text-2xl font-medium text-foreground">Popular Articles</h2>
+              <h2 className="font-serif text-2xl font-medium text-foreground">{t?.help?.popularArticlesTitle}</h2>
               
               <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {popularArticles.map((article) => {
@@ -153,23 +151,23 @@ export default function HelpCenterPage() {
               <div className="mx-auto max-w-2xl rounded-2xl bg-primary p-8 text-center text-primary-foreground lg:p-12">
                 <MessageSquare className="mx-auto h-12 w-12" />
                 <h2 className="mt-6 font-serif text-2xl font-medium">
-                  {settings.contactSupport.title}
+                  {t?.help?.contactSupport?.title}
                 </h2>
                 <p className="mt-4 text-primary-foreground/80">
-                  {settings.contactSupport.subtitle}
+                  {t?.help?.contactSupport?.subtitle}
                 </p>
                 <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
                   <Link 
                     href="/contact?type=support"
                     className="inline-flex items-center justify-center rounded-md bg-primary-foreground px-6 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary-foreground/90"
                   >
-                    {settings.contactSupport.contactButtonText}
+                    {t?.help?.contactSupport?.contactButtonText}
                   </Link>
                   <Link 
                     href="/faq"
                     className="inline-flex items-center justify-center rounded-md border border-primary-foreground/30 px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10"
                   >
-                    {settings.contactSupport.faqButtonText}
+                    {t?.help?.contactSupport?.faqButtonText}
                   </Link>
                 </div>
               </div>

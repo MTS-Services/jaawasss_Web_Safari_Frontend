@@ -3,6 +3,7 @@
 import { use } from "react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { useTranslation } from "@/lib/i18n"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Input } from "@/components/ui/input"
@@ -34,6 +35,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 export default function HelpCategoryPage({ params }: { params: Promise<{ category: string }> }) {
+  const { t } = useTranslation()
   const { category } = use(params)
   const categoryData = getCategoryBySlug(defaultHelpCenterData, category)
   
@@ -53,7 +55,7 @@ export default function HelpCategoryPage({ params }: { params: Promise<{ categor
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2 text-sm">
               <Link href="/help" className="text-muted-foreground hover:text-foreground">
-                Help Center
+                {t?.help?.backToHelp}
               </Link>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
               <span className="text-foreground">{categoryData.title}</span>
@@ -69,7 +71,7 @@ export default function HelpCategoryPage({ params }: { params: Promise<{ categor
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Help Center
+              {t?.help?.backToHelp}
             </Link>
             
             <div className="flex items-center gap-4">
@@ -90,7 +92,7 @@ export default function HelpCategoryPage({ params }: { params: Promise<{ categor
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder={`Search in ${categoryData.title}...`}
+                  placeholder={`${t?.help?.hero?.searchPlaceholder}`}
                   className="h-12 pl-12 pr-4"
                 />
               </div>

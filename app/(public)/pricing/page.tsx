@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useTranslation } from "@/lib/i18n"
 import { PayPalButton } from "@/components/payment/paypal-button"
 import {
   Accordion,
@@ -134,6 +135,7 @@ interface PlanOption {
 }
 
 export default function PricingPage() {
+  const { t } = useTranslation()
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly")
   const [selectedPlan, setSelectedPlan] = useState<PlanOption | null>(null)
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "success" | "error">("idle")
@@ -181,13 +183,13 @@ export default function PricingPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
               <h1 className="font-serif text-4xl font-medium tracking-tight text-primary-foreground sm:text-5xl">
-                Simple, Transparent Pricing
+                {t?.pricing?.hero?.title || "Simple, Transparent Pricing"}
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-lg text-primary-foreground/80">
-                Choose the plan that fits your business. All plans include admin review and approval process.
+                {t?.pricing?.hero?.subtitle || "Choose the plan that fits your business. All plans include admin review and approval process."}
               </p>
               <p className="mt-2 text-sm text-primary-foreground/60">
-                Pricing is for manufacturers only. Buyers use SourceNest for free.
+                {t?.pricing?.hero?.buyersNote || "Pricing is for manufacturers only. Buyers use SourceNest for free."}
               </p>
             </div>
           </div>
@@ -199,13 +201,14 @@ export default function PricingPage() {
             <div className="mx-auto max-w-3xl text-center mb-12">
               <Badge className="bg-secondary/20 text-secondary border-secondary/30 mb-4">
                 <Sparkles className="mr-1.5 h-3 w-3" />
-                Limited Time Offer
+                {t?.pricing?.founding?.badge || "Limited Time Offer"}
               </Badge>
               <h2 className="font-serif text-3xl font-medium tracking-tight text-foreground">
-                Join as a Founding Manufacturer
+                {t?.pricing?.founding?.title || "Join as a Founding Manufacturer"}
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Be among the first 300 manufacturers to join and get 6 months free access to our full <span className="font-semibold text-foreground">Growth plan</span> - a $1,794 value.
+                {(t?.pricing?.founding?.subtitle || "Be among the first 300 manufacturers to join and get 6 months free access to our full {plan} plan - a $1,794 value.")
+                  .replace("{plan}", t?.pricing?.founding?.plan || "Growth")}
               </p>
             </div>
 
@@ -214,93 +217,96 @@ export default function PricingPage() {
               <div className="relative rounded-2xl border-2 border-secondary bg-card p-8 shadow-lg">
                 <Badge className="absolute -top-3 left-6 bg-secondary text-secondary-foreground">
                   <Users className="mr-1.5 h-3 w-3" />
-                  First 300 Only
+                  {t?.pricing?.founding?.badge2 || "First 300 Only"}
                 </Badge>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/10">
                     <Sparkles className="h-6 w-6 text-secondary" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-foreground">Founding Manufacturer</h3>
-                    <p className="text-sm text-muted-foreground">Early Supplier Program</p>
+                    <h3 className="text-xl font-semibold text-foreground">{t?.pricing?.founding?.cardTitle || "Founding Manufacturer"}</h3>
+                    <p className="text-sm text-muted-foreground">{t?.pricing?.founding?.cardSubtitle || "Early Supplier Program"}</p>
                   </div>
                 </div>
                 <div className="mb-4">
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold text-foreground">$0</span>
-                    <span className="text-muted-foreground">for 6 months</span>
+                    <span className="text-muted-foreground">{t?.pricing?.founding?.freeFor || "for 6 months"}</span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-sm line-through text-muted-foreground">$299/mo</span>
-                    <Badge variant="secondary" className="text-xs bg-secondary/20 text-secondary">Save $1,794</Badge>
+                    <Badge variant="secondary" className="text-xs bg-secondary/20 text-secondary">{t?.pricing?.founding?.saveBadge || "Save $1,794"}</Badge>
                   </div>
-                  <p className="mt-1 text-sm text-secondary font-medium">No credit card required</p>
+                  <p className="mt-1 text-sm text-secondary font-medium">{t?.pricing?.founding?.noCardRequired || "No credit card required"}</p>
                 </div>
                 <div className="mb-4 rounded-lg bg-secondary/10 p-3 border border-secondary/20">
                   <p className="text-sm text-foreground">
-                    Get full <span className="font-semibold text-secondary">Growth plan</span> features free for 6 months. After the trial, continue with any paid plan to keep your account active.
+                    {(t?.pricing?.founding?.description || "Get full {plan} plan features free for 6 months. After the trial, continue with any paid plan to keep your account active.")
+                      .replace("{plan}", t?.pricing?.founding?.plan || "Growth")}
                   </p>
                 </div>
+                {/* Commented out: Spots remaining section
                 <div className="mb-6 rounded-lg bg-muted/50 p-3 border border-border">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Spots remaining:</span>
+                    <span className="text-muted-foreground">{t?.pricing?.founding?.spotsRemaining || "Spots remaining:"}</span>
                     <span className="font-semibold text-secondary">127 / 300</span>
                   </div>
                   <div className="mt-2 h-2 rounded-full bg-secondary/20">
                     <div className="h-full w-[58%] rounded-full bg-secondary" />
                   </div>
                 </div>
+                */}
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground">Company profile</span>
+                    <span className="text-foreground">{t?.pricing?.founding?.cardFeatures?.companyProfile || "Company profile"}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground font-medium">Up to 100 products</span>
+                    <span className="text-foreground font-medium">{t?.pricing?.founding?.cardFeatures?.products100 || "Up to 100 products"}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground">Internal messaging</span>
+                    <span className="text-foreground">{t?.pricing?.founding?.cardFeatures?.internalMessaging || "Internal messaging"}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground">Inquiry inbox & RFQ reception</span>
+                    <span className="text-foreground">{t?.pricing?.founding?.cardFeatures?.inquiryAndRfq || "Inquiry inbox & RFQ reception"}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground">Catalog upload</span>
+                    <span className="text-foreground">{t?.pricing?.founding?.cardFeatures?.catalogUpload || "Catalog upload"}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground">Certifications & Export markets</span>
+                    <span className="text-foreground">{t?.pricing?.founding?.cardFeatures?.certificationsAndMarkets || "Certifications & Export markets"}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground font-medium">Advanced analytics</span>
+                    <span className="text-foreground font-medium">{t?.pricing?.founding?.cardFeatures?.advancedAnalytics || "Advanced analytics"}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground font-medium">Priority search visibility</span>
+                    <span className="text-foreground font-medium">{t?.pricing?.founding?.cardFeatures?.prioritySearch || "Priority search visibility"}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground font-medium">Featured supplier badge</span>
+                    <span className="text-foreground font-medium">{t?.pricing?.founding?.cardFeatures?.featuredBadge || "Featured supplier badge"}</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm">
                     <Check className="h-4 w-4 text-secondary" />
-                    <span className="text-foreground font-medium">Multiple team users (3)</span>
+                    <span className="text-foreground font-medium">{t?.pricing?.founding?.cardFeatures?.teamUsers3 || "Multiple team users (3)"}</span>
                   </li>
                 </ul>
                 <Button
                   className="w-full gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90"
                   onClick={() => router.push('/auth/signup?role=manufacturer&plan=founding')}
                 >
-                  Apply as Founding Member
+                  {t?.pricing?.founding?.button || "Apply as Founding Member"}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
                 <p className="mt-3 text-xs text-center text-muted-foreground">
-                  Subject to admin review and approval
+                  {t?.pricing?.founding?.note || "Subject to admin review and approval"}
                 </p>
               </div>
             </div>
@@ -312,10 +318,10 @@ export default function PricingPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center mb-12">
               <h2 className="font-serif text-3xl font-medium tracking-tight text-foreground">
-                Paid Plans
+                {t?.pricing?.paidPlans?.title || "Paid Plans"}
               </h2>
               <p className="mt-4 text-muted-foreground">
-                For manufacturers ready to maximize their visibility and reach
+                {t?.pricing?.paidPlans?.subtitle || "For manufacturers ready to maximize their visibility and reach"}
               </p>
             </div>
 
@@ -331,7 +337,7 @@ export default function PricingPage() {
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  Monthly
+                  {t?.pricing?.paidPlans?.monthly || "Monthly"}
                 </button>
                 <button
                   onClick={() => setBillingCycle("yearly")}
@@ -342,8 +348,8 @@ export default function PricingPage() {
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  Yearly
-                  <Badge variant="secondary" className="text-xs">Save 17%</Badge>
+                  {t?.pricing?.paidPlans?.yearly || "Yearly"}
+                  <Badge variant="secondary" className="text-xs">{t?.pricing?.paidPlans?.savePercentage || "Save 17%"}</Badge>
                 </button>
               </div>
             </div>
@@ -360,7 +366,7 @@ export default function PricingPage() {
                 >
                   {plan.popular && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground">
-                      Most Popular
+                      {t?.pricing?.paidPlans?.growth?.badge || "Most Popular"}
                     </Badge>
                   )}
                   <div>
@@ -375,17 +381,17 @@ export default function PricingPage() {
                             ${billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice}
                           </span>
                           <span className="ml-2 text-muted-foreground">
-                            /{billingCycle === "monthly" ? "month" : "year"}
+                            /{billingCycle === "monthly" ? (t?.pricing?.paidPlans?.monthly || "month") : (t?.pricing?.paidPlans?.yearly || "year")}
                           </span>
                         </div>
                         {billingCycle === "yearly" && (
                           <p className="mt-1 text-sm text-muted-foreground">
-                            Billed annually (${Math.round(plan.yearlyPrice! / 12)}/month)
+                            {(t?.pricing?.paidPlans?.billedAnnually || "Billed annually (${price}/month)").replace("${price}", Math.round(plan.yearlyPrice! / 12).toString())}
                           </p>
                         )}
                       </>
                     ) : (
-                      <div className="text-4xl font-bold text-foreground">Custom</div>
+                      <div className="text-4xl font-bold text-foreground">{t?.pricing?.paidPlans?.enterprise?.price || "Custom"}</div>
                     )}
                   </div>
                   <Button
@@ -427,9 +433,9 @@ export default function PricingPage() {
             {/* Approval Notice */}
             <div className="mx-auto mt-12 max-w-2xl rounded-xl bg-secondary/10 p-6 text-center">
               <Shield className="mx-auto h-8 w-8 text-secondary" />
-              <h3 className="mt-4 font-semibold text-foreground">Approval Required</h3>
+              <h3 className="mt-4 font-semibold text-foreground">{t?.pricing?.approval?.title || "Approval Required"}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Payment does not automatically publish your profile. All manufacturer accounts go through a review process before becoming visible to buyers. This ensures quality and trust on the platform.
+                {t?.pricing?.approval?.description || "Payment does not automatically publish your profile. All manufacturer accounts go through a review process before becoming visible to buyers. This ensures quality and trust on the platform."}
               </p>
             </div>
           </div>
@@ -440,10 +446,10 @@ export default function PricingPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="font-serif text-3xl font-medium tracking-tight text-foreground">
-                Compare All Features
+                {t?.pricing?.comparison?.title || "Compare All Features"}
               </h2>
               <p className="mt-4 text-muted-foreground">
-                See exactly what&apos;s included in each plan
+                {t?.pricing?.comparison?.subtitle || "See exactly what's included in each plan"}
               </p>
             </div>
 
@@ -451,7 +457,7 @@ export default function PricingPage() {
               <table className="w-full min-w-150 border-collapse">
                 <thead>
                   <tr>
-                    <th className="border-b border-border p-4 text-left font-medium text-foreground">Feature</th>
+                    <th className="border-b border-border p-4 text-left font-medium text-foreground">{t?.pricing?.comparison?.feature || "Feature"}</th>
                     <th className="border-b border-border p-4 text-center font-medium text-foreground">Starter</th>
                     <th className="border-b border-border p-4 text-center font-medium text-foreground">Growth</th>
                     <th className="border-b border-border p-4 text-center font-medium text-foreground">Enterprise</th>
@@ -459,46 +465,46 @@ export default function PricingPage() {
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border-b border-border p-4 text-muted-foreground">Products limit</td>
+                    <td className="border-b border-border p-4 text-muted-foreground">{t?.pricing?.comparison?.productsLimit || "Products limit"}</td>
                     <td className="border-b border-border p-4 text-center">25</td>
                     <td className="border-b border-border p-4 text-center">100</td>
-                    <td className="border-b border-border p-4 text-center">Unlimited</td>
+                    <td className="border-b border-border p-4 text-center">{t?.pricing?.comparison?.unlimited || "Unlimited"}</td>
                   </tr>
                   <tr>
-                    <td className="border-b border-border p-4 text-muted-foreground">Team members</td>
+                    <td className="border-b border-border p-4 text-muted-foreground">{t?.pricing?.comparison?.teamMembers || "Team members"}</td>
                     <td className="border-b border-border p-4 text-center">1</td>
                     <td className="border-b border-border p-4 text-center">3</td>
-                    <td className="border-b border-border p-4 text-center">Unlimited</td>
+                    <td className="border-b border-border p-4 text-center">{t?.pricing?.comparison?.unlimited || "Unlimited"}</td>
                   </tr>
                   <tr>
-                    <td className="border-b border-border p-4 text-muted-foreground">Search visibility</td>
-                    <td className="border-b border-border p-4 text-center">Standard</td>
-                    <td className="border-b border-border p-4 text-center">Priority</td>
-                    <td className="border-b border-border p-4 text-center">Premium</td>
+                    <td className="border-b border-border p-4 text-muted-foreground">{t?.pricing?.comparison?.searchVisibility || "Search visibility"}</td>
+                    <td className="border-b border-border p-4 text-center">{t?.pricing?.comparison?.standard || "Standard"}</td>
+                    <td className="border-b border-border p-4 text-center">{t?.pricing?.comparison?.priority || "Priority"}</td>
+                    <td className="border-b border-border p-4 text-center">{t?.pricing?.comparison?.premium || "Premium"}</td>
                   </tr>
                   <tr>
-                    <td className="border-b border-border p-4 text-muted-foreground">Analytics</td>
-                    <td className="border-b border-border p-4 text-center">Basic</td>
-                    <td className="border-b border-border p-4 text-center">Advanced</td>
-                    <td className="border-b border-border p-4 text-center">Enterprise</td>
+                    <td className="border-b border-border p-4 text-muted-foreground">{t?.pricing?.comparison?.analytics || "Analytics"}</td>
+                    <td className="border-b border-border p-4 text-center">{t?.pricing?.comparison?.basic || "Basic"}</td>
+                    <td className="border-b border-border p-4 text-center">{t?.pricing?.comparison?.advanced || "Advanced"}</td>
+                    <td className="border-b border-border p-4 text-center">{t?.pricing?.comparison?.enterpriseLevel || "Enterprise"}</td>
                   </tr>
                   <tr>
-                    <td className="border-b border-border p-4 text-muted-foreground">Featured badge</td>
+                    <td className="border-b border-border p-4 text-muted-foreground">{t?.pricing?.comparison?.featuredBadge || "Featured badge"}</td>
                     <td className="border-b border-border p-4 text-center"><X className="mx-auto h-4 w-4 text-muted-foreground/50" /></td>
                     <td className="border-b border-border p-4 text-center"><Check className="mx-auto h-4 w-4 text-secondary" /></td>
                     <td className="border-b border-border p-4 text-center"><Check className="mx-auto h-4 w-4 text-secondary" /></td>
                   </tr>
                   <tr>
-                    <td className="border-b border-border p-4 text-muted-foreground">Account manager</td>
+                    <td className="border-b border-border p-4 text-muted-foreground">{t?.pricing?.comparison?.accountManager || "Account manager"}</td>
                     <td className="border-b border-border p-4 text-center"><X className="mx-auto h-4 w-4 text-muted-foreground/50" /></td>
                     <td className="border-b border-border p-4 text-center"><X className="mx-auto h-4 w-4 text-muted-foreground/50" /></td>
                     <td className="border-b border-border p-4 text-center"><Check className="mx-auto h-4 w-4 text-secondary" /></td>
                   </tr>
                   <tr>
-                    <td className="p-4 text-muted-foreground">Support level</td>
-                    <td className="p-4 text-center">Email</td>
-                    <td className="p-4 text-center">Priority email</td>
-                    <td className="p-4 text-center">Dedicated</td>
+                    <td className="p-4 text-muted-foreground">{t?.pricing?.comparison?.supportLevel || "Support level"}</td>
+                    <td className="p-4 text-center">{t?.pricing?.comparison?.email || "Email"}</td>
+                    <td className="p-4 text-center">{t?.pricing?.comparison?.priorityEmail || "Priority email"}</td>
+                    <td className="p-4 text-center">{t?.pricing?.comparison?.dedicated || "Dedicated"}</td>
                   </tr>
                 </tbody>
               </table>
@@ -512,18 +518,51 @@ export default function PricingPage() {
             <div className="text-center">
               <HelpCircle className="mx-auto h-10 w-10 text-secondary" />
               <h2 className="mt-4 font-serif text-3xl font-medium tracking-tight text-foreground">
-                Pricing FAQ
+                {t?.pricing?.faq?.title || "Pricing FAQ"}
               </h2>
             </div>
 
             <Accordion type="single" collapsible className="mt-12">
-              {faqs.map((faq, index) => (
+              {[
+                {
+                  q: t?.pricing?.faq?.q1 || "Does payment automatically publish my profile?",
+                  a: t?.pricing?.faq?.a1 || "No. Payment creates your manufacturer account, but your profile must still go through our review and approval process before it becomes visible to buyers. This typically takes 2-5 business days after you submit your complete profile."
+                },
+                {
+                  q: t?.pricing?.faq?.q2 || "What happens if my profile is not approved?",
+                  a: t?.pricing?.faq?.a2 || "If your profile doesn't meet our requirements, we'll provide specific feedback on what needs to be updated. You can make the necessary changes and resubmit. If approval is ultimately not possible, we offer a full refund within 30 days."
+                },
+                {
+                  q: t?.pricing?.faq?.q3 || "Can I upgrade or downgrade my plan?",
+                  a: t?.pricing?.faq?.a3 || "Yes, you can change your plan at any time. When upgrading, you'll be charged the prorated difference. When downgrading, the new rate applies at your next billing cycle."
+                },
+                {
+                  q: t?.pricing?.faq?.q4 || "What is the Founding Manufacturer program?",
+                  a: t?.pricing?.faq?.a4 || "The Founding Manufacturer program is a limited offer for the first 300 manufacturers who join SourceNest. As a founding member, you get 6 months of free access to our full Growth plan ($299/month value) - including up to 100 products, advanced analytics, priority search visibility, featured supplier badge, and multiple team users. No credit card required to start."
+                },
+                {
+                  q: t?.pricing?.faq?.q5 || "What happens after my 6-month free period ends?",
+                  a: t?.pricing?.faq?.a5 || "After your 6-month free period ends, you'll need to choose and pay for one of our plans (Starter, Growth, or Enterprise) to continue using the platform. We'll send you reminders before your free period expires so you have plenty of time to choose the right plan for your business."
+                },
+                {
+                  q: t?.pricing?.faq?.q6 || "Is the Founding Manufacturer program still available?",
+                  a: t?.pricing?.faq?.a6 || "The program is available until we reach 300 approved manufacturer registrations (pending applications don't count toward the limit). You can see the remaining spots on our pricing page. Once all spots are filled, the program will close and new manufacturers will need to choose a paid plan."
+                },
+                {
+                  q: t?.pricing?.faq?.q7 || "Are there any commission fees on sales?",
+                  a: t?.pricing?.faq?.a7 || "No. SourceNest does not take any commission on deals you close through the platform. Your subscription fee is your only cost."
+                },
+                {
+                  q: t?.pricing?.faq?.q8 || "What payment methods do you accept?",
+                  a: t?.pricing?.faq?.a8 || "We accept all major credit cards (Visa, Mastercard, American Express) and PayPal. For Enterprise plans, we also offer bank transfer options."
+                }
+              ].map((faq, index) => (
                 <AccordionItem key={index} value={`item-${index}`}>
                   <AccordionTrigger className="text-left text-base font-medium">
-                    {faq.question}
+                    {faq.q}
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground leading-relaxed">
-                    {faq.answer}
+                    {faq.a}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -536,21 +575,21 @@ export default function PricingPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="font-serif text-3xl font-medium tracking-tight text-primary-foreground">
-                Ready to Get Started?
+                {t?.pricing?.cta?.title || "Ready to Get Started?"}
               </h2>
               <p className="mt-4 text-primary-foreground/80">
-                Join SourceNest and start reaching global buyers today.
+                {t?.pricing?.cta?.subtitle || "Join SourceNest and start reaching global buyers today."}
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row w-full max-w-lg mx-auto">
                 <Button size="lg" variant="secondary" className="w-full sm:w-auto justify-center gap-2 bg-primary-foreground text-primary hover:bg-primary-foreground/90" asChild>
                   <Link href="/auth/signup?role=manufacturer" className="w-full text-center sm:w-auto">
-                    Create Account
+                    {t?.pricing?.cta?.createAccount || "Create Account"}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" className="bg-transparent w-full sm:w-auto border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10" asChild>
                   <Link href="/contact?type=sales" className="w-full text-center sm:w-auto">
-                    Talk to Sales
+                    {t?.pricing?.cta?.talkToSales || "Talk to Sales"}
                   </Link>
                 </Button>
               </div>
@@ -565,8 +604,8 @@ export default function PricingPage() {
               <div className="border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-6">
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0 flex-1">
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Complete Your Payment</h2>
-                    <p className="mt-1 text-xs sm:text-sm text-gray-600">{selectedPlan.name} Plan</p>
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">{t?.pricing?.payment?.title || "Complete Your Payment"}</h2>
+                    <p className="mt-1 text-xs sm:text-sm text-gray-600">{selectedPlan.name} {t?.pricing?.payment?.plan || "Plan"}</p>
                   </div>
                   <button
                     onClick={handleClosePayment}
@@ -582,12 +621,12 @@ export default function PricingPage() {
                 {paymentStatus === "success" && (
                   <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
                     <CheckCircle className="mx-auto h-8 w-8 text-green-600" />
-                    <h3 className="mt-3 font-semibold text-green-900 text-sm sm:text-base">Payment Successful!</h3>
+                    <h3 className="mt-3 font-semibold text-green-900 text-sm sm:text-base">{t?.pricing?.payment?.success || "Payment Successful!"}</h3>
                     <p className="mt-2 text-xs sm:text-sm text-green-700 break-all">
-                      Transaction ID: <span className="font-mono text-xs">{transactionId}</span>
+                      {t?.pricing?.payment?.transactionId || "Transaction ID:"} <span className="font-mono text-xs">{transactionId}</span>
                     </p>
                     <p className="mt-4 text-xs text-green-600">
-                      Redirecting to sign up...
+                      {t?.pricing?.payment?.redirecting || "Redirecting to sign up..."}
                     </p>
                   </div>
                 )}
@@ -599,7 +638,7 @@ export default function PricingPage() {
                       <div className="flex items-start gap-2 sm:gap-3">
                         <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-red-600 mt-0.5" />
                         <div className="min-w-0">
-                          <h3 className="font-semibold text-red-900 text-sm">Payment Failed</h3>
+                          <h3 className="font-semibold text-red-900 text-sm">{t?.pricing?.payment?.failed || "Payment Failed"}</h3>
                           <p className="mt-1 text-xs sm:text-sm text-red-700 break-word">{errorMessage}</p>
                         </div>
                       </div>
@@ -608,7 +647,7 @@ export default function PricingPage() {
                       onClick={() => setPaymentStatus("idle")}
                       className="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-300 transition-colors"
                     >
-                      Try Again
+                      {t?.pricing?.payment?.tryAgain || "Try Again"}
                     </button>
                   </div>
                 )}
@@ -619,7 +658,11 @@ export default function PricingPage() {
                     {/* Price Summary */}
                     <div className="rounded-lg bg-gray-50 p-3 sm:p-4">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs sm:text-sm text-gray-600">{selectedPlan.name} Plan ({selectedPlan.cycle})</span>
+                        <span className="text-xs sm:text-sm text-gray-600">
+                          {(t?.pricing?.payment?.priceInfo || "{plan} Plan ({cycle})")
+                            .replace("{plan}", selectedPlan.name)
+                            .replace("{cycle}", selectedPlan.cycle)}
+                        </span>
                         <span className="text-lg sm:text-xl font-bold text-gray-900 shrink-0">
                           ${selectedPlan.price.toFixed(2)}
                         </span>
@@ -637,7 +680,7 @@ export default function PricingPage() {
                     {/* Info Text */}
                     <div className="rounded-lg bg-blue-50 p-2 sm:p-3 border border-blue-200">
                       <p className="text-xs text-blue-900 leading-relaxed">
-                        💡 This typically takes 2-5 business days.
+                        {t?.pricing?.payment?.processingTime || "💡 This typically takes 2-5 business days."}
                       </p>
                     </div>
                   </div>
@@ -651,3 +694,4 @@ export default function PricingPage() {
     </div>
   )
 }
+

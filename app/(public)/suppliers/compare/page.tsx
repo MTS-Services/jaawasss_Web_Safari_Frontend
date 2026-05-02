@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useTranslation } from "@/lib/i18n"
 import {
   Select,
   SelectContent,
@@ -21,12 +22,10 @@ import {
   Factory,
   Star,
   MapPin,
-  Award,
   Clock,
   Package,
   TrendingUp,
   Globe,
-  CheckCircle,
   Calendar,
   Users,
   Plus,
@@ -38,6 +37,7 @@ import {
 const MAX_COMPARE = 4
 
 export default function SupplierComparePage() {
+  const { t } = useTranslation()
   const { 
     compareList, 
     addToCompare, 
@@ -78,13 +78,6 @@ export default function SupplierComparePage() {
     removeFromCompare(id)
   }
 
-  const verificationBadgeColors = {
-    basic: "bg-gray-100 text-gray-700",
-    standard: "bg-blue-100 text-blue-700",
-    premium: "bg-amber-100 text-amber-700",
-    enterprise: "bg-emerald-100 text-emerald-700"
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -94,14 +87,14 @@ export default function SupplierComparePage() {
           <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
             <nav className="flex items-center gap-2 text-sm">
               <Link href="/" className="text-muted-foreground hover:text-foreground">
-                Home
+                {t?.landing?.suppliers?.compare?.breadcrumbHome || "Home"}
               </Link>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
               <Link href="/suppliers" className="text-muted-foreground hover:text-foreground">
-                Suppliers
+                {t?.landing?.suppliers?.compare?.breadcrumbSuppliers || "Suppliers"}
               </Link>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium text-foreground">Compare</span>
+              <span className="font-medium text-foreground">{t?.landing?.suppliers?.compare?.breadcrumbCompare || "Compare"}</span>
             </nav>
           </div>
         </div>
@@ -112,16 +105,16 @@ export default function SupplierComparePage() {
             <div>
               <h1 className="flex items-center gap-3 font-serif text-2xl font-medium text-foreground sm:text-3xl">
                 <Scale className="h-8 w-8 text-secondary" />
-                Compare Suppliers
+                {t?.landing?.suppliers?.compare?.pageTitle || "Compare Suppliers"}
               </h1>
               <p className="mt-2 text-muted-foreground">
-                Compare up to {MAX_COMPARE} suppliers side by side
+                {(t?.landing?.suppliers?.compare?.pageDescription || "Compare up to {max} suppliers side by side").replace("{max}", MAX_COMPARE.toString())}
               </p>
             </div>
 
             <Select onValueChange={addSupplier}>
               <SelectTrigger className="w-64">
-                <SelectValue placeholder="Add supplier to compare" />
+                <SelectValue placeholder={t?.landing?.suppliers?.compare?.addSupplier || "Add supplier to compare"} />
               </SelectTrigger>
               <SelectContent>
                 {availableSuppliers.length > 0 ? (
@@ -132,7 +125,7 @@ export default function SupplierComparePage() {
                   ))
                 ) : (
                   <div className="p-2 text-sm text-muted-foreground text-center">
-                    Maximum suppliers added
+                    {t?.landing?.suppliers?.compare?.maximumSuppliersAdded || "Maximum suppliers added"}
                   </div>
                 )}
               </SelectContent>
@@ -143,24 +136,24 @@ export default function SupplierComparePage() {
             <div className="mt-12 rounded-xl border border-dashed border-border py-16 text-center">
               <Scale className="mx-auto h-16 w-16 text-muted-foreground/50" />
               <h2 className="mt-6 font-semibold text-xl text-foreground">
-                No Suppliers Selected
+                {t?.landing?.suppliers?.compare?.noSuppliersSelected || "No Suppliers Selected"}
               </h2>
               <p className="mt-2 text-muted-foreground max-w-md mx-auto">
-                Select suppliers from the dropdown above or browse our supplier directory to start comparing.
+                {t?.landing?.suppliers?.compare?.noSuppliersMessage || "Select suppliers from the dropdown above or browse our supplier directory to start comparing."}
               </p>
               <Button asChild className="mt-6">
-                <Link href="/suppliers">Browse Suppliers</Link>
+                <Link href="/suppliers">{t?.landing?.suppliers?.compare?.browseSuppliers || "Browse Suppliers"}</Link>
               </Button>
             </div>
           ) : (
             <div className="mt-8">
               {/* Comparison Grid */}
               <div className="overflow-x-auto">
-                <div className="min-w-[800px]">
+                <div className="min-w-200">
                   {/* Supplier Headers */}
                   <div className={`grid gap-4 mb-6`} style={{ gridTemplateColumns: `200px repeat(${selectedSuppliers.length}, 1fr)` }}>
                     <div className="text-sm font-medium text-muted-foreground p-4">
-                      Comparing {selectedSuppliers.length} suppliers
+                      {(t?.landing?.suppliers?.compare?.comparing || "Comparing {count} suppliers").replace("{count}", selectedSuppliers.length.toString())}
                     </div>
                     {selectedSuppliers.map((supplier) => (
                       <div key={supplier.id} className="rounded-xl border border-border bg-card p-4 relative">
@@ -171,7 +164,7 @@ export default function SupplierComparePage() {
                           <X className="h-4 w-4 text-muted-foreground" />
                         </button>
                         <div className="flex items-center gap-3">
-                          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-muted">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted">
                             <Factory className="h-6 w-6 text-muted-foreground" />
                           </div>
                           <div>
@@ -187,19 +180,13 @@ export default function SupplierComparePage() {
                             </div>
                           </div>
                         </div>
-                        {supplier.verified && (
-                          <Badge className={`mt-3 ${verificationBadgeColors[supplier.verificationLevel]}`}>
-                            <CheckCircle className="mr-1 h-3 w-3" />
-                            {supplier.verificationLevel.charAt(0).toUpperCase() + supplier.verificationLevel.slice(1)}
-                          </Badge>
-                        )}
                       </div>
                     ))}
                   </div>
 
                   {/* Rating Row */}
                   <ComparisonRow
-                    label="Rating"
+                    label={t?.landing?.suppliers?.compare?.rating || "Rating"}
                     icon={<Star className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
@@ -210,7 +197,7 @@ export default function SupplierComparePage() {
                           <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
                           <span className="text-lg font-semibold">{summary.average || supplier.rating}</span>
                           <span className="text-sm text-muted-foreground">
-                            ({summary.total || supplier.reviewCount} reviews)
+                            ({summary.total || supplier.reviewCount} {t?.landing?.suppliers?.compare?.reviews || "reviews"})
                           </span>
                         </div>
                       )
@@ -219,7 +206,7 @@ export default function SupplierComparePage() {
 
                   {/* Response Time Row */}
                   <ComparisonRow
-                    label="Response Time"
+                    label={t?.landing?.suppliers?.compare?.responseTime || "Response Time"}
                     icon={<Clock className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
@@ -230,7 +217,7 @@ export default function SupplierComparePage() {
 
                   {/* Response Rate Row */}
                   <ComparisonRow
-                    label="Response Rate"
+                    label={t?.landing?.suppliers?.compare?.responseRate || "Response Rate"}
                     icon={<TrendingUp className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
@@ -241,7 +228,7 @@ export default function SupplierComparePage() {
 
                   {/* On-Time Delivery Row */}
                   <ComparisonRow
-                    label="On-Time Delivery"
+                    label={t?.landing?.suppliers?.compare?.onTimeDelivery || "On-Time Delivery"}
                     icon={<Package className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
@@ -252,7 +239,7 @@ export default function SupplierComparePage() {
 
                   {/* Year Established Row */}
                   <ComparisonRow
-                    label="Established"
+                    label={t?.landing?.suppliers?.compare?.established || "Established"}
                     icon={<Calendar className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
@@ -260,7 +247,7 @@ export default function SupplierComparePage() {
                       <div key={supplier.id}>
                         <span className="font-medium">{supplier.yearEstablished}</span>
                         <span className="text-sm text-muted-foreground ml-1">
-                          ({new Date().getFullYear() - supplier.yearEstablished} years)
+                          ({new Date().getFullYear() - supplier.yearEstablished} {t?.landing?.suppliers?.compare?.years || "years"})
                         </span>
                       </div>
                     ))}
@@ -268,7 +255,7 @@ export default function SupplierComparePage() {
 
                   {/* Employees Row */}
                   <ComparisonRow
-                    label="Employees"
+                    label={t?.landing?.suppliers?.compare?.employees || "Employees"}
                     icon={<Users className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
@@ -279,7 +266,7 @@ export default function SupplierComparePage() {
 
                   {/* Products Row */}
                   <ComparisonRow
-                    label="Product Count"
+                    label={t?.landing?.suppliers?.compare?.productCount || "Product Count"}
                     icon={<Package className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
@@ -290,20 +277,20 @@ export default function SupplierComparePage() {
 
                   {/* MOQ Row */}
                   <ComparisonRow
-                    label="Min Order Value"
+                    label={t?.landing?.suppliers?.compare?.minOrderValue || "Min Order Value"}
                     icon={<TrendingUp className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
                     {selectedSuppliers.map((supplier) => (
                       <span key={supplier.id} className="font-medium">
-                        {supplier.minOrderValue || "Contact for MOQ"}
+                        {supplier.minOrderValue || (t?.landing?.suppliers?.compare?.contactForMOQ || "Contact for MOQ")}
                       </span>
                     ))}
                   </ComparisonRow>
 
                   {/* Export Markets Row */}
                   <ComparisonRow
-                    label="Export Markets"
+                    label={t?.landing?.suppliers?.compare?.exportMarkets || "Export Markets"}
                     icon={<Globe className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
@@ -325,7 +312,7 @@ export default function SupplierComparePage() {
 
                   {/* Certifications Row */}
                   <ComparisonRow
-                    label="Certifications"
+                    label={t?.landing?.suppliers?.compare?.certifications || "Certifications"}
                     icon={<Shield className="h-4 w-4" />}
                     columns={selectedSuppliers.length}
                   >
@@ -352,12 +339,12 @@ export default function SupplierComparePage() {
                       <div key={supplier.id} className="flex flex-col gap-2">
                         <Button asChild>
                           <Link href={`/messages/new?supplier=${supplier.slug}`}>
-                            Contact Supplier
+                            {t?.landing?.suppliers?.compare?.contactSupplier || "Contact Supplier"}
                           </Link>
                         </Button>
                         <Button variant="outline" asChild>
                           <Link href={`/suppliers/${supplier.slug}`}>
-                            View Profile
+                            {t?.landing?.suppliers?.compare?.viewProfile || "View Profile"}
                           </Link>
                         </Button>
                       </div>
@@ -371,11 +358,13 @@ export default function SupplierComparePage() {
                 <div className="mt-8 rounded-xl border border-dashed border-border p-8 text-center">
                   <Plus className="mx-auto h-8 w-8 text-muted-foreground/50" />
                   <p className="mt-3 text-muted-foreground">
-                    Add {MAX_COMPARE - selectedSuppliers.length} more supplier{MAX_COMPARE - selectedSuppliers.length > 1 ? "s" : ""} to compare
+                    {(t?.landing?.suppliers?.compare?.addMore || "Add {count} more supplier{plural} to compare")
+                      .replace("{count}", (MAX_COMPARE - selectedSuppliers.length).toString())
+                      .replace("{plural}", MAX_COMPARE - selectedSuppliers.length > 1 ? "s" : "")}
                   </p>
                   <Select onValueChange={addSupplier}>
                     <SelectTrigger className="mt-4 mx-auto w-64">
-                      <SelectValue placeholder="Select a supplier" />
+                      <SelectValue placeholder={t?.landing?.suppliers?.compare?.selectSupplier || "Select a supplier"} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableSuppliers.map((supplier) => (

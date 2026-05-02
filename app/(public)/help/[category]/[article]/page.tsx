@@ -3,6 +3,7 @@
 import { use } from "react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { useTranslation } from "@/lib/i18n"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,7 @@ import {
 } from "@/lib/data/help-center"
 
 export default function HelpArticlePage({ params }: { params: Promise<{ category: string; article: string }> }) {
+  const { t } = useTranslation()
   const { category, article } = use(params)
   
   const categoryData = getCategoryBySlug(defaultHelpCenterData, category)
@@ -44,7 +46,7 @@ export default function HelpArticlePage({ params }: { params: Promise<{ category
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2 text-sm">
               <Link href="/help" className="text-muted-foreground hover:text-foreground">
-                Help Center
+                {t?.help?.backToHelp}
               </Link>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
               <Link href={`/help/${category}`} className="text-muted-foreground hover:text-foreground">
@@ -95,7 +97,7 @@ export default function HelpArticlePage({ params }: { params: Promise<{ category
 
             {/* Feedback */}
             <div className="mt-12 rounded-xl border border-border bg-muted/50 p-6">
-              <p className="text-center font-medium text-foreground">Was this article helpful?</p>
+              <p className="text-center font-medium text-foreground">{t?.help?.wasHelpful}</p>
               <div className="mt-4 flex items-center justify-center gap-4">
                 <Button variant="outline" className="gap-2">
                   <ThumbsUp className="h-4 w-4" />
@@ -112,7 +114,7 @@ export default function HelpArticlePage({ params }: { params: Promise<{ category
                   className="inline-flex items-center gap-2 text-sm text-secondary hover:underline"
                 >
                   <MessageSquare className="h-4 w-4" />
-                  Still need help? Contact support
+                  Still need help? {t?.help?.contactSupportCta}
                 </Link>
               </div>
             </div>

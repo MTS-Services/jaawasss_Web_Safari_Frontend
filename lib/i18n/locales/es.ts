@@ -497,6 +497,36 @@ const es = {
       noSuppliersFound: "找不到供应商",
       adjustSearchFilters: "尝试调整你的搜索或筛选条件",
       clearAllFilters: "清除所有筛选",
+      compare: {
+        pageTitle: "比较供应商",
+        pageDescription: "并排比较最多 {max} 个供应商",
+        breadcrumbHome: "主页",
+        breadcrumbSuppliers: "供应商",
+        breadcrumbCompare: "比较",
+        addSupplier: "添加供应商以比较",
+        maximumSuppliersAdded: "已添加最大供应商数",
+        noSuppliersSelected: "未选择供应商",
+        noSuppliersMessage: "从上方下拉菜单中选择供应商或浏览我们的供应商目录以开始比较。",
+        browseSuppliers: "浏览供应商",
+        comparing: "比较 {count} 个供应商",
+        rating: "评分",
+        reviews: "评论",
+        responseTime: "响应时间",
+        responseRate: "响应率",
+        onTimeDelivery: "准时交货",
+        established: "成立于",
+        years: "年",
+        employees: "员工",
+        productCount: "产品数量",
+        minOrderValue: "最小订单值",
+        contactForMOQ: "联系获取最小订单量",
+        exportMarkets: "出口市场",
+        certifications: "认证",
+        contactSupplier: "联系供应商",
+        viewProfile: "查看资料",
+        addMore: "再添加 {count} 个供应商以比较",
+        selectSupplier: "选择供应商",
+      }
     },
     products: {
       pageTitle: "发现产品",
@@ -653,6 +683,69 @@ const es = {
       popular: "热门行业",
       viewAll: "查看所有行业",
       rights: "版权所有。"
+    },
+    forBuyers: {
+      hero: {
+        badge: "100% 免费供买家使用",
+        title: "全球采购，完全免费",
+        subtitle: "搜索已审查的供应商，比较工厂，请求报价，直接与制造商沟通 — 一切完全免费。SourceNest 对买家永远免费。",
+        signupButton: "创建免费账户",
+        browseButton: "浏览供应商",
+      },
+      featuresTitle: "您需要的所有智能采购工具",
+      featuresSubtitle: "专为简化整个采购工作流程而设计的强大工具",
+      features: {
+        search: {
+          title: "搜索供应商",
+          description: "访问我们的全球已审查制造商目录。按行业、地点、认证、最小订单量等进行过滤，以找到完美的合作伙伴。",
+        },
+        compare: {
+          title: "比较工厂",
+          description: "将供应商添加到您的比较列表中并并排评估它们。比较能力、认证、交货时间等。",
+        },
+        messaging: {
+          title: "直接消息",
+          description: "通过我们的安全平台直接与工厂代表聊天。没有中间商，没有经纪人 — 只是直接沟通。",
+        },
+        rfq: {
+          title: "请求报价",
+          description: "提交详细的采购询价单，包括规格、数量和要求。直接从制造商处获得竞争性报价。",
+        },
+        favorites: {
+          title: "保存收藏",
+          description: "将供应商和产品保存到您的收藏中，以便轻松访问。随时间建立您的首选供应商列表。",
+        },
+        catalogs: {
+          title: "下载目录",
+          description: "访问并下载已审查供应商的产品目录、规格表和公司宣传册。",
+        },
+        dashboard: {
+          title: "有组织的仪表板",
+          description: "在一个地方管理所有采购活动。跟踪消息、采购询价单、保存的项目和供应商交互。",
+        },
+        notifications: {
+          title: "智能通知",
+          description: "当供应商响应您的询问时、当新供应商匹配您的偏好时等获得通知。",
+        },
+      },
+      benefitsTitle: "为什么买家喜欢 SourceNest",
+      benefitsSubtitle: "加入数千名采购专业人士、进口商和采购经理，他们相信 SourceNest 满足其全球采购需求。",
+      benefits: {
+        free: "完全免费使用 — 无订阅，无隐藏费用",
+        reviewed: "平台上仅有已审查和批准的供应商",
+        directComm: "与工厂代表进行直接沟通",
+        comparison: "并排供应商比较工具",
+        secure: "安全的采购询价单和消息系统",
+        catalogs: "访问产品目录和规格说明",
+        dashboard: "为所有采购活动组织仪表板",
+        global: "全球范围内 50 多个制造国家",
+      },
+      benefitBoxTitle: "为什么对买家免费？",
+      benefitBoxDescription1: "我们的商业模式很简单：制造商为在平台上列出而支付订阅费，而买家免费使用。这确保工厂的最大覆盖范围，同时为您提供一个高级采购工具，无需花费。",
+      benefitBoxDescription2: "通过为买家保持平台免费，我们吸引更多认真的采购专业人士 — 这进而使平台对制造商更有价值。每个人都赢了。",
+      ctaTitle: "今天开始采购",
+      ctaSubtitle: "在几秒钟内创建您的免费账户并开始与全球评审制造商联系。",
+      ctaButton: "创建免费买家账户",
     }
   },
   forManufacturers: {
@@ -714,6 +807,539 @@ const es = {
       subtitle: "立即加入 SourceNest，开始接收来自全球进口商的询盘。",
       choosePlan: "选择您的计划",
       contactSales: "联系销售"
+    }
+  },
+  pricing: {
+    hero: {
+      title: "简单透明的价格",
+      subtitle: "选择适合您业务的计划。所有计划都包括管理员审查和批准流程。",
+      buyersNote: "定价仅适用于制造商。买家可免费使用 SourceNest。"
+    },
+    founding: {
+      badge: "限时优惠",
+      title: "作为创始制造商加入",
+      subtitle: "成为前 300 个加入 SourceNest 的制造商，获得 6 个月免费访问我们完整的 {plan} 计划 - 价值 $1,794。",
+      plan: "Growth",
+      freeFor: "6 个月免费",
+      saveBadge: "节省 $1,794",
+      noCardRequired: "无需信用卡",
+      description: "获得完整的 {plan} 计划功能免费 6 个月。试用期结束后，继续选择任何付费计划以保持您的账户活跃。",
+      spotsRemaining: "剩余名额：",
+      button: "申请成为创始成员",
+      note: "需通过管理员审查和批准",
+      badge2: "仅限前 300 名",
+      cardTitle: "创始制造商",
+      cardSubtitle: "早期供应商计划",
+      cardFeatures: {
+        companyProfile: "公司资料",
+        products100: "最多 100 个产品",
+        internalMessaging: "内部消息",
+        inquiryAndRfq: "询价收件箱和 RFQ 接收",
+        catalogUpload: "目录上传",
+        certificationsAndMarkets: "认证和出口市场",
+        advancedAnalytics: "高级分析",
+        prioritySearch: "优先搜索可见性",
+        featuredBadge: "精选供应商徽章",
+        teamUsers3: "多个团队用户 (3)"
+      }
+    },
+    features: {
+      companyProfile: "公司资料",
+      products25: "最多 25 个产品",
+      products100: "最多 100 个产品",
+      productsUnlimited: "无限产品",
+      internalMessaging: "内部消息",
+      inquiryInbox: "询价收件箱",
+      rfqReception: "RFQ 接收",
+      catalogUpload: "目录上传",
+      certificationsSection: "认证部分",
+      exportMarketsSection: "出口市场部分",
+      basicAnalytics: "基础分析",
+      advancedAnalytics: "高级分析",
+      enterpriseAnalytics: "企业分析",
+      prioritySearchVisibility: "优先搜索可见性",
+      premiumSearchPlacement: "高级搜索展示",
+      featuredSupplierBadge: "精选供应商徽章",
+      multipleTeamUsers: "多个团队用户",
+      multipleTeamUsers3: "多个团队用户 (3)",
+      unlimitedTeamUsers: "无限团队用户",
+      premiumSupport: "高级支持",
+      dedicatedAccountManager: "专属客户经理",
+      prioritySupport: "优先支持",
+      customOnboarding: "定制入门"
+    },
+    paidPlans: {
+      title: "付费计划",
+      subtitle: "为准备最大化知名度和覆盖范围的制造商打造",
+      monthly: "每月",
+      yearly: "每年",
+      savePercentage: "节省 17%",
+      starter: {
+        name: "Starter",
+        description: "适合刚开始出口业务的中小制造商",
+        monthlyPrice: 149,
+        yearlyPrice: 1490,
+        cta: "开始使用"
+      },
+      growth: {
+        name: "Growth",
+        description: "适合寻求更多曝光的成熟制造商",
+        monthlyPrice: 299,
+        yearlyPrice: 2990,
+        cta: "开始使用",
+        badge: "最受欢迎"
+      },
+      enterprise: {
+        name: "Enterprise",
+        description: "适合有定制需求的大型制造商",
+        price: "自定义",
+        cta: "联系销售"
+      },
+      billedAnnually: "按年计费 (${price}/月)",
+      pricePerCycle: "{cycle}"
+    },
+    approval: {
+      title: "需要批准",
+      description: "付款不会自动发布您的资料。所有制造商账户都需要经过审查流程才能对买家可见。这确保了平台的质量和信任。"
+    },
+    comparison: {
+      title: "比较所有功能",
+      subtitle: "查看每个计划中包含的内容",
+      feature: "功能",
+      productsLimit: "产品限额",
+      teamMembers: "团队成员",
+      searchVisibility: "搜索可见性",
+      analytics: "分析",
+      featuredBadge: "精选供应商徽章",
+      accountManager: "账户经理",
+      supportLevel: "支持级别",
+      standard: "标准",
+      priority: "优先",
+      premium: "高级",
+      basic: "基础",
+      advanced: "高级",
+      enterpriseLevel: "企业级",
+      email: "电子邮件",
+      priorityEmail: "优先电子邮件",
+      dedicated: "专属",
+      unlimited: "无限",
+      notIncluded: "不包括"
+    },
+    faq: {
+      title: "定价常见问题",
+      q1: "付款会自动发布我的资料吗？",
+      a1: "不会。付款会创建您的制造商账户，但您的资料仍需要通过我们的审查和批准流程才能对买家可见。通常在您提交完整资料后需要 2-5 个工作日。",
+      q2: "如果我的资料未被批准怎么办？",
+      a2: "如果您的资料不符合我们的要求，我们将提供具体的反馈说明需要更新的内容。您可以进行必要的更改并重新提交。如果最终无法批准，我们在 30 天内提供全额退款。",
+      q3: "我可以升级或降级我的计划吗？",
+      a3: "是的，您可以随时更改您的计划。升级时，您将被收取按比例分配的差额。降级时，新费率将在您的下一个计费周期生效。",
+      q4: "什么是创始制造商计划？",
+      a4: "创始制造商计划是对加入 SourceNest 的前 300 家制造商的限时优惠。作为创始成员，您可以免费获得 6 个月的 Growth 计划全部功能（价值 $299/月）- 包括最多 100 个产品、高级分析、优先搜索可见性、精选供应商徽章和多个团队用户。无需信用卡即可开始。",
+      q5: "6 个月免费期结束后会发生什么？",
+      a5: "6 个月免费期结束后，您需要选择并支付我们的其中一个计划（Starter、Growth 或 Enterprise）以继续使用该平台。我们会在您的免费期即将结束前发送提醒，以便您有足够的时间选择适合您业务的计划。",
+      q6: "创始制造商计划还可用吗？",
+      a6: "该计划在我们达到 300 个已批准的制造商注册时可用（待处理应用程序不计入限额）。您可以在我们的定价页面上看到剩余名额。一旦所有名额已满，该计划将关闭，新制造商需要选择付费计划。",
+      q7: "销售中有任何佣金费用吗？",
+      a7: "没有。SourceNest 不收取您通过平台达成的任何交易的佣金。您的订阅费是您唯一的成本。",
+      q8: "您接受哪些付款方式？",
+      a8: "我们接受所有主要信用卡（Visa、Mastercard、American Express）和 PayPal。对于企业计划，我们还提供银行转账选项。"
+    },
+    cta: {
+      title: "准备好开始了吗？",
+      subtitle: "加入 SourceNest，立即开始与全球买家建立联系。",
+      createAccount: "创建账户",
+      talkToSales: "联系销售"
+    },
+    payment: {
+      title: "完成您的支付",
+      plan: "计划",
+      success: "支付成功！",
+      transactionId: "交易 ID：",
+      redirecting: "正在重定向到注册...",
+      failed: "支付失败",
+      tryAgain: "重试",
+      priceInfo: "{plan} 计划（{cycle}）",
+      processingTime: "💡 这通常需要 2-5 个工作日。"
+    }
+  },
+
+  // ── Verification / Review Process Page ──────────────────────────────
+  verification: {
+    hero: {
+      badge: "信任与质量",
+      title: "我们的审核流程",
+      description: "SourceNest 上的每个制造商都需要通过严格的审核流程，根据提交的信息进行审核，然后才能被批准。以下是我们维持质量标准的方式。"
+    },
+    whyMatters: {
+      title: "为什么我们的审核流程很重要",
+      intro: "在 B2B 采购领域，信任是必不可少的。买家在与供应商建立联系时需要有信心。传统平台通常允许任何人列出商品，这可能使评估选项变得更困难，并需要买家付出更多努力。",
+      approach: "SourceNest 采取了不同的方法。我们旨在审核制造商资料和提交的信息，以帮助提高透明度，并在供应商出现在平台上之前支持做出更好的决策。",
+      benefits: "我们的流程的好处",
+      benefit1: "买家可以更清楚地获取供应商信息",
+      benefit2: "制造商受益于成为质量导向型市场的一部分",
+      benefit3: "该平台鼓励更高标准",
+      benefit4: "该流程有助于简化供应商发现"
+    },
+    steps: {
+      title: "我们如何审核供应商",
+      subtitle: "我们的多步审核流程确保基于提交的信息进行全面筛查",
+      documentReview: {
+        title: "文件审核",
+        description: "我们审核公司信息和可用文件以支持透明度并建立信任。",
+        item1: "营业执照",
+        item2: "进出口许可证（如适用）",
+        item3: "行业认证（ISO、CE、FDA 等）",
+        item4: "税务登记文件（如适用）"
+      },
+      factoryReview: {
+        title: "工厂信息审核",
+        description: "我们审核基本的工厂信息和生产能力。",
+        item1: "工厂位置信息",
+        item2: "生产能力",
+        item3: "设备和机械",
+        item4: "工厂规模和劳动力"
+      },
+      profileReview: {
+        title: "资料审核",
+        description: "我们审核资料内容的质量和准确性。",
+        item1: "审核公司描述",
+        item2: "评估产品信息质量",
+        item3: "审核图像和媒体",
+        item4: "检查联系信息"
+      },
+      monitoring: {
+        title: "持续监控",
+        description: "我们随着时间的推移监控供应商活动和买家反馈。",
+        item1: "响应时间",
+        item2: "买家反馈",
+        item3: "总体表现",
+        item4: "质量检查"
+      }
+    },
+    badges: {
+      title: "信任徽章说明",
+      subtitle: "我们的审核徽章对您意味着什么",
+      reviewed: {
+        name: "SourceNest 已审核",
+        description: "供应商已提交公司信息并完成基本审核以在平台上列出。"
+      },
+      featured: {
+        name: "精选供应商",
+        description: "根据活动、反应速度和买家反馈突出显示的供应商。"
+      },
+      exportReady: {
+        name: "出口准备就绪",
+        description: "供应商表示具有国际运输经验。"
+      }
+    },
+    rejected: {
+      title: "如果我的申请未获批准怎么办？",
+      content: "如果您的制造商申请无法根据提供的信息获得批准，我们可能会分享可以改进的反馈。您可以随时更新您的详细信息并重新提交申请。请注意，在应用程序过程中不需要付款，只有在批准后才会要求付款。",
+      reasons: "常见的重新提交原因：",
+      reason1: "信息不完整或不清楚",
+      reason2: "缺少业务详情",
+      reason3: "资料内容质量问题",
+      reason4: "信息不一致",
+      resubmit: "您可以解决问题并重新提交申请。如果最终无法批准。"
+    },
+    cta: {
+      title: "准备好接受审核了吗？",
+      subtitle: "加入 SourceNest，向全球买家展示您的工厂。",
+      viewPlans: "查看计划并开始使用",
+      readFaq: "阅读常见问题"
+    }
+  },
+
+  // ── Help Center ─────────────────────────────────────────────────────
+  help: {
+    hero: {
+      title: "我们如何帮助？",
+      subtitle: "查找常见问题的答案或联系我们的支持团队。",
+      searchPlaceholder: "搜索帮助文章..."
+    },
+    contactSupport: {
+      title: "仍需帮助？",
+      subtitle: "找不到您要找的内容？我们的支持团队随时准备帮助。",
+      contactButtonText: "联系支持",
+      faqButtonText: "查看常见问题"
+    },
+    browseCategoryTitle: "按类别浏览",
+    viewAllArticles: "查看所有文章",
+    popularArticlesTitle: "热门文章",
+    backToHelp: "返回帮助中心",
+    backToCategory: "返回 {category}",
+    wasHelpful: "这篇文章有帮助吗？",
+    contactSupportCta: "联系支持",
+    categories: {
+      buyers: {
+        title: "买家",
+        description: "了解如何搜索、比较和与供应商联系",
+        articles: {
+          searchSuppliers: {
+            title: "如何搜索供应商",
+            content: "找到合适的制造合作伙伴对您的业务成功至关重要。SourceNest 提供强大的搜索和过滤工具，帮助您发现全球评审过的供应商。",
+            steps: [
+              "使用主搜索栏输入产品名称、类别或关键词",
+              "应用过滤器按国家、行业、评审级别和最小订单量范围缩小结果",
+              "按相关性、评分或响应时间排序结果",
+              "单击供应商卡片查看详细资料",
+              "使用\"保存\"按钮为后续比较标记供应商"
+            ]
+          },
+          compareSave: {
+            title: "比较和保存供应商",
+            content: "我们的比较工具帮助您并排评估多个供应商，做出明智决定。",
+            steps: [
+              "单击任何供应商卡片上的心形图标保存它们",
+              "从您的仪表板访问已保存的供应商",
+              "选择最多 4 个供应商进行比较",
+              "查看功能、定价和认证的并排比较",
+              "导出比较报告供团队审查"
+            ]
+          },
+          sendMessages: {
+            title: "向工厂发送消息",
+            content: "与供应商的直接沟通是成功采购的关键。我们的消息系统使询问、谈判和建立关系变得容易。",
+            steps: [
+              "访问任何供应商资料并单击\"联系供应商\"",
+              "撰写清晰、详细的消息说明您的需求",
+              "附加相关文件，如规格或设计",
+              "在您的消息中心跟踪所有对话",
+              "启用通知以快速响应供应商回复"
+            ]
+          },
+          requestQuotes: {
+            title: "请求报价（RFQ）",
+            content: "请求报价（RFQ）系统可帮助您一次从多个供应商获得具有竞争力的报价。",
+            steps: [
+              "从主菜单或仪表板导航到\"提交 RFQ\"",
+              "填写产品详情、规格和需求",
+              "指定数量、目标价格和交货时间表",
+              "选择发送给特定供应商或广播给相关制造商",
+              "在您的仪表板中查看和比较传入的报价"
+            ]
+          },
+          manageDashboard: {
+            title: "管理您的买家仪表板",
+            content: "您的仪表板是 SourceNest 上所有采购活动的中央枢纽。",
+            steps: [
+              "查看您的活动 RFQ 及其状态",
+              "访问已保存的供应商和最近的搜索",
+              "管理与供应商的消息对话",
+              "跟踪订单历史和供应商互动",
+              "更新您的资料和通知偏好"
+            ]
+          },
+          createAccount: {
+            title: "如何创建买家账户",
+            content: "在 SourceNest 上创建买家账户是免费的，让您可以访问全球数千家评审过的供应商。",
+            steps: [
+              "单击主页上的\"注册\"或\"作为买家加入\"",
+              "输入您的电子邮件地址并创建安全密码",
+              "填写您的基本公司信息",
+              "通过确认链接验证您的电子邮件地址",
+              "完成您的买家资料以获得更好的供应商建议"
+            ]
+          },
+          sendRfq: {
+            title: "发送您的第一个 RFQ",
+            content: "了解如何创建和发送您的第一个报价请求，开始从制造商处获取报价。",
+            steps: [
+              "登录您的买家账户并转到\"提交 RFQ\"",
+              "选择最适合您需求的产品类别",
+              "详细描述您的产品需求",
+              "上传任何相关文件、图纸或规格",
+              "设置您的数量需求、目标价格和交货期望",
+              "查看并提交您的 RFQ 以从匹配的供应商处获取报价"
+            ]
+          }
+        }
+      },
+      manufacturers: {
+        title: "制造商",
+        description: "设置和管理您的工厂资料的指南",
+        articles: {
+          gettingStarted: {
+            title: "作为制造商入门",
+            content: "欢迎来到 SourceNest！本指南将帮助您设置制造商账户并开始从全球买家接收询问。",
+            steps: [
+              "在注册期间选择\"制造商\"创建您的账户",
+              "使用准确的业务信息完成您的公司资料",
+              "上传具有详细规格的产品目录",
+              "申请审核以建立与买家的信任",
+              "优化您的资料以提高搜索可见性"
+            ]
+          },
+          createProfile: {
+            title: "创建您的公司资料",
+            content: "完整、引人注目的资料对于吸引优质买家至关重要。以下是创建有效制造商资料的方法。",
+            steps: [
+              "添加您的官方公司名称和注册详情",
+              "选择您的主要行业和产品类别",
+              "上传您的工厂和产品的高质量照片",
+              "撰写详细的公司描述，突出您的优势",
+              "列出您的认证、出口市场和生产能力"
+            ]
+          },
+          uploadProducts: {
+            title: "上传产品",
+            content: "有效展示您的产品以吸引买家询问。",
+            steps: [
+              "转到仪表板 > 产品 > 添加产品",
+              "输入产品名称、类别和详细规格",
+              "上传多张高质量的产品图像",
+              "设置价格范围、最小订单量和交货时间",
+              "添加相关认证和自定义选项"
+            ]
+          },
+          manageInquiries: {
+            title: "管理询问和 RFQ",
+            content: "有效处理询问是将潜在客户转换为客户的关键。",
+            steps: [
+              "定期监控您的询问仪表板",
+              "在 24 小时内回复新 RFQ 以获得最佳效果",
+              "提供具有清晰定价明细的详细报价",
+              "如果需求不清楚，提出澄清问题",
+              "专业跟进以建立关系"
+            ]
+          },
+          analytics: {
+            title: "理解您的分析",
+            content: "使用分析来优化您的存在并提高转换率。",
+            steps: [
+              "检查资料浏览次数和访问者人口统计",
+              "监控产品询问率和热门项目",
+              "跟踪响应时间和消息统计",
+              "分析从询问到报价的转换率",
+              "识别趋势并相应调整您的策略"
+            ]
+          },
+          profileSetup: {
+            title: "设置您的制造商资料",
+            content: "优化良好的制造商资料是您在 SourceNest 上的数字展示厅。以下是为最大可见性和买家参与度设置它的方法。",
+            steps: [
+              "导航到您的仪表板并单击\"编辑资料\"",
+              "上传专业的公司徽标和横幅图像",
+              "撰写引人注目的公司描述（建议 300-500 字）",
+              "添加您的工厂照片、生产线图像和证书",
+              "填写所有业务详情：成立年份、员工数量、年收入",
+              "列出您的主要产品、出口市场和认证",
+              "准确设置您的响应时间和最小订单值"
+            ]
+          }
+        }
+      },
+      billing: {
+        title: "账单和计划",
+        description: "关于订阅、付款和发票的信息",
+        articles: {
+          subscriptionPlans: {
+            title: "了解订阅计划",
+            content: "SourceNest 为制造商提供灵活的订阅计划。选择最适合您业务需求的计划。",
+            steps: [
+              "查看定价页面上的所有可用计划",
+              "比较功能、产品限制和支持级别",
+              "新制造商的 Starter 计划",
+              "具有高级分析和优先支持的 Growth 计划",
+              "具有专业账户管理的 Enterprise 计划"
+            ]
+          },
+          paymentMethods: {
+            title: "付款方式和账单",
+            content: "我们接受多种付款方式，使您的订阅轻松便捷。",
+            steps: [
+              "在结账时选择您的付款方式",
+              "接受信用卡、借记卡或 PayPal",
+              "发票会自动生成并发送到您的电子邮件",
+              "在您的账户设置中更新您的付款方式",
+              "随时取消或更改您的计划"
+            ]
+          },
+          invoices: {
+            title: "管理发票和收据",
+            content: "随时访问您的账单历史并下载发票。",
+            steps: [
+              "转到设置 > 账单",
+              "查看您的完整发票历史记录",
+              "下载发票的 PDF 副本供您记录",
+              "打印或通过电子邮件发送发票给您的会计部门",
+              "如果需要质疑任何费用，请联系支持"
+            ]
+          }
+        }
+      }
+    }
+  },
+
+  // ── About Page ──────────────────────────────────────────────────────
+  about: {
+    hero: {
+      title: "让全球采购运作更顺利",
+      subtitle: "SourceNest 致力于改变企业寻找和连接制造合作伙伴的方式。"
+    },
+    story: {
+      title: "我们的故事",
+      p1: "全球采购一直充满挑战。买方难以找到可靠的供应商、审查其合法性并有效跨境沟通。尤其是质量导向的制造商，很难在众多选择中脱颖而出并接触到认真的买方。",
+      p2: "SourceNest 源于一个简单的想法：如果有一个平台只展示经过审核和批准的制造商呢？一个买方可以确信每个供应商在上市前都经过信息审查的地方？",
+      p3: "我们建立了 SourceNest 来实现这一目标。通过要求对每个制造商进行管理员批准并为买方免费提供平台，我们创造了一个质量优先、信任成为每次联系基础的环境。",
+      p4: "如今，SourceNest 在 50 多个国家跨越 45 多个行业连接数千名买方与经过审查的制造商。我们很荣幸能够使全球贸易更加便利、透明和高效。"
+    },
+    stats: {
+      countries: "国家",
+      suppliers: "审查供应商",
+      products: "产品上市",
+      industries: "行业覆盖范围"
+    },
+    missionVision: {
+      missionTitle: "我们的使命",
+      missionDesc: "通过优质 B2B 平台连接以质量为先的买方和经过审查的制造商，使全球采购更加透明、高效和可信。",
+      visionTitle: "我们的愿景",
+      visionDesc: "一个寻找合适制造合作伙伴很简单、安全且成功的世界 — 无论地理位置、公司规模或行业如何。"
+    },
+    values: {
+      title: "我们的价值观",
+      subtitle: "指导我们一切行动的原则",
+      trust: {
+        title: "信任与透明",
+        description: "我们相信采购应该建立在信任的基础上。每个供应商都根据提交的信息进行审核，我们致力于维持平台质量。"
+      },
+      global: {
+        title: "全球可访问性",
+        description: "我们打破国际贸易的壁垒，使各种规模的企业更容易跨境连接。"
+      },
+      community: {
+        title: "社区优先",
+        description: "我们不仅在构建平台 — 我们在创建一个以质量为先的买方和制造商社区。"
+      },
+      innovation: {
+        title: "创新",
+        description: "我们通过智能功能不断改进平台，使采购更加高效和有效。"
+      }
+    },
+    difference: {
+      title: "为什么 SourceNest 与众不同",
+      reviewed: {
+        title: "仅审查的市场：",
+        description: "与任何人都可以上市的开放平台不同，SourceNest 上的每个制造商都经过基于提交信息的审核和批准过程。这意味着买方知道供应商已被筛选，制造商知道他们处于良好的公司中。"
+      },
+      free: {
+        title: "对买方免费：",
+        description: "我们相信买方应该无障碍获得优质采购工具。通过为买方免费提供平台，我们确保制造商的最大覆盖范围和采购专业人士的最大访问权限。"
+      },
+      nocommission: {
+        title: "无佣金模式：",
+        description: "我们不收取您交易的佣金。制造商仅支付订阅费，所有沟通和谈判直接在各方之间进行。"
+      },
+      premium: {
+        title: "优质专注：",
+        description: "我们不是试图成为最大的平台 — 我们试图成为最值得信赖的平台。质量优于数量是我们的指导原则。"
+      }
+    },
+    cta: {
+      title: "加入 SourceNest 社区",
+      subtitle: "无论您是在采购产品还是制造产品，我们都希望有您。",
+      buyerButton: "作为买方加入",
+      manufacturerButton: "作为制造商加入"
     }
   }
 } as const;
