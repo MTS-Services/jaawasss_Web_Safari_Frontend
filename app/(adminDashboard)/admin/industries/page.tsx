@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Swal from "sweetalert2"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -336,7 +337,12 @@ export default function AdminIndustriesPage() {
     void (async () => {
       const result = await toggleAdminCategoryFeatured(String(id))
       if (!result.success) {
-        setErrorMessage(result.message || "Failed to toggle main category state.")
+        await Swal.fire({
+          title: "Error",
+          text: result.message || "Failed to toggle main category state.",
+          icon: "error",
+          confirmButtonText: "OK",
+        })
         return
       }
       await loadFromBackend()

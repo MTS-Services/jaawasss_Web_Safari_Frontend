@@ -312,7 +312,7 @@ export async function toggleAdminCategoryFeatured(
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to toggle featured status",
+      message: getApiErrorMessage(error, "Failed to toggle featured status"),
       data: null,
     }
   }
