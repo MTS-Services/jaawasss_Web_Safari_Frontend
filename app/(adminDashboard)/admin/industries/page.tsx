@@ -270,11 +270,14 @@ export default function AdminIndustriesPage() {
   // Industry CRUD
   const handleAddIndustry = () => {
     void (async () => {
+      const slugUsed = (newIndustry.slug || "").trim() || slugify(newIndustry.name)
+      const wantFeatured = newIndustry.featured
+
       const result = await createAdminCategory({
-        name: newIndustry.name,
-        slug: newIndustry.slug || slugify(newIndustry.name),
+        name: newIndustry.name.trim(),
+        slug: slugUsed,
         description: newIndustry.description,
-        featured: newIndustry.featured,
+        featured: false,
         color: newIndustry.color,
         title_color: newIndustry.title_color,
         description_color: newIndustry.description_color,
@@ -289,12 +292,72 @@ export default function AdminIndustriesPage() {
         return
       }
 
-      setNewIndustry({ 
-        name: "", 
-        description: "", 
-        featured: false, 
-        slug: "", 
-        color: "#ffffff", 
+      if (wantFeatured) {
+        let categoryId: string | null = result.data
+        if (!categoryId) {
+          const list = await getAdminCategories({ perPage: 100 })
+          if (list.success) {
+            const norm = (s: string) => s.toLowerCase().trim()
+            const su = norm(slugUsed)
+            const row =
+              list.data.find((c) => norm(c.slug || "") === su) ||
+              list.data.find((c) => norm(slugify(c.name || "")) === su)
+            categoryId = row ? String(row.id) : null
+          }
+        }
+        if (categoryId) {
+          const tgl = await toggleAdminCategoryFeatured(categoryId)
+          if (!tgl.success) {
+            setNewIndustry({
+              name: "",
+              description: "",
+              featured: false,
+              slug: "",
+              color: "#ffffff",
+              title_color: "#000000",
+              description_color: "#64748b",
+              btn_color: "#3b82f6",
+              supplier_count_color: "#64748b",
+              icon: "",
+              icon_color: "#000000",
+            })
+            setShowAddIndustryDialog(false)
+            await loadFromBackend()
+            setErrorMessage(
+              tgl.message ||
+                "Industry was created but could not be set as a main/homepage category (for example, the limit of 8 may already be reached)."
+            )
+            return
+          }
+        } else {
+          setNewIndustry({
+            name: "",
+            description: "",
+            featured: false,
+            slug: "",
+            color: "#ffffff",
+            title_color: "#000000",
+            description_color: "#64748b",
+            btn_color: "#3b82f6",
+            supplier_count_color: "#64748b",
+            icon: "",
+            icon_color: "#000000",
+          })
+          setShowAddIndustryDialog(false)
+          await loadFromBackend()
+          setErrorMessage(
+            'Industry was created. Use the row menu "Add to Main Categories" if you still want it on the homepage.'
+          )
+          return
+        }
+      }
+
+      setNewIndustry({
+        name: "",
+        description: "",
+        featured: false,
+        slug: "",
+        color: "#ffffff",
         title_color: "#000000",
         description_color: "#64748b",
         btn_color: "#3b82f6",
@@ -895,7 +958,27 @@ export default function AdminIndustriesPage() {
       </div>
 
       {/* Add Industry Dialog */}
-      <Dialog open={showAddIndustryDialog} onOpenChange={setShowAddIndustryDialog}>
+      <Dialog
+        open={showAddIndustryDialog}
+        onOpenChange={(open) => {
+          setShowAddIndustryDialog(open)
+          if (open) {
+            setNewIndustry({
+              name: "",
+              description: "",
+              featured: false,
+              slug: "",
+              color: "#ffffff",
+              title_color: "#000000",
+              description_color: "#64748b",
+              btn_color: "#3b82f6",
+              supplier_count_color: "#64748b",
+              icon: "",
+              icon_color: "#000000",
+            })
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle>Add New Industry</DialogTitle>
@@ -1057,9 +1140,13 @@ export default function AdminIndustriesPage() {
                 <div>
                   <Label className="text-base">Featured</Label>
                   <p className="text-xs text-muted-foreground">Show this industry on the homepage</p>
+                  {featuredCount >= 8 && (
+                    <p className="text-xs text-amber-700 mt-1">There are already 8 main categories. Turn off an existing one before adding another.</p>
+                  )}
                 </div>
-                <Switch 
+                <Switch
                   checked={newIndustry.featured}
+                  disabled={featuredCount >= 8}
                   onCheckedChange={(checked) => setNewIndustry({ ...newIndustry, featured: checked })}
                 />
               </div>

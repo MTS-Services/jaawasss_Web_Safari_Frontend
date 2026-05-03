@@ -41,6 +41,27 @@ interface ApiResult<T> {
   data: T
 }
 
+/** Parse Laravel-style create response for a category id. */
+function extractCreatedCategoryId(payload: unknown): string | null {
+  if (payload == null || typeof payload !== "object") return null
+  const root = payload as Record<string, unknown>
+
+  const idFrom = (obj: unknown): string | null => {
+    if (obj == null || typeof obj !== "object") return null
+    const id = (obj as Record<string, unknown>).id
+    if (typeof id === "number" || typeof id === "string") return String(id)
+    return null
+  }
+
+  const fromData = idFrom(root.data)
+  if (fromData) return fromData
+  if (Array.isArray(root.data) && root.data.length > 0) {
+    const first = idFrom(root.data[0])
+    if (first) return first
+  }
+  return idFrom(root)
+}
+
 function readArray(payload: unknown): unknown[] {
   if (Array.isArray(payload)) return payload
   if (!payload || typeof payload !== "object") return []
@@ -214,6 +235,31 @@ export async function getPublicCategories(params?: { perPage?: number; page?: nu
   }
 }
 
+/**
+ * Reads Laravel pagination `meta.last_page` from a `/categories` JSON body so we can
+ * fetch every page even when the server caps `per_page` below our requested value.
+ */
+function parseCategoriesLastPage(payload: unknown): number | null {
+  if (!payload || typeof payload !== "object") {
+    return null
+  }
+  const root = payload as Record<string, unknown>
+  const meta = root.meta
+  if (!meta || typeof meta !== "object") {
+    return null
+  }
+  const m = meta as Record<string, unknown>
+  const lp = m.last_page
+  if (typeof lp === "number" && Number.isFinite(lp) && lp >= 1) {
+    return Math.floor(lp)
+  }
+  if (typeof lp === "string") {
+    const n = Number.parseInt(lp, 10)
+    return Number.isFinite(n) && n >= 1 ? n : null
+  }
+  return null
+}
+
 /** Fetches every page from `GET /categories` and merges results (Laravel-style pagination). */
 export async function getAllPublicCategories(options?: { perPage?: number }): Promise<ApiResult<BackendCategory[]>> {
   const perPage = typeof options?.perPage === "number" ? options.perPage : 50
@@ -221,17 +267,41 @@ export async function getAllPublicCategories(options?: { perPage?: number }): Pr
   let page = 1
 
   for (;;) {
-    const batch = await getPublicCategories({ perPage, page })
-    if (!batch.success) {
+    try {
+      const response = await publicApiClient.get("/categories", {
+        params: { per_page: perPage, page },
+      })
+      const payload = response.data
+      const batch = normalizeCategories(payload)
+      merged.push(...batch)
+
+      const lastPage = parseCategoriesLastPage(payload)
+      if (lastPage != null) {
+        if (page >= lastPage || batch.length === 0) {
+          break
+        }
+        page += 1
+        if (page > 200) {
+          break
+        }
+        continue
+      }
+
+      if (batch.length === 0) {
+        break
+      }
+      if (batch.length < perPage) {
+        break
+      }
+      page += 1
+      if (page > 200) {
+        break
+      }
+    } catch (error) {
       return page === 1
-        ? { success: false, message: batch.message, data: [] }
+        ? { success: false, message: getApiErrorMessage(error, "Failed to fetch categories."), data: [] }
         : { success: true, data: merged }
     }
-    if (!batch.data.length) break
-    merged.push(...batch.data)
-    if (batch.data.length < perPage) break
-    page += 1
-    if (page > 200) break
   }
 
   return { success: true, data: merged }
@@ -248,11 +318,12 @@ export async function createAdminCategory(input: {
   btn_color?: string
   supplier_color?: string
   supplier_count_color?: string
+  /** Omit or false: create as non-featured (recommended). Use `toggleAdminCategoryFeatured` after create to avoid max-featured validation bugs on create. */
   featured?: boolean
   icon?: string
   icon_color?: string
   icon_url?: string
-}): Promise<ApiResult<null>> {
+}): Promise<ApiResult<string | null>> {
   try {
     const form = new FormData()
     form.append("name", input.name)
@@ -265,13 +336,17 @@ export async function createAdminCategory(input: {
     if (descColor) form.append("desc_color", descColor)
     if (input.btn_color) form.append("btn_color", input.btn_color)
     if (supplierColor) form.append("supplier_color", supplierColor)
-    form.append("featured", input.featured ? "1" : "0")
+    if (input.featured !== undefined) {
+      form.append("featured", input.featured ? "1" : "0")
+    } else {
+      form.append("featured", "0")
+    }
     if (input.icon) form.append("icon", input.icon)
     if (input.icon_color !== undefined) form.append("icon_color", input.icon_color || "")
     if (input.icon_url) form.append("icon_url", input.icon_url)
 
-    await apiClient.post("/admin/categories/create", form)
-    return { success: true, data: null }
+    const response = await apiClient.post("/admin/categories/create", form)
+    return { success: true, data: extractCreatedCategoryId(response.data) }
   } catch (error) {
     return {
       success: false,

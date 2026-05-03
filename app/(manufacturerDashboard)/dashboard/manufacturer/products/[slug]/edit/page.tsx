@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { use, useEffect, useMemo, useRef, useState } from "react"
 import Swal from "sweetalert2"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -32,12 +32,18 @@ import {
   Loader2,
 } from "lucide-react"
 import { toast } from "sonner"
-import { getAllPublicCategories, getAdminSubcategories, type BackendCategory, type BackendSubcategory } from "@/lib/api/categories"
 import {
-  buildManufacturerProductCreateFormData,
-  createManufacturerProduct,
+  getAllPublicCategories,
+  getAdminSubcategories,
+  type BackendCategory,
+  type BackendSubcategory,
+} from "@/lib/api/categories"
+import {
+  buildManufacturerProductUpdateFormData,
+  getManufacturerProductBySlug,
   getManufacturerCurrencies,
   getManufacturerShippingMethods,
+  updateManufacturerProduct,
 } from "@/lib/api/manufacturer-products"
 import type {
   ManufacturerCurrencyOption,
@@ -58,7 +64,6 @@ const units = [
   { value: "pallets", label: "Pallets" },
 ]
 
-/** Used when GET /currencies fails — ids align with typical Jaawass currency rows. */
 const FALLBACK_CURRENCIES: ManufacturerCurrencyOption[] = [
   { id: 1, code: "USD", name: "US Dollar", symbol: "$" },
   { id: 2, code: "EUR", name: "Euro", symbol: "€" },
@@ -87,52 +92,72 @@ function packagingTypeLabel(value: string): string {
   return row?.label ?? (value.trim() || "Standard Export Packaging")
 }
 
+function reversePackagingType(label: string): string {
+  const row = packagingTypes.find(
+    (t) => t.label.toLowerCase() === label.toLowerCase()
+  )
+  return row?.value ?? "standard"
+}
+
 function unitDisplayLabel(unitValue: string): string {
   const row = units.find((u) => u.value === unitValue)
   return row?.label ?? unitValue
 }
 
+function reverseUnit(label: string): string {
+  const row = units.find(
+    (u) => u.label.toLowerCase() === label.toLowerCase()
+  )
+  return row?.value ?? "pieces"
+}
+
 function productionDurationLabel(period: string): string {
-  if (period === "day") {
-    return "Per Day"
-  }
-  if (period === "week") {
-    return "Per Week"
-  }
+  if (period === "day") return "Per Day"
+  if (period === "week") return "Per Week"
   return "Per Month"
+}
+
+function reverseProductionDuration(label: string): string {
+  const l = label.toLowerCase()
+  if (l.includes("day")) return "day"
+  if (l.includes("week")) return "week"
+  return "month"
 }
 
 type ProductImageSlot = { file: File; url: string }
 
-export default function AddProductPage() {
+export default function EditProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = use(params)
   const router = useRouter()
   const imageInputRef = useRef<HTMLInputElement>(null)
   const brochureInputRef = useRef<HTMLInputElement>(null)
 
+  const [loadingProduct, setLoadingProduct] = useState(true)
+  const [productId, setProductId] = useState<number | null>(null)
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [imageSlots, setImageSlots] = useState<ProductImageSlot[]>([])
-  const [specifications, setSpecifications] = useState([
-    { key: "", value: "" }
-  ])
-
+  const [newImageSlots, setNewImageSlots] = useState<ProductImageSlot[]>([])
+  const [specifications, setSpecifications] = useState([{ key: "", value: "" }])
   const [categories, setCategories] = useState<BackendCategory[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [allSubcategories, setAllSubcategories] = useState<BackendSubcategory[]>([])
   const [currencyOptions, setCurrencyOptions] = useState<ManufacturerCurrencyOption[]>([])
   const [shippingOptions, setShippingOptions] = useState<ManufacturerSelectOption[]>([])
-
   const [brochureFile, setBrochureFile] = useState<File | null>(null)
+  const [keyFeatures, setKeyFeatures] = useState<string[]>([""])
+  const [customizationOptions, setCustomizationOptions] = useState<string[]>([""])
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    /** Parent category id from `GET /categories` */
     categoryId: "",
-    /** Sub-category id (`sub_category_id` for product create) */
     subCategoryId: "",
     priceMin: "",
     priceMax: "",
-    /** API: numeric → currency_id; ISO code → currency_code (see GET /currencies). */
     currencyId: "",
     moq: "",
     moqUnit: "pieces",
@@ -145,28 +170,93 @@ export default function AddProductPage() {
     packagingDimensions: "",
     packagingWeight: "",
     packagingCostPerUnit: "",
-    unitsPerCarton: "",
-    /** Shipping method ids from GET /shipping/methods */
-    shippingMethodIds: [] as string[],
     portOfLoading: "",
+    shippingMethodIds: [] as string[],
     sampleAvailable: false,
     samplePrice: "",
     customization: false,
     customizationDetails: "",
     keywords: "",
-    status: "draft",
+    status: "draft" as ManufacturerProductStatus,
   })
-  const [keyFeatures, setKeyFeatures] = useState<string[]>([""])
-  const [customizationOptions, setCustomizationOptions] = useState<string[]>([""])
 
+  // Load product
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      setLoadingProduct(true)
+      const res = await getManufacturerProductBySlug(slug)
+      if (cancelled) return
+      setLoadingProduct(false)
+      if (!res.success || !res.data) {
+        toast.error(res.message ?? "Could not load product.")
+        router.push("/dashboard/manufacturer/products")
+        return
+      }
+      const d = res.data
+      setProductId(d.id)
+
+      // Existing images
+      const imgUrls = d.images
+        .map((img) => img.url ?? img.file_path ?? img.path ?? "")
+        .filter(Boolean)
+      setExistingImageUrls(imgUrls)
+
+      // Specifications
+      if (d.specifications.length > 0) {
+        setSpecifications(d.specifications.map((s) => ({ key: s.title, value: s.value })))
+      }
+
+      // Key features
+      if (d.keyFeatures.length > 0) {
+        setKeyFeatures(d.keyFeatures)
+      }
+
+      // Customize options
+      if (d.customizeOptions.length > 0) {
+        setCustomizationOptions(d.customizeOptions)
+      }
+
+      setFormData({
+        name: d.name,
+        description: d.description,
+        categoryId: d.categoryId != null ? String(d.categoryId) : "",
+        subCategoryId: d.subCategoryId != null ? String(d.subCategoryId) : "",
+        priceMin: d.minPrice,
+        priceMax: d.maxPrice,
+        currencyId: d.currencyId != null ? String(d.currencyId) : "",
+        moq: d.minimumOrderQuantity,
+        moqUnit: reverseUnit(d.unit),
+        leadTime: d.leadTime,
+        supplyCapacity: d.productionCapacity,
+        supplyUnit: reverseUnit(d.productionUnit),
+        supplyPeriod: reverseProductionDuration(d.productionDuration),
+        packaging: reversePackagingType(d.packagingType),
+        packagingDetails: d.packagingDescription,
+        packagingDimensions: d.packagingDimensions,
+        packagingWeight: d.packagingWeight,
+        packagingCostPerUnit: d.packagingCostPerUnit,
+        portOfLoading: d.portOfLoading,
+        shippingMethodIds: d.shippingMethodIds,
+        sampleAvailable: d.sampleAvailable,
+        samplePrice: d.samplePrice,
+        customization: d.customizationAvailable,
+        customizationDetails: d.customizationDetail,
+        keywords: d.keywords.join(", "),
+        status: d.status,
+      })
+    }
+    void load()
+    return () => { cancelled = true }
+  }, [slug, router])
+
+  // Load categories
   useEffect(() => {
     let cancelled = false
     async function loadCategories() {
       setCategoriesLoading(true)
       const res = await getAllPublicCategories({ perPage: 50 })
-      if (cancelled) {
-        return
-      }
+      if (cancelled) return
       setCategoriesLoading(false)
       if (!res.success) {
         toast.error(res.message ?? "Could not load categories.")
@@ -179,11 +269,10 @@ export default function AddProductPage() {
       setCategories(sorted)
     }
     void loadCategories()
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [])
 
+  // Load meta (currencies + shipping)
   useEffect(() => {
     let cancelled = false
     async function loadMeta() {
@@ -191,38 +280,22 @@ export default function AddProductPage() {
         getManufacturerCurrencies(),
         getManufacturerShippingMethods(),
       ])
-      if (cancelled) {
-        return
-      }
-      const curOpts =
-        cur.success && cur.data.length > 0 ? cur.data : FALLBACK_CURRENCIES
+      if (cancelled) return
+      const curOpts = cur.success && cur.data.length > 0 ? cur.data : FALLBACK_CURRENCIES
       setCurrencyOptions(curOpts)
       setShippingOptions(ship.success ? ship.data : [])
     }
     void loadMeta()
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [])
 
-  useEffect(() => {
-    if (!currencyOptions.length) {
-      return
-    }
-    setFormData((prev) =>
-      prev.currencyId ? prev : { ...prev, currencyId: currencySelectValue(currencyOptions[0]) }
-    )
-  }, [currencyOptions])
-
-  // Fetch all subcategories once and filter by selected category
+  // Load subcategories
   useEffect(() => {
     let cancelled = false
     async function loadSubcategories() {
       const res = await getAdminSubcategories()
       if (cancelled) return
-      if (res.success) {
-        setAllSubcategories(res.data)
-      }
+      if (res.success) setAllSubcategories(res.data)
     }
     void loadSubcategories()
     return () => { cancelled = true }
@@ -230,33 +303,21 @@ export default function AddProductPage() {
 
   const selectedCategory = categories.find((c) => String(c.id) === formData.categoryId)
   const subcategoriesForCategory = useMemo(() => {
-    // First try subcategories fetched from the dedicated endpoint
     const fromApi = allSubcategories.filter(
-      (s) => String(s.industry_id) === formData.categoryId || String(s.category_id) === formData.categoryId
+      (s) =>
+        String(s.industry_id) === formData.categoryId ||
+        String(s.category_id) === formData.categoryId
     )
     if (fromApi.length > 0) {
-      return [...fromApi].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }))
+      return [...fromApi].sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+      )
     }
-    // Fallback to nested subcategories from GET /categories
     const subs = selectedCategory?.subcategories ?? []
     return [...subs].sort((a, b) =>
       a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
     )
   }, [selectedCategory, allSubcategories, formData.categoryId])
-
-  const handleAddSpecification = () => {
-    setSpecifications([...specifications, { key: "", value: "" }])
-  }
-
-  const handleRemoveSpecification = (index: number) => {
-    setSpecifications(specifications.filter((_, i) => i !== index))
-  }
-
-  const handleSpecificationChange = (index: number, field: "key" | "value", value: string) => {
-    const updated = [...specifications]
-    updated[index][field] = value
-    setSpecifications(updated)
-  }
 
   const toggleShippingMethod = (id: string) => {
     setFormData((prev) => ({
@@ -270,14 +331,10 @@ export default function AddProductPage() {
   const onPickImages = (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(e.target.files ?? [])
     e.target.value = ""
-    if (!picked.length) {
-      return
-    }
-    setImageSlots((prev) => {
-      const cap = 10 - prev.length
-      if (cap <= 0) {
-        return prev
-      }
+    if (!picked.length) return
+    setNewImageSlots((prev) => {
+      const cap = 10 - existingImageUrls.length - prev.length
+      if (cap <= 0) return prev
       const next = [...prev]
       for (const file of picked.slice(0, cap)) {
         next.push({ file, url: URL.createObjectURL(file) })
@@ -286,37 +343,28 @@ export default function AddProductPage() {
     })
   }
 
-  const removeImageAt = (index: number) => {
-    setImageSlots((prev) => {
+  const removeNewImageAt = (index: number) => {
+    setNewImageSlots((prev) => {
       const row = prev[index]
-      if (row) {
-        URL.revokeObjectURL(row.url)
-      }
+      if (row) URL.revokeObjectURL(row.url)
       return prev.filter((_, i) => i !== index)
     })
   }
 
   const handleSubmit = async (e: React.FormEvent, saveAsDraft = false) => {
     e.preventDefault()
+    if (!productId) return
     if (!formData.categoryId.trim()) {
       toast.error("Please select a category.")
-      return
-    }
-    if (subcategoriesForCategory.length > 0 && !formData.subCategoryId.trim()) {
-      toast.error("Please select a sub-category.")
       return
     }
     if (!formData.currencyId.trim()) {
       toast.error("Please select a currency.")
       return
     }
-    if (imageSlots.length === 0) {
-      toast.error("Add at least one product image.")
-      return
-    }
 
     setIsSubmitting(true)
-    const status: ManufacturerProductStatus = saveAsDraft ? "draft" : "active"
+    const status: ManufacturerProductStatus = saveAsDraft ? "draft" : formData.status
     const keywords = formData.keywords
       .split(",")
       .map((s) => s.trim())
@@ -327,7 +375,7 @@ export default function AddProductPage() {
       .map((s) => ({ title: s.key.trim(), value: s.value.trim() }))
       .filter((s) => s.title && s.value)
 
-    const fd = buildManufacturerProductCreateFormData({
+    const fd = buildManufacturerProductUpdateFormData({
       name: formData.name,
       description: formData.description,
       categoryId: formData.categoryId,
@@ -357,11 +405,11 @@ export default function AddProductPage() {
       keywords,
       keyFeatures: keyFeatureLines,
       specifications: specRows,
-      imageFiles: imageSlots.map((s) => s.file),
+      imageFiles: newImageSlots.map((s) => s.file),
       brochureFile,
     })
 
-    const res = await createManufacturerProduct(fd)
+    const res = await updateManufacturerProduct(productId, fd)
     setIsSubmitting(false)
     if (!res.success) {
       const errorLines: string[] = []
@@ -373,18 +421,29 @@ export default function AddProductPage() {
         }
       }
       await Swal.fire({
-        title: "Failed to Create Product",
+        title: "Failed to Update Product",
         html: errorLines.length
           ? `<div style="text-align:left;line-height:1.8">${errorLines.join("<br/>")}</div>`
-          : res.message ?? "Could not create product.",
+          : res.message ?? "Could not update product.",
         icon: "error",
         confirmButtonText: "OK",
       })
       return
     }
-    toast.success(res.message ?? "Product created.")
+    toast.success(res.message ?? "Product updated.")
     router.push("/dashboard/manufacturer/products")
   }
+
+  if (loadingProduct) {
+    return (
+      <div className="flex items-center justify-center py-24 text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        Loading product…
+      </div>
+    )
+  }
+
+  const totalImages = existingImageUrls.length + newImageSlots.length
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 pb-12">
@@ -396,10 +455,8 @@ export default function AddProductPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="font-serif text-2xl font-medium text-foreground">Add New Product</h1>
-          <p className="mt-1 text-muted-foreground">
-            Fill in the details to list your product
-          </p>
+          <h1 className="font-serif text-2xl font-medium text-foreground">Edit Product</h1>
+          <p className="mt-1 text-muted-foreground">Update your product details</p>
         </div>
       </div>
 
@@ -435,17 +492,11 @@ export default function AddProductPage() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe your product in detail, including key features and benefits..."
-                className="mt-2 min-h-[120px]"
+                placeholder="Describe your product in detail…"
+                className="mt-2 min-h-30"
                 required
               />
             </div>
-
-            <p className="text-xs text-muted-foreground">
-              Data from GET /categories: the first list is each top-level category (maps to category_id on
-              create). The second list is that category’s sub_categories from the API (maps to
-              sub_category_id).
-            </p>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
@@ -453,11 +504,7 @@ export default function AddProductPage() {
                 <Select
                   value={formData.categoryId || undefined}
                   onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      categoryId: value,
-                      subCategoryId: "",
-                    })
+                    setFormData({ ...formData, categoryId: value, subCategoryId: "" })
                   }
                   disabled={categoriesLoading || categories.length === 0}
                 >
@@ -483,12 +530,10 @@ export default function AddProductPage() {
               </div>
 
               <div>
-                <Label htmlFor="subcategory">Sub-category *</Label>
+                <Label htmlFor="subcategory">Sub-category</Label>
                 <Select
                   value={formData.subCategoryId || undefined}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, subCategoryId: value })
-                  }
+                  onValueChange={(value) => setFormData({ ...formData, subCategoryId: value })}
                   disabled={!formData.categoryId || subcategoriesForCategory.length === 0}
                 >
                   <SelectTrigger id="subcategory" className="mt-2">
@@ -497,7 +542,7 @@ export default function AddProductPage() {
                         !formData.categoryId
                           ? "Select a category first"
                           : subcategoriesForCategory.length === 0
-                            ? "No sub-categories for this category"
+                            ? "No sub-categories"
                             : "Select sub-category"
                       }
                     />
@@ -512,6 +557,25 @@ export default function AddProductPage() {
                 </Select>
               </div>
             </div>
+
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, status: value as ManufacturerProductStatus })
+                }
+              >
+                <SelectTrigger id="status" className="mt-2 max-w-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
@@ -523,7 +587,9 @@ export default function AddProductPage() {
             </div>
             <div>
               <h2 className="font-semibold text-foreground">Product Images</h2>
-              <p className="text-sm text-muted-foreground">Upload up to 10 high-quality images (required)</p>
+              <p className="text-sm text-muted-foreground">
+                Existing images are kept. Upload additional images below.
+              </p>
             </div>
           </div>
 
@@ -537,29 +603,46 @@ export default function AddProductPage() {
           />
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {imageSlots.map((slot, index) => (
+            {/* Existing images (read-only) */}
+            {existingImageUrls.map((url, index) => (
               <div
-                key={`${slot.url}-${index}`}
+                key={`existing-${index}`}
                 className="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt="" className="h-full w-full object-cover" />
+                <span className="absolute bottom-1 left-1 rounded bg-black/50 px-1 text-[10px] text-white">
+                  saved
+                </span>
+              </div>
+            ))}
+
+            {/* New image uploads */}
+            {newImageSlots.map((slot, index) => (
+              <div
+                key={`new-${slot.url}-${index}`}
+                className="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={slot.url} alt="" className="h-full w-full object-cover" />
                 <button
                   type="button"
-                  onClick={() => removeImageAt(index)}
+                  onClick={() => removeNewImageAt(index)}
                   className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
             ))}
-            {imageSlots.length < 10 && (
+
+            {totalImages < 10 && (
               <button
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
                 className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/50 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
               >
                 <Upload className="h-6 w-6" />
-                <span className="text-xs">Upload</span>
+                <span className="text-xs">Add more</span>
               </button>
             )}
           </div>
@@ -585,7 +668,9 @@ export default function AddProductPage() {
               <div>
                 <Label htmlFor="priceMin">Price Min *</Label>
                 <div className="relative mt-2">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
                   <Input
                     id="priceMin"
                     type="number"
@@ -602,7 +687,9 @@ export default function AddProductPage() {
               <div>
                 <Label htmlFor="priceMax">Price Max *</Label>
                 <div className="relative mt-2">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
                   <Input
                     id="priceMax"
                     type="number"
@@ -650,8 +737,8 @@ export default function AddProductPage() {
                     placeholder="100"
                     required
                   />
-                  <Select 
-                    value={formData.moqUnit} 
+                  <Select
+                    value={formData.moqUnit}
                     onValueChange={(value) => setFormData({ ...formData, moqUnit: value })}
                   >
                     <SelectTrigger className="w-32">
@@ -692,8 +779,8 @@ export default function AddProductPage() {
                   onChange={(e) => setFormData({ ...formData, supplyCapacity: e.target.value })}
                   placeholder="10000"
                 />
-                <Select 
-                  value={formData.supplyUnit} 
+                <Select
+                  value={formData.supplyUnit}
                   onValueChange={(value) => setFormData({ ...formData, supplyUnit: value })}
                 >
                   <SelectTrigger className="w-32">
@@ -707,8 +794,8 @@ export default function AddProductPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Select 
-                  value={formData.supplyPeriod} 
+                <Select
+                  value={formData.supplyPeriod}
                   onValueChange={(value) => setFormData({ ...formData, supplyPeriod: value })}
                 >
                   <SelectTrigger className="w-32">
@@ -743,13 +830,21 @@ export default function AddProductPage() {
                 <Input
                   placeholder="Specification (e.g., Material)"
                   value={spec.key}
-                  onChange={(e) => handleSpecificationChange(index, "key", e.target.value)}
+                  onChange={(e) => {
+                    const updated = [...specifications]
+                    updated[index].key = e.target.value
+                    setSpecifications(updated)
+                  }}
                   className="flex-1"
                 />
                 <Input
                   placeholder="Value (e.g., Stainless Steel)"
                   value={spec.value}
-                  onChange={(e) => handleSpecificationChange(index, "value", e.target.value)}
+                  onChange={(e) => {
+                    const updated = [...specifications]
+                    updated[index].value = e.target.value
+                    setSpecifications(updated)
+                  }}
                   className="flex-1"
                 />
                 {specifications.length > 1 && (
@@ -757,7 +852,7 @@ export default function AddProductPage() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleRemoveSpecification(index)}
+                    onClick={() => setSpecifications(specifications.filter((_, i) => i !== index))}
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -768,7 +863,7 @@ export default function AddProductPage() {
               type="button"
               variant="outline"
               size="sm"
-              onClick={handleAddSpecification}
+              onClick={() => setSpecifications([...specifications, { key: "", value: "" }])}
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -785,7 +880,9 @@ export default function AddProductPage() {
             </div>
             <div>
               <h2 className="font-semibold text-foreground">Key Features</h2>
-              <p className="text-sm text-muted-foreground">Highlight the main selling points of your product</p>
+              <p className="text-sm text-muted-foreground">
+                Highlight the main selling points of your product
+              </p>
             </div>
           </div>
 
@@ -793,7 +890,7 @@ export default function AddProductPage() {
             {keyFeatures.map((feature, index) => (
               <div key={index} className="flex gap-3">
                 <Input
-                  placeholder={`Feature ${index + 1} (e.g., "Active Noise Cancellation")`}
+                  placeholder={`Feature ${index + 1}`}
                   value={feature}
                   onChange={(e) => {
                     const updated = [...keyFeatures]
@@ -824,9 +921,6 @@ export default function AddProductPage() {
               <Plus className="h-4 w-4" />
               Add Feature
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Add up to 10 key features that make your product stand out
-            </p>
           </div>
         </div>
 
@@ -838,7 +932,9 @@ export default function AddProductPage() {
             </div>
             <div>
               <h2 className="font-semibold text-foreground">Customization Options</h2>
-              <p className="text-sm text-muted-foreground">What can buyers customize for this product?</p>
+              <p className="text-sm text-muted-foreground">
+                What can buyers customize for this product?
+              </p>
             </div>
           </div>
 
@@ -846,7 +942,7 @@ export default function AddProductPage() {
             {customizationOptions.map((option, index) => (
               <div key={index} className="flex gap-3">
                 <Input
-                  placeholder={`Option ${index + 1} (e.g., "Logo printing", "Custom color")`}
+                  placeholder={`Option ${index + 1} (e.g., "Logo printing")`}
                   value={option}
                   onChange={(e) => {
                     const updated = [...customizationOptions]
@@ -860,7 +956,9 @@ export default function AddProductPage() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    onClick={() => setCustomizationOptions(customizationOptions.filter((_, i) => i !== index))}
+                    onClick={() =>
+                      setCustomizationOptions(customizationOptions.filter((_, i) => i !== index))
+                    }
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -877,9 +975,6 @@ export default function AddProductPage() {
               <Plus className="h-4 w-4" />
               Add Option
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Common options: Logo printing, Custom color, Custom packaging, OEM branding
-            </p>
           </div>
         </div>
 
@@ -898,9 +993,9 @@ export default function AddProductPage() {
           <div className="space-y-5">
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <Label htmlFor="packaging">Packaging Type</Label>
-                <Select 
-                  value={formData.packaging} 
+                <Label>Packaging Type</Label>
+                <Select
+                  value={formData.packaging}
                   onValueChange={(value) => setFormData({ ...formData, packaging: value })}
                 >
                   <SelectTrigger className="mt-2">
@@ -934,7 +1029,9 @@ export default function AddProductPage() {
                 <Input
                   id="packagingDimensions"
                   value={formData.packagingDimensions}
-                  onChange={(e) => setFormData({ ...formData, packagingDimensions: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, packagingDimensions: e.target.value })
+                  }
                   placeholder="e.g., 10x8x4 cm"
                   className="mt-2"
                 />
@@ -964,18 +1061,6 @@ export default function AddProductPage() {
                   className="mt-2"
                 />
               </div>
-              <div>
-                <Label htmlFor="unitsPerCarton">Units per Carton</Label>
-                <Input
-                  id="unitsPerCarton"
-                  type="number"
-                  min="1"
-                  value={formData.unitsPerCarton}
-                  onChange={(e) => setFormData({ ...formData, unitsPerCarton: e.target.value })}
-                  placeholder="e.g., 50"
-                  className="mt-2"
-                />
-              </div>
             </div>
 
             <div>
@@ -984,20 +1069,17 @@ export default function AddProductPage() {
                 id="packagingDetails"
                 value={formData.packagingDetails}
                 onChange={(e) => setFormData({ ...formData, packagingDetails: e.target.value })}
-                placeholder="Describe your packaging in detail (materials used, inserts, branding options...)"
+                placeholder="Describe your packaging in detail…"
                 className="mt-2"
               />
             </div>
 
             <div>
-              <Label>Shipping methods</Label>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Loaded from the API. Select at least one if your listing requires shipping options.
-              </p>
+              <Label>Shipping Methods</Label>
               <div className="mt-3 flex flex-wrap gap-3">
                 {shippingOptions.length === 0 ? (
                   <span className="text-sm text-muted-foreground">
-                    No shipping methods returned — you can still submit; the API may assign defaults.
+                    No shipping methods returned — you can still submit.
                   </span>
                 ) : (
                   shippingOptions.map((method) => {
@@ -1035,10 +1117,14 @@ export default function AddProductPage() {
               <Checkbox
                 id="sampleAvailable"
                 checked={formData.sampleAvailable}
-                onCheckedChange={(checked) => setFormData({ ...formData, sampleAvailable: checked as boolean })}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, sampleAvailable: checked as boolean })
+                }
               />
               <div>
-                <Label htmlFor="sampleAvailable" className="cursor-pointer">Samples Available</Label>
+                <Label htmlFor="sampleAvailable" className="cursor-pointer">
+                  Samples Available
+                </Label>
                 <p className="text-sm text-muted-foreground">Buyers can request product samples</p>
               </div>
             </div>
@@ -1047,7 +1133,9 @@ export default function AddProductPage() {
               <div className="ml-6">
                 <Label htmlFor="samplePrice">Sample Price</Label>
                 <div className="relative mt-2 max-w-xs">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
                   <Input
                     id="samplePrice"
                     type="number"
@@ -1055,7 +1143,7 @@ export default function AddProductPage() {
                     min="0"
                     value={formData.samplePrice}
                     onChange={(e) => setFormData({ ...formData, samplePrice: e.target.value })}
-                    placeholder="0.00 (Free if empty)"
+                    placeholder="0.00"
                     className="pl-7"
                   />
                 </div>
@@ -1066,10 +1154,14 @@ export default function AddProductPage() {
               <Checkbox
                 id="customization"
                 checked={formData.customization}
-                onCheckedChange={(checked) => setFormData({ ...formData, customization: checked as boolean })}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, customization: checked as boolean })
+                }
               />
               <div>
-                <Label htmlFor="customization" className="cursor-pointer">Customization Available</Label>
+                <Label htmlFor="customization" className="cursor-pointer">
+                  Customization Available
+                </Label>
                 <p className="text-sm text-muted-foreground">OEM/ODM services for this product</p>
               </div>
             </div>
@@ -1080,8 +1172,10 @@ export default function AddProductPage() {
                 <Textarea
                   id="customizationDetails"
                   value={formData.customizationDetails}
-                  onChange={(e) => setFormData({ ...formData, customizationDetails: e.target.value })}
-                  placeholder="Describe available customization options (logo printing, color options, packaging design...)"
+                  onChange={(e) =>
+                    setFormData({ ...formData, customizationDetails: e.target.value })
+                  }
+                  placeholder="Describe available customization options…"
                   className="mt-2"
                 />
               </div>
@@ -1093,97 +1187,75 @@ export default function AddProductPage() {
                 id="keywords"
                 value={formData.keywords}
                 onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
-                placeholder="wireless earbuds, bluetooth headphones, tws earphones"
+                placeholder="wireless earbuds, bluetooth headphones"
                 className="mt-2"
               />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Separate keywords with commas. These help buyers find your product.
-              </p>
-            </div>
-
-            <div className="pt-4 border-t border-border">
-              <Label>Product brochure (PDF)</Label>
-              <p className="text-sm text-muted-foreground mt-1">
-                Optional PDF for buyers (sent as product_brochure in the create request).
-              </p>
-              <input
-                ref={brochureInputRef}
-                type="file"
-                accept="application/pdf,.pdf"
-                className="sr-only"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null
-                  e.target.value = ""
-                  setBrochureFile(f)
-                }}
-              />
-              <div className="mt-3">
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => brochureInputRef.current?.click()}
-                  onKeyDown={(e) => e.key === "Enter" && brochureInputRef.current?.click()}
-                  className="flex w-full max-w-md cursor-pointer items-center gap-3 rounded-lg border border-dashed border-border bg-muted/50 p-4 text-left transition-colors hover:border-secondary"
-                >
-                  <Upload className="h-5 w-5 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">
-                      {brochureFile ? brochureFile.name : "Upload PDF"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Max 10MB · optional</p>
-                  </div>
-                  {brochureFile && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="shrink-0"
-                      onClick={(ev) => {
-                        ev.stopPropagation()
-                        setBrochureFile(null)
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Separate keywords with commas.</p>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <Button type="button" variant="outline" asChild>
-            <Link href="/dashboard/manufacturer/products">Cancel</Link>
-          </Button>
-          <div className="flex gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={(e) => handleSubmit(e, true)}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving…
-                </>
-              ) : (
-                "Save as Draft"
-              )}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Publishing…
-                </>
-              ) : (
-                "Publish Product"
-              )}
-            </Button>
+        {/* Brochure */}
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="font-semibold text-foreground mb-4">Product Brochure</h2>
+          <div className="space-y-3">
+            <input
+              ref={brochureInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null
+                setBrochureFile(file)
+                e.target.value = ""
+              }}
+            />
+            {brochureFile ? (
+              <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 p-3">
+                <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+                <span className="flex-1 text-sm truncate">{brochureFile.name}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setBrochureFile(null)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => brochureInputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") brochureInputRef.current?.click()
+                }}
+                className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/50 p-8 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+              >
+                <Upload className="h-6 w-6" />
+                <span className="text-sm">Upload new brochure (PDF, DOC)</span>
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isSubmitting}
+            onClick={(e) => handleSubmit(e as unknown as React.FormEvent, true)}
+          >
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Save as Draft
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Save Changes
+          </Button>
         </div>
       </form>
     </div>
