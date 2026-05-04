@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,6 +34,7 @@ import {
   Eye,
   Package
 } from "lucide-react"
+import { fetchPlans, createPlan, updatePlan, deletePlan as deleteApiPlan, type PricingPlan as BackendPricingPlan } from "@/lib/api/admin-pricing"
 
 interface PricingFeature {
   text: string
@@ -52,76 +53,53 @@ interface PricingPlan {
   active: boolean
 }
 
-const initialPlans: PricingPlan[] = [
-  {
-    id: "free",
-    name: "Free",
-    description: "Get started with basic features",
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    features: [
-      { text: "Basic company profile", included: true },
-      { text: "Up to 10 product listings", included: true },
-      { text: "Receive buyer inquiries", included: true },
-      { text: "Basic analytics", included: true },
-      { text: "Email support", included: true },
-      { text: "Priority listing", included: false },
-      { text: "Reviewed badge", included: false },
-      { text: "Featured placement", included: false },
-    ],
-    highlighted: false,
-    buttonText: "Get Started",
-    active: true
-  },
-  {
-    id: "professional",
-    name: "Professional",
-    description: "For growing manufacturers",
-    monthlyPrice: 99,
-    yearlyPrice: 990,
-    features: [
-      { text: "Enhanced company profile", included: true },
-      { text: "Up to 100 product listings", included: true },
-      { text: "Priority in search results", included: true },
-      { text: "Advanced analytics dashboard", included: true },
-      { text: "Reviewed supplier badge", included: true },
-      { text: "Priority email & chat support", included: true },
-      { text: "Product catalog downloads", included: true },
-      { text: "Featured placement", included: false },
-    ],
-    highlighted: true,
-    buttonText: "Start Free Trial",
-    active: true
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    description: "For established manufacturers",
-    monthlyPrice: 299,
-    yearlyPrice: 2990,
-    features: [
-      { text: "Premium company profile", included: true },
-      { text: "Unlimited product listings", included: true },
-      { text: "Top priority in search results", included: true },
-      { text: "Custom analytics & reports", included: true },
-      { text: "Premium reviewed badge", included: true },
-      { text: "Dedicated account manager", included: true },
-      { text: "Featured homepage placement", included: true },
-      { text: "API access", included: true },
-    ],
-    highlighted: false,
-    buttonText: "Contact Sales",
-    active: true
+function transformBackendPlan(plan: BackendPricingPlan): PricingPlan {
+  return {
+    id: plan.id.toString(),
+    name: plan.name,
+    description: plan.description,
+    monthlyPrice: parseFloat(plan.monthly_price?.amount || "0"),
+    yearlyPrice: parseFloat(plan.yearly_price?.amount || "0"),
+    features: plan.features?.map((feature) => ({
+      text: feature.value,
+      included: feature.input_type === "boolean" ? feature.value === "1" : true
+    })) || [],
+    highlighted: plan.is_popular,
+    buttonText: plan.button_text,
+    active: plan.status === 1
   }
-]
+}
 
 export default function AdminPricingPage() {
-  const [plans, setPlans] = useState<PricingPlan[]>(initialPlans)
+  const [plans, setPlans] = useState<PricingPlan[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isCreating, setIsCreating] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [updateError, setUpdateError] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [editingPlan, setEditingPlan] = useState<PricingPlan | null>(null)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [newFeature, setNewFeature] = useState("")
+
+  useEffect(() => {
+    const loadPlans = async () => {
+      setIsLoading(true)
+      try {
+        const backendPlans = await fetchPlans()
+        const transformedPlans = backendPlans.map(transformBackendPlan)
+        setPlans(transformedPlans)
+      } catch (error) {
+        console.error("Error loading plans:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadPlans()
+  }, [])
   
   const [editForm, setEditForm] = useState({
     name: "",
@@ -147,15 +125,52 @@ export default function AdminPricingPage() {
     setShowEditDialog(true)
   }
 
-  const savePlan = () => {
-    if (editingPlan) {
-      setPlans(prev => prev.map(p => 
-        p.id === editingPlan.id 
-          ? { ...p, ...editForm }
-          : p
-      ))
-      setShowEditDialog(false)
-      setEditingPlan(null)
+  const savePlan = async () => {
+    if (!editingPlan) return
+
+    setIsUpdating(true)
+    setUpdateError(null)
+
+    try {
+      // Transform features to backend format with sequential IDs
+      const transformedFeatures = editForm.features.map((feature, index) => ({
+        id: index + 1,
+        input_type: feature.included ? "text" : "boolean",
+        value: feature.text
+      }))
+
+      // Prepare the payload
+      const payload = {
+        name: editForm.name,
+        description: editForm.description,
+        button_text: editForm.buttonText,
+        monthly_price: editForm.monthlyPrice,
+        yearly_price: editForm.yearlyPrice,
+        status: editForm.highlighted,
+        is_popular: editForm.highlighted,
+        features: transformedFeatures
+      }
+
+      // Call the API
+      const result = await updatePlan(editingPlan.id, payload)
+
+      if (result.success) {
+        // Update local state
+        setPlans(prev => prev.map(p => 
+          p.id === editingPlan.id 
+            ? { ...p, ...editForm }
+            : p
+        ))
+        setShowEditDialog(false)
+        setEditingPlan(null)
+      } else {
+        setUpdateError(result.message || "Failed to update plan")
+      }
+    } catch (error) {
+      console.error("Error updating plan:", error)
+      setUpdateError("An unexpected error occurred")
+    } finally {
+      setIsUpdating(false)
     }
   }
 
@@ -198,39 +213,102 @@ export default function AdminPricingPage() {
     }))
   }
 
-  const addNewPlan = () => {
-    const newPlan: PricingPlan = {
-      id: `plan-${Date.now()}`,
-      name: editForm.name || "New Plan",
-      description: editForm.description || "Plan description",
-      monthlyPrice: editForm.monthlyPrice,
-      yearlyPrice: editForm.yearlyPrice,
-      features: editForm.features.length > 0 ? editForm.features : [
-        { text: "Basic features", included: true }
-      ],
-      highlighted: false,
-      buttonText: editForm.buttonText || "Get Started",
-      active: true
+  const addNewPlan = async () => {
+    if (!editForm.name.trim()) {
+      setCreateError("Plan name is required")
+      return
     }
-    setPlans(prev => [...prev, newPlan])
-    setShowAddDialog(false)
-    setEditForm({
-      name: "",
-      description: "",
-      monthlyPrice: 0,
-      yearlyPrice: 0,
-      buttonText: "",
-      highlighted: false,
-      features: []
-    })
+
+    setIsCreating(true)
+    setCreateError(null)
+
+    try {
+      // Transform features to backend format with sequential IDs
+      const transformedFeatures = editForm.features.map((feature, index) => ({
+        id: index + 1,
+        input_type: feature.included ? "text" : "boolean",
+        value: feature.text
+      }))
+
+      // Prepare the payload
+      const payload = {
+        name: editForm.name,
+        description: editForm.description || "Plan description",
+        button_text: editForm.buttonText || "Get Started",
+        monthly_price: editForm.monthlyPrice,
+        yearly_price: editForm.yearlyPrice,
+        currency_code: "USD",
+        features: transformedFeatures
+      }
+
+      // Call the API
+      const result = await createPlan(payload)
+
+      if (result.success) {
+        // If API returns the created plan, use it; otherwise create locally
+        if (result.plan) {
+          const newPlan = transformBackendPlan(result.plan)
+          setPlans(prev => [...prev, newPlan])
+        } else {
+          const newPlan: PricingPlan = {
+            id: `plan-${Date.now()}`,
+            name: editForm.name,
+            description: editForm.description,
+            monthlyPrice: editForm.monthlyPrice,
+            yearlyPrice: editForm.yearlyPrice,
+            features: editForm.features,
+            highlighted: false,
+            buttonText: editForm.buttonText,
+            active: true
+          }
+          setPlans(prev => [...prev, newPlan])
+        }
+
+        // Reset form
+        setShowAddDialog(false)
+        setEditForm({
+          name: "",
+          description: "",
+          monthlyPrice: 0,
+          yearlyPrice: 0,
+          buttonText: "",
+          highlighted: false,
+          features: []
+        })
+      } else {
+        setCreateError(result.message || "Failed to create plan")
+      }
+    } catch (error) {
+      console.error("Error creating plan:", error)
+      setCreateError("An unexpected error occurred")
+    } finally {
+      setIsCreating(false)
+    }
   }
 
-  const deletePlan = (planId: string) => {
-    setPlans(prev => prev.filter(p => p.id !== planId))
+  const deletePlan = async (planId: string) => {
+    setIsDeleting(planId)
+    try {
+      const result = await deleteApiPlan(planId)
+      if (result.success) {
+        setPlans(prev => prev.filter(p => p.id !== planId))
+      }
+    } catch (error) {
+      console.error("Error deleting plan:", error)
+    } finally {
+      setIsDeleting(null)
+    }
   }
 
   return (
     <div className="space-y-6">
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-muted-foreground">Loading pricing plans...</div>
+        </div>
+      )}
+      {!isLoading && (
+        <>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Pricing Management</h1>
@@ -319,6 +397,7 @@ export default function AdminPricingPage() {
                     variant="ghost" 
                     size="icon"
                     onClick={() => openEditDialog(plan)}
+                    disabled={isDeleting === plan.id}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -327,8 +406,13 @@ export default function AdminPricingPage() {
                     size="icon"
                     onClick={() => deletePlan(plan.id)}
                     className="text-destructive"
+                    disabled={isDeleting === plan.id}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {isDeleting === plan.id ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-destructive border-t-transparent" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -395,6 +479,11 @@ export default function AdminPricingPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
+            {updateError && (
+              <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 border border-red-200">
+                {updateError}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Plan Name</Label>
@@ -402,6 +491,7 @@ export default function AdminPricingPage() {
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                   className="mt-2"
+                  disabled={isUpdating}
                 />
               </div>
               <div>
@@ -410,6 +500,7 @@ export default function AdminPricingPage() {
                   value={editForm.buttonText}
                   onChange={(e) => setEditForm({ ...editForm, buttonText: e.target.value })}
                   className="mt-2"
+                  disabled={isUpdating}
                 />
               </div>
             </div>
@@ -421,6 +512,7 @@ export default function AdminPricingPage() {
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                 className="mt-2"
                 rows={2}
+                disabled={isUpdating}
               />
             </div>
 
@@ -433,6 +525,7 @@ export default function AdminPricingPage() {
                   value={editForm.monthlyPrice}
                   onChange={(e) => setEditForm({ ...editForm, monthlyPrice: Number(e.target.value) })}
                   className="mt-2"
+                  disabled={isUpdating}
                 />
               </div>
               <div>
@@ -443,6 +536,7 @@ export default function AdminPricingPage() {
                   value={editForm.yearlyPrice}
                   onChange={(e) => setEditForm({ ...editForm, yearlyPrice: Number(e.target.value) })}
                   className="mt-2"
+                  disabled={isUpdating}
                 />
               </div>
             </div>
@@ -455,6 +549,7 @@ export default function AdminPricingPage() {
                     <Switch 
                       checked={feature.included}
                       onCheckedChange={() => toggleFeatureIncluded(i)}
+                      disabled={isUpdating}
                     />
                     <span className="flex-1 text-sm">{feature.text}</span>
                     <Button 
@@ -462,6 +557,7 @@ export default function AdminPricingPage() {
                       size="icon"
                       onClick={() => removeFeature(i)}
                       className="h-8 w-8"
+                      disabled={isUpdating}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -473,9 +569,10 @@ export default function AdminPricingPage() {
                   placeholder="Add new feature..."
                   value={newFeature}
                   onChange={(e) => setNewFeature(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addFeature()}
+                  onKeyDown={(e) => e.key === "Enter" && !isUpdating && addFeature()}
+                  disabled={isUpdating}
                 />
-                <Button onClick={addFeature}>
+                <Button onClick={addFeature} disabled={isUpdating}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -485,17 +582,34 @@ export default function AdminPricingPage() {
               <Switch 
                 checked={editForm.highlighted}
                 onCheckedChange={(checked) => setEditForm({ ...editForm, highlighted: checked })}
+                disabled={isUpdating}
               />
               <Label>Mark as Most Popular</Label>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowEditDialog(false)
+                setUpdateError(null)
+              }}
+              disabled={isUpdating}
+            >
               Cancel
             </Button>
-            <Button onClick={savePlan}>
-              <Save className="mr-2 h-4 w-4" />
-              Save Changes
+            <Button onClick={savePlan} disabled={isUpdating}>
+              {isUpdating ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -511,6 +625,11 @@ export default function AdminPricingPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
+            {createError && (
+              <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 border border-red-200">
+                {createError}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Plan Name</Label>
@@ -519,6 +638,7 @@ export default function AdminPricingPage() {
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                   className="mt-2"
                   placeholder="e.g., Business"
+                  disabled={isCreating}
                 />
               </div>
               <div>
@@ -528,6 +648,7 @@ export default function AdminPricingPage() {
                   onChange={(e) => setEditForm({ ...editForm, buttonText: e.target.value })}
                   className="mt-2"
                   placeholder="e.g., Get Started"
+                  disabled={isCreating}
                 />
               </div>
             </div>
@@ -540,6 +661,7 @@ export default function AdminPricingPage() {
                 className="mt-2"
                 rows={2}
                 placeholder="Brief description of this plan"
+                disabled={isCreating}
               />
             </div>
 
@@ -552,6 +674,7 @@ export default function AdminPricingPage() {
                   value={editForm.monthlyPrice}
                   onChange={(e) => setEditForm({ ...editForm, monthlyPrice: Number(e.target.value) })}
                   className="mt-2"
+                  disabled={isCreating}
                 />
               </div>
               <div>
@@ -562,6 +685,7 @@ export default function AdminPricingPage() {
                   value={editForm.yearlyPrice}
                   onChange={(e) => setEditForm({ ...editForm, yearlyPrice: Number(e.target.value) })}
                   className="mt-2"
+                  disabled={isCreating}
                 />
               </div>
             </div>
@@ -574,6 +698,7 @@ export default function AdminPricingPage() {
                     <Switch 
                       checked={feature.included}
                       onCheckedChange={() => toggleFeatureIncluded(i)}
+                      disabled={isCreating}
                     />
                     <span className="flex-1 text-sm">{feature.text}</span>
                     <Button 
@@ -581,6 +706,7 @@ export default function AdminPricingPage() {
                       size="icon"
                       onClick={() => removeFeature(i)}
                       className="h-8 w-8"
+                      disabled={isCreating}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -592,21 +718,38 @@ export default function AdminPricingPage() {
                   placeholder="Add new feature..."
                   value={newFeature}
                   onChange={(e) => setNewFeature(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addFeature()}
+                  onKeyDown={(e) => e.key === "Enter" && !isCreating && addFeature()}
+                  disabled={isCreating}
                 />
-                <Button onClick={addFeature}>
+                <Button onClick={addFeature} disabled={isCreating}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowAddDialog(false)
+                setCreateError(null)
+              }}
+              disabled={isCreating}
+            >
               Cancel
             </Button>
-            <Button onClick={addNewPlan}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Plan
+            <Button onClick={addNewPlan} disabled={isCreating}>
+              {isCreating ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Plan
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -666,6 +809,8 @@ export default function AdminPricingPage() {
           </div>
         </DialogContent>
       </Dialog>
+        </>
+      )}
     </div>
   )
 }

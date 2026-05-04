@@ -28,6 +28,7 @@ import { useTranslation } from "@/lib/i18n"
 import { apiClient } from "@/lib/api/client"
 import { useToast } from "@/hooks/use-toast"
 import { getApiErrorMessage } from "@/lib/api/errors"
+import { fetchCurrencies, type Currency } from "@/lib/api/currencies"
 
 export default function BuyerSettingsPage() {
   const { t } = useTranslation();
@@ -41,72 +42,44 @@ export default function BuyerSettingsPage() {
     promotions: false,
   })
 
-  const [userId, setUserId] = useState<string | null>(null)
   const [profile, setProfile] = useState<any>({
     first_name: "",
     last_name: "",
     email: "",
     company_name: "",
     phone: "",
-
-    short_description: "",
-    long_description: "",
-    company_established: "",
-    company_size: "",
-    country: "",
-    city: "",
-    street_address: "",
-    minimum_order_value: "",
-    company_type: "",
-    revenue: "",
-    capabilities: [],
-    certifications: [],
-    export_markets: [],
-    language_spoken: [],
-    payments_term: [],
-    factory_production: false,
-    mulitple_factories: false,
-    industries_id: [],
-    factory_size: "",
-    production_lines: "",
   })
   const [isLoadingProfile, setIsLoadingProfile] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showPasswordForm, setShowPasswordForm] = useState(false)
   const [pwdForm, setPwdForm] = useState({ current_password: "", password: "", password_confirmation: "" })
+  const [currencies, setCurrencies] = useState<Currency[]>([])
+  const [isLoadingCurrencies, setIsLoadingCurrencies] = useState(false)
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("")
+
+
 
   useEffect(() => {
-    // read stored user to obtain id and seed basic fields
-    try {
-      const raw = localStorage.getItem("sourcenest_user")
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        const id = parsed?.id ? String(parsed.id) : null
-        setUserId(id)
-        setProfile((p: any) => ({
-          ...p,
-          first_name: parsed?.firstName ?? p.first_name,
-          last_name: parsed?.lastName ?? p.last_name,
-          email: parsed?.email ?? p.email,
-          company_name: parsed?.company ?? p.company_name,
-        }))
-      }
-    } catch {
-      // ignore
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!userId) return
     let cancelled = false
     const load = async () => {
       setIsLoadingProfile(true)
       try {
-        const res = await apiClient.get(`/buyer/profile/${userId}`)
+        const res = await apiClient.get("/buyer/profile")
         const data = res?.data?.data ?? res?.data
         if (!cancelled && data) {
-          // merge server response into profile state
-          setProfile((p: any) => ({ ...p, ...data }))
+          // Merge server response into profile state
+          setProfile((p: any) => ({
+            ...p,
+            first_name: data.first_name || p.first_name,
+            last_name: data.last_name || p.last_name,
+            email: data.email || p.email,
+            company_name: data.company?.company_name || p.company_name,
+            phone: data.company?.phone || p.phone,
+          }))
+          // Set selected currency from profile
+          if (data.preferred_currency?.code) {
+            setSelectedCurrency(data.preferred_currency.code)
+          }
         }
       } catch (err) {
         toast({ title: "Failed to load profile", description: getApiErrorMessage(err) || String(err), variant: "destructive" })
@@ -117,49 +90,49 @@ export default function BuyerSettingsPage() {
 
     void load()
     return () => { cancelled = true }
-  }, [userId, toast])
+  }, [toast])
 
-  const saveProfile = useCallback(async () => {
-    if (!userId) {
-      toast({ title: "Not signed in", variant: "destructive" })
-      return
+  useEffect(() => {
+    let cancelled = false
+    const loadCurrencies = async () => {
+      setIsLoadingCurrencies(true)
+      try {
+        const data = await fetchCurrencies()
+        if (!cancelled) {
+          setCurrencies(data)
+          // Set default to first currency or USD if available
+          if (data.length > 0) {
+            const usdCurrency = data.find(c => c.code === "USD")
+            if (!selectedCurrency && usdCurrency) {
+              setSelectedCurrency(usdCurrency.code)
+            } else if (!selectedCurrency) {
+              setSelectedCurrency(data[0].code)
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error loading currencies:", err)
+      } finally {
+        if (!cancelled) setIsLoadingCurrencies(false)
+      }
     }
 
+    void loadCurrencies()
+    return () => { cancelled = true }
+  }, [])
+
+  const saveProfile = useCallback(async () => {
     setIsSaving(true)
     try {
-      const payload: Record<string, any> = {
+      const payload = {
         first_name: profile.first_name,
         last_name: profile.last_name,
         email: profile.email,
         company_name: profile.company_name,
         phone: profile.phone,
-
-        short_description: profile.short_description,
-        long_description: profile.long_description,
-        company_established: profile.company_established,
-        company_size: profile.company_size,
-        country: profile.country,
-        city: profile.city,
-        street_address: profile.street_address,
-        minimum_order_value: profile.minimum_order_value ? Number(profile.minimum_order_value) : undefined,
-        company_type: profile.company_type,
-        revenue: profile.revenue,
-        capabilities: Array.isArray(profile.capabilities) ? profile.capabilities : (typeof profile.capabilities === 'string' ? profile.capabilities.split(',').map((s:any)=>s.trim()).filter(Boolean) : []),
-        certifications: Array.isArray(profile.certifications) ? profile.certifications : (typeof profile.certifications === 'string' ? profile.certifications.split(',').map((s:any)=>s.trim()).filter(Boolean) : []),
-        export_markets: Array.isArray(profile.export_markets) ? profile.export_markets : (typeof profile.export_markets === 'string' ? profile.export_markets.split(',').map((s:any)=>s.trim()).filter(Boolean) : []),
-        language_spoken: Array.isArray(profile.language_spoken) ? profile.language_spoken : (typeof profile.language_spoken === 'string' ? profile.language_spoken.split(',').map((s:any)=>s.trim()).filter(Boolean) : []),
-        payments_term: Array.isArray(profile.payments_term) ? profile.payments_term : (typeof profile.payments_term === 'string' ? profile.payments_term.split(',').map((s:any)=>s.trim()).filter(Boolean) : []),
-        factory_production: !!profile.factory_production,
-        mulitple_factories: !!profile.mulitple_factories,
-        industries_id: profile.industries_id,
-        factory_size: profile.factory_size ? Number(profile.factory_size) : undefined,
-        production_lines: profile.production_lines ? Number(profile.production_lines) : undefined,
       }
 
-      // strip undefined
-      Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k])
-
-      await apiClient.put(`/buyer/profile/${userId}`, payload)
+      await apiClient.put("/buyer/profile/update", payload)
       toast({ title: "Profile updated", description: "Your profile has been updated.", variant: "default" })
 
       // Update local stored user if present
@@ -180,14 +153,9 @@ export default function BuyerSettingsPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [userId, profile, toast])
+  }, [profile, toast])
 
   const changePassword = useCallback(async () => {
-    if (!userId) {
-      toast({ title: "Not signed in", variant: "destructive" })
-      return
-    }
-
     if (!pwdForm.current_password || !pwdForm.password) {
       toast({ title: "Missing fields", description: "Provide current and new password", variant: "destructive" })
       return
@@ -200,7 +168,7 @@ export default function BuyerSettingsPage() {
 
     setIsSaving(true)
     try {
-      await apiClient.put(`/buyer/profile/change/password/${userId}`, {
+      await apiClient.put("/buyer/profile/change-password", {
         current_password: pwdForm.current_password,
         password: pwdForm.password,
         password_confirmation: pwdForm.password_confirmation,
@@ -213,7 +181,7 @@ export default function BuyerSettingsPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [userId, pwdForm, toast])
+  }, [pwdForm, toast])
 
   return (
     <div className="space-y-6">
@@ -340,107 +308,21 @@ export default function BuyerSettingsPage() {
                   <label className="text-sm font-medium text-foreground">{t.settings.language}</label>
                   <LanguageSelector />
                 </div>
-                {/* <div>
-                  <label className="text-sm font-medium text-foreground">{t.settings.timezone}</label>
-                  <Select defaultValue="asia-shanghai">
+                <div>
+                  <label className="text-sm font-medium text-foreground">{t.settings.currencyDisplay || "Currency Display"}</label>
+                  <Select value={selectedCurrency} onValueChange={setSelectedCurrency} disabled={isLoadingCurrencies}>
                     <SelectTrigger className="mt-2">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="asia-shanghai">Asia/Shanghai (GMT+8)</SelectItem>
-                      <SelectItem value="america-los-angeles">America/Los Angeles (GMT-8)</SelectItem>
-                      <SelectItem value="europe-london">Europe/London (GMT+0)</SelectItem>
-                      <SelectItem value="europe-berlin">Europe/Berlin (GMT+1)</SelectItem>
+                      {currencies.map((currency) => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.code} - {currency.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                </div> */}
-              </div>
-              {/* <div>
-                <label className="text-sm font-medium text-foreground">{t.settings.currencyDisplay}</label>
-                <Select defaultValue="usd">
-                  <SelectTrigger className="mt-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="usd">USD - US Dollar</SelectItem>
-                    <SelectItem value="eur">EUR - Euro</SelectItem>
-                    <SelectItem value="gbp">GBP - British Pound</SelectItem>
-                    <SelectItem value="cny">CNY - Chinese Yuan</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div> */}
-            </CardContent>
-          </Card>
-
-          {/* Company Profile - simplified fields from backend */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{"Company Profile"}</CardTitle>
-              <CardDescription>Company information visible to suppliers</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground">Short Description</label>
-                <Textarea value={profile.short_description || ""} onChange={(e) => setProfile({ ...profile, short_description: e.target.value })} className="mt-2" rows={2} />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Long Description</label>
-                <Textarea value={profile.long_description || ""} onChange={(e) => setProfile({ ...profile, long_description: e.target.value })} className="mt-2" rows={4} />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Year Established</label>
-                  <Input value={profile.company_established || ""} onChange={(e) => setProfile({ ...profile, company_established: e.target.value })} className="mt-2" />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Company Size</label>
-                  <Input value={profile.company_size || ""} onChange={(e) => setProfile({ ...profile, company_size: e.target.value })} className="mt-2" />
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Country</label>
-                  <Input value={profile.country || ""} onChange={(e) => setProfile({ ...profile, country: e.target.value })} className="mt-2" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">City</label>
-                  <Input value={profile.city || ""} onChange={(e) => setProfile({ ...profile, city: e.target.value })} className="mt-2" />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Street Address</label>
-                <Input value={profile.street_address || ""} onChange={(e) => setProfile({ ...profile, street_address: e.target.value })} className="mt-2" />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Minimum Order Value</label>
-                  <Input type="number" value={profile.minimum_order_value || ""} onChange={(e) => setProfile({ ...profile, minimum_order_value: e.target.value })} className="mt-2" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Company Type</label>
-                  <Input value={profile.company_type || ""} onChange={(e) => setProfile({ ...profile, company_type: e.target.value })} className="mt-2" />
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Revenue</label>
-                  <Input value={profile.revenue || ""} onChange={(e) => setProfile({ ...profile, revenue: e.target.value })} className="mt-2" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Factory Production</label>
-                  <div className="mt-2">
-                    <Switch checked={!!profile.factory_production} onCheckedChange={(v) => setProfile({ ...profile, factory_production: v })} />
-                    <span className="ml-3 text-sm text-muted-foreground">Has factory production capability</span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Capabilities (comma separated)</label>
-                <Input value={(Array.isArray(profile.capabilities) ? profile.capabilities.join(', ') : (profile.capabilities || ''))} onChange={(e) => setProfile({ ...profile, capabilities: e.target.value })} className="mt-2" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Certifications (comma separated)</label>
-                <Input value={(Array.isArray(profile.certifications) ? profile.certifications.join(', ') : (profile.certifications || ''))} onChange={(e) => setProfile({ ...profile, certifications: e.target.value })} className="mt-2" />
               </div>
             </CardContent>
           </Card>

@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Swal from "sweetalert2"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,14 +10,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
@@ -26,7 +19,6 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { countries as allCountries } from "@/lib/data/countries"
-import { industries } from "@/lib/data/industries"
 import { apiClient } from "@/lib/api/client"
 import { useToast } from "@/hooks/use-toast"
 import { getApiErrorMessage } from "@/lib/api/errors"
@@ -53,51 +45,26 @@ import {
   Users
 } from "lucide-react"
 
-const certificationTypes = [
-  "ISO 9001",
-  "ISO 14001",
-  "ISO 45001",
-  "CE Marking",
-  "FDA",
-  "GMP",
-  "BSCI",
-  "SEDEX",
-  "SA8000",
-  "REACH",
-  "RoHS",
-  "UL",
-  "FCC",
-  "IATF 16949"
-]
-
-const businessTypes = [
-  "Manufacturer",
-  "Trading Company",
-  "Manufacturer & Trading",
-  "OEM Manufacturer",
-  "ODM Manufacturer",
-  "Contract Manufacturer"
-]
-
-const capabilities = [
-  "Private Label",
-  "OEM Service",
-  "ODM Service",
-  "Custom Packaging",
-  "Drop Shipping",
-  "Quality Inspection",
-  "Product Development",
-  "Custom Design"
-]
-
 export default function AdminCreateManufacturerPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [showPassword, setShowPassword] = useState(false)
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
-  const [createdCredentials, setCreatedCredentials] = useState({ email: "", password: "" })
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const { toast } = useToast()
+
+  // Dynamic data from API with fallback defaults
+  const [certificationTypes, setCertificationTypes] = useState<string[]>([
+    "ISO 9001", "ISO 14001", "ISO 45001", "CE Marking", "FDA", "GMP", "BSCI", "SEDEX", "SA8000", "REACH", "RoHS", "UL", "FCC", "IATF 16949"
+  ])
+  const [businessTypes, setBusinessTypes] = useState<string[]>([
+    "Manufacturer", "Trading Company", "Manufacturer & Trading", "OEM Manufacturer", "ODM Manufacturer", "Contract Manufacturer"
+  ])
+  const [capabilities, setCapabilities] = useState<string[]>([
+    "Private Label", "OEM Service", "ODM Service", "Custom Packaging", "Drop Shipping", "Quality Inspection", "Product Development", "Custom Design"
+  ])
+  const [exportMarkets, setExportMarkets] = useState<string[]>([])
+  const [categories, setCategories] = useState<Array<{id: number; name: string}>>([])
   
   // Account Info
   const [accountForm, setAccountForm] = useState({
@@ -130,14 +97,80 @@ export default function AdminCreateManufacturerPage() {
   })
   
   // Business Details
-  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([])
+  const [selectedIndustries, setSelectedIndustries] = useState<number[]>([])
   const [selectedCapabilities, setSelectedCapabilities] = useState<string[]>([])
   const [selectedCertifications, setSelectedCertifications] = useState<string[]>([])
-  const [exportMarkets, setExportMarkets] = useState<string[]>([])
+  const [selectedExportMarkets, setSelectedExportMarkets] = useState<string[]>([])
   
   // Products
   const [mainProducts, setMainProducts] = useState<string[]>([])
   const [newProduct, setNewProduct] = useState("")
+
+  // Fetch dynamic data from API
+  useEffect(() => {
+    const fetchDynamicData = async () => {
+      try {
+        setIsLoadingData(true)
+        
+        // Fetch categories (Industries)
+        try {
+          const catRes = await apiClient.get("/admin/categories")
+          if (catRes.data?.data) {
+            setCategories(catRes.data.data.map((cat: any) => ({ id: cat.id, name: cat.name })))
+          }
+        } catch (err) {
+          console.log("Categories endpoint not available, using defaults")
+        }
+
+        // Fetch certifications
+        try {
+          const certRes = await apiClient.get("/api/certifications")
+          if (certRes.data?.data) {
+            setCertificationTypes(certRes.data.data)
+          }
+        } catch (err) {
+          console.log("Certifications endpoint not available, using defaults")
+        }
+
+        // Fetch business types
+        try {
+          const bizRes = await apiClient.get("/api/business-types")
+          if (bizRes.data?.data) {
+            setBusinessTypes(bizRes.data.data)
+          }
+        } catch (err) {
+          console.log("Business types endpoint not available, using defaults")
+        }
+
+        // Fetch capabilities
+        try {
+          const capRes = await apiClient.get("/api/capabilities")
+          if (capRes.data?.data) {
+            setCapabilities(capRes.data.data)
+          }
+        } catch (err) {
+          console.log("Capabilities endpoint not available, using defaults")
+        }
+
+        // Fetch export markets
+        try {
+          const mkRes = await apiClient.get("/api/export-markets")
+          if (mkRes.data?.data) {
+            setExportMarkets(mkRes.data.data)
+          }
+        } catch (err) {
+          console.log("Export markets endpoint not available, using defaults")
+        }
+
+        setIsLoadingData(false)
+      } catch (err) {
+        console.error("Error fetching dynamic data:", err)
+        setIsLoadingData(false)
+      }
+    }
+
+    fetchDynamicData()
+  }, [])
   
   const generatePassword = () => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%"
@@ -148,11 +181,11 @@ export default function AdminCreateManufacturerPage() {
     setAccountForm({ ...accountForm, password })
   }
 
-  const toggleIndustry = (industry: string) => {
+  const toggleIndustry = (industryId: number) => {
     setSelectedIndustries(prev => 
-      prev.includes(industry) 
-        ? prev.filter(i => i !== industry)
-        : [...prev, industry]
+      prev.includes(industryId) 
+        ? prev.filter(i => i !== industryId)
+        : [...prev, industryId]
     )
   }
 
@@ -173,7 +206,7 @@ export default function AdminCreateManufacturerPage() {
   }
 
   const toggleExportMarket = (market: string) => {
-    setExportMarkets(prev => 
+    setSelectedExportMarkets(prev => 
       prev.includes(market) 
         ? prev.filter(m => m !== market)
         : [...prev, market]
@@ -191,11 +224,6 @@ export default function AdminCreateManufacturerPage() {
     setMainProducts(prev => prev.filter(p => p !== product))
   }
 
-  const copyCredentials = () => {
-    const text = `Email: ${createdCredentials.email}\nPassword: ${createdCredentials.password}`
-    navigator.clipboard.writeText(text)
-  }
-
   const handleSubmit = async () => {
     // Validate required fields
     if (!accountForm.email || !accountForm.password || !companyForm.companyName || !locationForm.country) {
@@ -205,46 +233,42 @@ export default function AdminCreateManufacturerPage() {
 
     setIsSaving(true)
 
-    // map selected industry names to ids (numbers) if needed
-    const industries_id = selectedIndustries.map(s => {
-      // allow storing either name or id
-      const foundByName = industries.find(i => i.name === s)
-      if (foundByName) return Number(foundByName.id)
-      const asNumber = Number(s)
-      return Number.isFinite(asNumber) ? asNumber : null
-    }).filter(Boolean)
+    // selectedIndustries already contains numeric IDs from /admin/categories
+    const industries_id = selectedIndustries
 
     const payload: Record<string, any> = {
       email: accountForm.email,
       password: accountForm.password,
-      first_name: accountForm.firstName || undefined,
-      last_name: accountForm.lastName || undefined,
       send_email: !!accountForm.sendCredentials,
 
-      company_name: companyForm.companyName || undefined,
-      company_type: companyForm.businessType || undefined,
-      company_established: companyForm.yearEstablished || undefined,
-      company_size: companyForm.employeeCount || undefined,
-      revenue: companyForm.annualRevenue || undefined,
-
-      country: locationForm.country || undefined,
-      city: locationForm.city || undefined,
-      street_address: locationForm.address || undefined,
-      phone: locationForm.phone || undefined,
-      zip_code: locationForm.postalCode || undefined,
+      country: locationForm.country,
       industries_id: industries_id,
       capabilities: selectedCapabilities,
       certifications: selectedCertifications,
-      export_markets: exportMarkets,
-
-      bussiness_license: companyForm.businessLicense || undefined,
-      company_website: companyForm.website || undefined,
-      notes: companyForm.description || undefined,
+      export_markets: selectedExportMarkets,
     }
 
+    // Add optional fields if provided
+    if (accountForm.firstName) payload.first_name = accountForm.firstName
+    if (accountForm.lastName) payload.last_name = accountForm.lastName
+
+    if (companyForm.companyName) payload.company_name = companyForm.companyName
+    if (companyForm.businessType) payload.company_type = companyForm.businessType
+    if (companyForm.yearEstablished) payload.company_established = companyForm.yearEstablished
+    if (companyForm.employeeCount) payload.company_size = companyForm.employeeCount
+    if (companyForm.annualRevenue) payload.revenue = companyForm.annualRevenue
+    if (companyForm.businessLicense) payload.bussiness_license = companyForm.businessLicense
+    if (companyForm.website) payload.company_website = companyForm.website
+    if (companyForm.description) payload.notes = companyForm.description
+
+    if (locationForm.city) payload.city = locationForm.city
+    if (locationForm.address) payload.street_address = locationForm.address
+    if (locationForm.phone) payload.phone = locationForm.phone
+    if (locationForm.postalCode) payload.zip_code = locationForm.postalCode
+
     try {
-      // Try conventional REST endpoint first, fallback to legacy create path
-      const endpoints = ["/admin/manufacturers", "/admin/manufacturer/create"]
+      // Try /admin/manufacturer/create endpoint first, fallback to /admin/manufacturers
+      const endpoints = ["/admin/manufacturer/create", "/admin/manufacturers"]
       let res: any = null
       for (const ep of endpoints) {
         try {
@@ -259,13 +283,45 @@ export default function AdminCreateManufacturerPage() {
 
       if (!res) throw new Error("Create failed: no response from server")
 
-      setCreatedCredentials({ email: accountForm.email, password: accountForm.password })
       setIsSaving(false)
-      setShowSuccessDialog(true)
+
+      // Show success alert with credentials
+      await Swal.fire({
+        icon: "success",
+        title: "Manufacturer Created Successfully!",
+        html: `
+          <div style="text-align: left; margin-top: 20px;">
+            <p><strong>Email:</strong></p>
+            <p style="font-family: monospace; background-color: #f0f0f0; padding: 8px; border-radius: 4px; word-break: break-all;">${accountForm.email}</p>
+            <p style="margin-top: 15px;"><strong>Password:</strong></p>
+            <p style="font-family: monospace; background-color: #f0f0f0; padding: 8px; border-radius: 4px;">${accountForm.password}</p>
+            ${accountForm.sendCredentials ? `<p style="margin-top: 15px; color: #10b981;"><strong>✓</strong> Credentials will be sent to ${accountForm.email}</p>` : ""}
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "View Manufacturers",
+        cancelButtonText: "Create Another",
+        confirmButtonColor: "#3b82f6",
+        cancelButtonColor: "#6b7280",
+      }).then((result: any) => {
+        if (result.isConfirmed) {
+          resetForm()
+          router.push("/admin/manufacturers")
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          resetForm()
+        }
+      })
 
     } catch (err) {
       setIsSaving(false)
-      toast({ title: "Create failed", description: getApiErrorMessage(err) || String(err), variant: "destructive" })
+      const errorMsg = getApiErrorMessage(err) || String(err)
+      
+      Swal.fire({
+        icon: "error",
+        title: "Failed to Create Manufacturer",
+        text: errorMsg,
+        confirmButtonColor: "#ef4444"
+      })
     }
   }
 
@@ -278,7 +334,7 @@ export default function AdminCreateManufacturerPage() {
     setSelectedCertifications([])
     setExportMarkets([])
     setMainProducts([])
-    setShowSuccessDialog(false)
+    setCurrentStep(1)
   }
 
   return (
@@ -678,14 +734,14 @@ export default function AdminCreateManufacturerPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {industries.map(industry => (
+                {categories.map(category => (
                   <Badge
-                    key={industry.id}
-                    variant={selectedIndustries.includes(industry.name) ? "default" : "outline"}
+                    key={category.id}
+                    variant={selectedIndustries.includes(category.id) ? "default" : "outline"}
                     className="cursor-pointer"
-                    onClick={() => toggleIndustry(industry.name)}
+                    onClick={() => toggleIndustry(category.id)}
                   >
-                    {industry.name}
+                    {category.name}
                   </Badge>
                 ))}
               </div>
@@ -756,7 +812,7 @@ export default function AdminCreateManufacturerPage() {
                 {["North America", "South America", "Western Europe", "Eastern Europe", "Middle East", "Africa", "Southeast Asia", "East Asia", "South Asia", "Oceania"].map(market => (
                   <Badge
                     key={market}
-                    variant={exportMarkets.includes(market) ? "default" : "outline"}
+                    variant={selectedExportMarkets.includes(market) ? "default" : "outline"}
                     className="cursor-pointer"
                     onClick={() => toggleExportMarket(market)}
                   >
@@ -797,56 +853,6 @@ export default function AdminCreateManufacturerPage() {
           </div>
         </div>
       )}
-
-      {/* Success Dialog */}
-      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-emerald-500" />
-              Manufacturer Created Successfully
-            </DialogTitle>
-            <DialogDescription>
-              The manufacturer account has been created
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="p-4 rounded-lg bg-muted space-y-3">
-              <div>
-                <Label className="text-xs text-muted-foreground">Email</Label>
-                <p className="font-mono text-sm">{createdCredentials.email}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Password</Label>
-                <p className="font-mono text-sm">{createdCredentials.password}</p>
-              </div>
-            </div>
-            
-            <Button variant="outline" className="w-full" onClick={copyCredentials}>
-              <Copy className="mr-2 h-4 w-4" />
-              Copy Credentials
-            </Button>
-
-            {accountForm.sendCredentials && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 text-emerald-700 text-sm">
-                <Send className="h-4 w-4" />
-                Login credentials will be sent to {createdCredentials.email}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              resetForm()
-              router.push("/admin/manufacturers")
-            }}>
-              View Manufacturers
-            </Button>
-            <Button onClick={resetForm}>
-              Create Another
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

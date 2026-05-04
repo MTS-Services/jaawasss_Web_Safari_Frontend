@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -76,7 +77,7 @@ type AdminUserDetail = UserItem & {
   supplier_update?: number
   weekly_digest?: number
   marketing_promotion?: number
-  preferred_currency?: string | null
+  preferred_currency?: { code: string; symbol: string } | null
   login_history?: any[]
   company?: any
 }
@@ -85,6 +86,8 @@ import { apiClient } from "@/lib/api/client"
 import { normalizeUserRole } from "@/lib/roles/dashboard-route"
 import { useToast } from "@/hooks/use-toast"
 import { getApiErrorMessage } from "@/lib/api/errors"
+import { createConversation, getConversations } from "@/lib/api/messages"
+import { useAuth } from "@/lib/auth-context"
 
 // Start with an empty list; the component will load data from the API.
 const initialUsers: UserItem[] = []
@@ -116,6 +119,9 @@ const roleConfig: Record<UserRole, { label: string; icon: typeof User; color: st
 }
 
 export default function AdminUsersPage() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const { user: currentAuthUser } = useAuth()
   const [users, setUsers] = useState<UserItem[]>(initialUsers)
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
@@ -129,7 +135,6 @@ export default function AdminUsersPage() {
   const [showUserDialog, setShowUserDialog] = useState(false)
   const [currentUser, setCurrentUser] = useState<AdminUserDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState<boolean>(false)
-  const { toast } = useToast()
   // Action dialogs state
   const [deactivateOpen, setDeactivateOpen] = useState(false)
   const [deactivateTarget, setDeactivateTarget] = useState<string | null>(null)
@@ -140,6 +145,7 @@ export default function AdminUsersPage() {
   const [bulkDeactivateOpen, setBulkDeactivateOpen] = useState(false)
   const [bulkDeactivateReason, setBulkDeactivateReason] = useState("")
   const [actionLoading, setActionLoading] = useState(false)
+  const [contactingUserId, setContactingUserId] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -162,9 +168,9 @@ export default function AdminUsersPage() {
           name: `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim(),
           email: u.email ?? "",
           role: normalizeUserRole(String(u.role ?? "buyer")),
-          company: u.company ?? null,
+          company: u.company?.company_name ?? null,
           status: (String(u.status ?? "active")).toLowerCase() as UserStatus,
-          country: u.country ?? u.timezone ?? undefined,
+          country: u.company?.country ?? undefined,
           joinedAt: u.created_at ?? undefined,
         }))
 
@@ -213,13 +219,13 @@ export default function AdminUsersPage() {
 
   const updateUserStatus = async (id: string, status: UserStatus, reason?: string) => {
     const actionText = status === 'active' ? 'Activating' : status === 'deactivated' ? 'Deactivating' : 'Updating'
-    const toastRef = toast({ title: `${actionText} user...` })
+    toast({ title: `${actionText} user...` })
 
     try {
       if (status === 'active') {
         await apiClient.patch(`/admin/users/${id}/active`)
         setUsers(prev => prev.map(u => u.id === id ? { ...u, status: 'active' } : u))
-        toastRef.update({ title: 'User activated.' })
+        toast({ title: 'User activated.' })
         setReloadKey(k => k + 1)
         return
       }
@@ -227,7 +233,7 @@ export default function AdminUsersPage() {
       if (status === 'deactivated') {
         await apiClient.patch(`/admin/users/${id}/deactivate`, { reason: reason ?? undefined })
         setUsers(prev => prev.map(u => u.id === id ? { ...u, status: 'deactivated' } : u))
-        toastRef.update({ title: 'User deactivated.' })
+        toast({ title: 'User deactivated.' })
         setReloadKey(k => k + 1)
         return
       }
@@ -235,15 +241,15 @@ export default function AdminUsersPage() {
       if (status === 'suspended') {
         // No API provided for suspend — perform local update only
         setUsers(prev => prev.map(u => u.id === id ? { ...u, status: 'suspended' } : u))
-        toastRef.update({ title: 'User suspended (local update).' })
+        toast({ title: 'User suspended (local update).' })
         return
       }
 
       // Fallback: local update
       setUsers(prev => prev.map(u => u.id === id ? { ...u, status } : u))
-      toastRef.update({ title: 'User status updated (local).' })
+      toast({ title: 'User status updated (local).' })
     } catch (err) {
-      toastRef.update({ title: 'Action failed', description: getApiErrorMessage(err) })
+      toast({ title: 'Action failed', description: getApiErrorMessage(err), variant: 'destructive' })
     }
   }
 
@@ -251,16 +257,16 @@ export default function AdminUsersPage() {
     if (selectedUsers.length === 0) return
 
     if (status === 'active') {
-      const t = toast({ title: 'Activating users...' })
+      toast({ title: 'Activating users...' })
       try {
         await Promise.all(selectedUsers.map((id) => apiClient.patch(`/admin/users/${id}/active`)))
         setUsers(prev => prev.map(u => selectedUsers.includes(u.id) ? { ...u, status: 'active' } : u))
         setSelectedUsers([])
-        t.update({ title: 'Users activated.' })
+        toast({ title: 'Users activated.' })
         setReloadKey(k => k + 1)
         return
       } catch (err) {
-        t.update({ title: 'Bulk activation failed', description: getApiErrorMessage(err) })
+        toast({ title: 'Bulk activation failed', description: getApiErrorMessage(err), variant: 'destructive' })
         return
       }
     }
@@ -278,31 +284,31 @@ export default function AdminUsersPage() {
   }
 
   const deleteUser = async (id: string, reason?: string) => {
-    const t = toast({ title: 'Deleting user...' })
+    toast({ title: 'Deleting user...' })
     try {
       await apiClient.delete(`/admin/users/${id}`, { data: { reason: reason ?? undefined } })
       setUsers(prev => prev.filter(u => u.id !== id))
-      t.update({ title: 'User deleted.' })
+      toast({ title: 'User deleted.' })
       setReloadKey(k => k + 1)
     } catch (err) {
-      t.update({ title: 'Delete failed', description: getApiErrorMessage(err) })
+      toast({ title: 'Delete failed', description: getApiErrorMessage(err), variant: 'destructive' })
     }
   }
 
   const performBulkDeactivate = async () => {
     if (selectedUsers.length === 0) return
     setActionLoading(true)
-    const t = toast({ title: 'Deactivating users...' })
+    toast({ title: 'Deactivating users...' })
     try {
       await Promise.all(selectedUsers.map((id) => apiClient.patch(`/admin/users/${id}/deactivate`, { reason: bulkDeactivateReason ?? undefined })))
       setUsers(prev => prev.map(u => selectedUsers.includes(u.id) ? { ...u, status: 'deactivated' } : u))
       setSelectedUsers([])
-      t.update({ title: 'Users deactivated.' })
+      toast({ title: 'Users deactivated.' })
       setReloadKey(k => k + 1)
       setBulkDeactivateOpen(false)
       setBulkDeactivateReason("")
     } catch (err) {
-      t.update({ title: 'Bulk deactivate failed', description: getApiErrorMessage(err) })
+      toast({ title: 'Bulk deactivate failed', description: getApiErrorMessage(err), variant: 'destructive' })
     } finally {
       setActionLoading(false)
     }
@@ -313,7 +319,10 @@ export default function AdminUsersPage() {
     try {
       const res = await apiClient.get(`/admin/users/${userId}`)
       const u = res.data?.data
-      if (!u) return
+      if (!u) {
+        toast({ title: "User not found", description: "The user details could not be retrieved.", variant: "destructive" })
+        return
+      }
 
       const mapped: AdminUserDetail = {
         id: String(u.id),
@@ -345,8 +354,7 @@ export default function AdminUsersPage() {
 
       setCurrentUser(mapped)
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to load user detail", err)
+      toast({ title: "Failed to load user details", description: getApiErrorMessage(err) || String(err), variant: "destructive" })
     } finally {
       setDetailLoading(false)
     }
@@ -361,6 +369,59 @@ export default function AdminUsersPage() {
 
   const buyerCount = users.filter(u => u.role === "buyer").length
   const manufacturerCount = users.filter(u => u.role === "manufacturer").length
+
+  const contactUser = async () => {
+    if (!currentUser?.id || !currentAuthUser?.id) return
+
+    setContactingUserId(currentUser.id)
+    try {
+      const adminId = parseInt(currentAuthUser.id)
+      const userId = parseInt(currentUser.id)
+      
+      // Check if a conversation already exists with this user
+      const existingConversations = await getConversations()
+      const existingConversation = existingConversations.find(conv => 
+        conv.participants.some(p => p.id === currentUser.id.toString())
+      )
+      
+      if (existingConversation) {
+        // Conversation already exists, navigate to it
+        setShowUserDialog(false)
+        toast({ title: "Conversation found", description: "Opening existing conversation..." })
+        router.push(`/messages?conversation=${existingConversation.id}`)
+      } else {
+        // Create a new conversation
+        const conversation = await createConversation([adminId, userId])
+        
+        if (conversation) {
+          setShowUserDialog(false)
+          toast({ title: "Conversation started", description: "Redirecting to messages..." })
+          router.push(`/messages?conversation=${conversation.id}`)
+        } else {
+          toast({ title: "Failed to start conversation", description: "Could not create conversation with this user", variant: "destructive" })
+        }
+      }
+    } catch (err) {
+      const errorMsg = getApiErrorMessage(err)
+      // Handle the "conversation already exists" error gracefully
+      if (errorMsg?.includes("already exists")) {
+        toast({ title: "Conversation exists", description: "This conversation already exists. Opening it...", variant: "default" })
+        // Fetch conversations again and find the one that was just checked
+        const existingConversations = await getConversations()
+        const existingConversation = existingConversations.find(conv => 
+          conv.participants.some(p => p.id === currentUser?.id?.toString())
+        )
+        if (existingConversation) {
+          setShowUserDialog(false)
+          router.push(`/messages?conversation=${existingConversation.id}`)
+        }
+      } else {
+        toast({ title: "Error", description: errorMsg || "Failed to contact user", variant: "destructive" })
+      }
+    } finally {
+      setContactingUserId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -409,6 +470,7 @@ export default function AdminUsersPage() {
               <SelectItem value="suspended">Suspended</SelectItem>
               <SelectItem value="deactivated">Deactivated</SelectItem>
               <SelectItem value="deleted">Deleted</SelectItem>
+              <SelectItem value="scheduled_deletion">Scheduled Deletion</SelectItem>
             </SelectContent>
           </Select>
           <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); setPage(1); }}>
@@ -448,10 +510,17 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* Users Table */}
+      {isLoading && (
+        <div className="text-center py-12">
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="mt-4 text-muted-foreground">Loading users...</p>
+        </div>
+      )}
 
-      {/* Mobile: card list */}
-      <div className="block sm:hidden space-y-3">
+      {!isLoading && (
+        <>
+          {/* Mobile: card list */}
+          <div className="block sm:hidden space-y-3">
         {filteredUsers.map((user) => {
           const RoleIcon = roleConfig[user.role].icon
           const s = getStatusInfo(user.status)
@@ -715,6 +784,8 @@ export default function AdminUsersPage() {
           </div>
         </div>
       </div>
+        </>
+      )}
 
       {/* User Details Dialog */}
       <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
@@ -759,7 +830,7 @@ export default function AdminUsersPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Company:</span>
-                  <p className="font-medium">{currentUser.company?.name ?? currentUser.company ?? "-"}</p>
+                  <p className="font-medium">{typeof currentUser.company === 'string' ? currentUser.company : (currentUser.company?.company_name ?? "-")}</p>
                 </div>
 
                 <div>
@@ -774,7 +845,7 @@ export default function AdminUsersPage() {
 
                 <div>
                   <span className="text-muted-foreground">Preferred currency:</span>
-                  <p className="font-medium">{currentUser.preferred_currency ?? "-"}</p>
+                  <p className="font-medium">{currentUser.preferred_currency ? `${currentUser.preferred_currency.code} - ${currentUser.preferred_currency.symbol}` : "-"}</p>
                 </div>
 
                 <div>
@@ -817,27 +888,23 @@ export default function AdminUsersPage() {
                     <Badge variant="outline">Marketing: {currentUser.marketing_promotion ?? 0}</Badge>
                   </div>
                 </div>
-
-                <div className="md:col-span-2">
-                  <span className="text-muted-foreground">Login history:</span>
-                  {Array.isArray(currentUser.login_history) && currentUser.login_history.length > 0 ? (
-                    <ul className="mt-2 list-disc list-inside text-sm text-muted-foreground">
-                      {currentUser.login_history.map((h: any, i: number) => (
-                        <li key={i}>{String(h)}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="font-medium mt-1">No login history</p>
-                  )}
-                </div>
               </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowUserDialog(false)}>Close</Button>
-            <Button>
-              <Mail className="mr-2 h-4 w-4" />
-              Contact User
+            <Button onClick={contactUser} disabled={contactingUserId !== null}>
+              {contactingUserId ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Contacting...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Contact User
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
