@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import * as Icons from "lucide-react"
-import { getAdminProducts, updateAdminProductApprovalStatus } from "@/lib/api/admin-products"
+import { getAdminProducts, updateAdminProductApprovalStatus, deleteAdminProduct } from "@/lib/api/admin-products"
 import type { AdminProduct } from "@/lib/api/admin-products"
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -152,6 +152,66 @@ export default function AdminProductsPage() {
     })
   }
 
+  // Handle product deletion
+  const handleDeleteProduct = async (productId: number, productName: string) => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Delete Product",
+      text: `Are you sure you want to delete "${productName}"? This action cannot be undone.`,
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      customClass: {
+        confirmButton: "rounded-lg px-6 py-2 font-semibold",
+        cancelButton: "rounded-lg px-6 py-2 font-semibold",
+      },
+    })
+
+    if (!result.isConfirmed) {
+      return
+    }
+
+    setUpdatingIds((prev) => new Set([...prev, productId]))
+    const response = await deleteAdminProduct(productId)
+    
+    if (response.success) {
+      // Remove product from local state
+      setProducts((prev) => prev.filter((p) => p.id !== productId))
+      
+      // Show success alert
+      await Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: "Product has been deleted successfully",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#503322",
+        customClass: {
+          confirmButton: "rounded-lg px-6 py-2 font-semibold",
+        },
+      })
+    } else {
+      // Show error alert
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: response.message || "Failed to delete product",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#6366f1",
+        customClass: {
+          confirmButton: "rounded-lg px-6 py-2 font-semibold",
+        },
+      })
+    }
+    
+    setUpdatingIds((prev) => {
+      const newSet = new Set(prev)
+      newSet.delete(productId)
+      return newSet
+    })
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -255,11 +315,6 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge
-                      variant={product.is_approved ? "default" : "secondary"}
-                    >
-                      {product.is_approved ? "Approved" : "Pending"}
-                    </Badge>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" disabled={isUpdating}>
@@ -267,32 +322,16 @@ export default function AdminProductsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {!product.is_approved && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleApprovalStatusChange(product.id, true)
-                            }
-                            disabled={isUpdating}
-                            className="cursor-pointer"
-                          >
-                            <Icons.Check className="mr-2 h-4 w-4" />
-                            Approve
-                          </DropdownMenuItem>
-                        )}
-                        {product.is_approved && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleApprovalStatusChange(product.id, false)
-                              }
-                              disabled={isUpdating}
-                              className="cursor-pointer text-destructive"
-                            >
-                              <Icons.X className="mr-2 h-4 w-4" />
-                              Reject
-                            </DropdownMenuItem>
-                          </>
-                        )}
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleDeleteProduct(product.id, product.name)
+                          }
+                          disabled={isUpdating}
+                          className="cursor-pointer text-destructive"
+                        >
+                          <Icons.Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>

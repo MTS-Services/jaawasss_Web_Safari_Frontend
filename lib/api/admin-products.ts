@@ -484,3 +484,22 @@ export async function updateAdminProductApprovalStatus(
     }
   }
 }
+
+export async function deleteAdminProduct(
+  id: number
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    const response = await apiClient.delete(`/admin/products/${id}`)
+    const payload = toRecord(response.data)
+
+    return {
+      success: typeof payload.success === "boolean" ? payload.success : true,
+      message: typeof payload.message === "string" ? payload.message : undefined,
+    }
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message: getApiErrorMessage(error, "Failed to delete product."),
+    }
+  }
+}
