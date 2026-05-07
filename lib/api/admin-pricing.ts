@@ -9,6 +9,12 @@ export interface PricingFeature {
   sort?: number
 }
 
+export interface PlanFeature {
+  id: number
+  name: string
+  key: string
+}
+
 export interface PricingPlan {
   id: number
   name: string
@@ -166,9 +172,27 @@ export async function deletePlan(planId: number | string): Promise<{ success: bo
   }
 }
 
-export async function fetchPlanFeatures(): Promise<PricingFeature[]> {
+export async function togglePopularPlan(planId: number | string): Promise<{ success: boolean; message: string; plan?: PricingPlan }> {
   try {
-    const response = await apiClient.get<{ success: boolean; data?: PricingFeature[] }>("/admin/plan-features")
+    const response = await apiClient.patch<CreatePlanResponse>(`/admin/plans/${planId}/toggle-popular`)
+    return {
+      success: response.data?.success || false,
+      message: response.data?.message || "Plan popular status toggled successfully",
+      plan: response.data?.data
+    }
+  } catch (error) {
+    const errorMessage = getApiErrorMessage(error)
+    console.error("Failed to toggle plan popular status:", errorMessage)
+    return {
+      success: false,
+      message: errorMessage || "Failed to toggle plan popular status"
+    }
+  }
+}
+
+export async function fetchPlanFeatures(): Promise<PlanFeature[]> {
+  try {
+    const response = await apiClient.get<{ success: boolean; data?: PlanFeature[] }>("/admin/plans/features")
     return response.data?.data || []
   } catch (error) {
     console.error("Failed to fetch plan features:", getApiErrorMessage(error))
