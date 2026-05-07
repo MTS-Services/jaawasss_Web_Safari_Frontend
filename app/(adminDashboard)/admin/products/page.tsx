@@ -236,7 +236,7 @@ export default function AdminProductsPage() {
             className="pl-9"
           />
         </div>
-        <Select
+        {/* <Select
           value={isApprovedFilter}
           onValueChange={(value) =>
             updateQueryParams({ is_approved: value, page: 1 })
@@ -250,7 +250,7 @@ export default function AdminProductsPage() {
             <SelectItem value="1">Approved</SelectItem>
             <SelectItem value="0">Pending</SelectItem>
           </SelectContent>
-        </Select>
+        </Select> */}
       </div>
 
       {/* Loading State */}
