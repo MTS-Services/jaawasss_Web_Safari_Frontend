@@ -217,7 +217,7 @@ export async function deleteAdminCertification(
   certificationId: string | number
 ): Promise<AdminCertificationMutationResponse> {
   try {
-    const response = await apiClient.delete(`/manufacturer/certificate/${certificationId}`)
+    const response = await apiClient.delete(`/admin/certifications/${certificationId}`)
     return normalizeMutationResponse(response.data, "Certification deleted successfully.")
   } catch (error: unknown) {
     return {
