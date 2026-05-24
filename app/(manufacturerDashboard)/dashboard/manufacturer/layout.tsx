@@ -26,7 +26,8 @@ import {
   Globe,
   CreditCard,
   FileBox,
-  Clock
+  Clock,
+  ScanEye
 } from "lucide-react"
 import { useState } from "react"
 
@@ -34,6 +35,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard/manufacturer", icon: LayoutDashboard },
   { name: "Inquiries", href: "/dashboard/manufacturer/inquiries", icon: FileText },
   { name: "Messages", href: "/dashboard/manufacturer/messages", icon: MessageSquare },
+  { name: "Review Center", href: "/dashboard/manufacturer/review-center", icon: ScanEye },
   { name: "Products", href: "/dashboard/manufacturer/products", icon: Package },
   { name: "Catalogs", href: "/dashboard/manufacturer/catalogs", icon: FileBox },
   { name: "Certifications", href: "/dashboard/manufacturer/certifications", icon: Award },

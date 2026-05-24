@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
@@ -37,6 +37,7 @@ import { useToast } from "@/hooks/use-toast"
 import type { ManufacturerApplication, ManufacturerRegistrationResponse } from "@/lib/api/admin-manufacturer-registrations"
 import { fetchManufacturerRegistrations, deleteManufacturer, approveManufacturer, rejectManufacturer } from "@/lib/api/admin-manufacturer-registrations"
 import { ManufacturerApplicationDetailDialog } from "@/components/admin/manufacturer-application-detail-dialog"
+import RequestReviewDialog from "@/components/admin/request-review-dialog"
 import {
   Factory,
   Check,
@@ -53,6 +54,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  ScanEye,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -96,6 +98,8 @@ export default function ManufacturerRegistrationsPage() {
   const [rejectTarget, setRejectTarget] = useState<ManufacturerApplication | null>(null)
   const [rejectReason, setRejectReason] = useState("")
   const [showRejectDialog, setShowRejectDialog] = useState(false)
+  const [reviewTarget, setReviewTarget] = useState<ManufacturerApplication | null>(null)
+  const [showReviewDialog, setShowReviewDialog] = useState(false)
   const [approvingId, setApprovingId] = useState<number | string | null>(null)
   const [rejectingId, setRejectingId] = useState<number | string | null>(null)
 
@@ -374,7 +378,11 @@ export default function ManufacturerRegistrationsPage() {
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => openInfoRequest(row)}>
               <FileQuestion className="mr-2 h-4 w-4" />
-              Request More Info
+              Request Info
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { setReviewTarget(row); setShowReviewDialog(true) }}>
+              <ScanEye className="mr-2 h-4 w-4 text-secondary" />
+              <span className="text-secondary font-medium">Request Review</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {pending && (
@@ -722,6 +730,18 @@ export default function ManufacturerRegistrationsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Request Review Dialog */}
+      {reviewTarget && (
+        <RequestReviewDialog
+          open={showReviewDialog}
+          onOpenChange={(o) => {
+            setShowReviewDialog(o)
+            if (!o) setReviewTarget(null)
+          }}
+          manufacturer={reviewTarget}
+        />
+      )}
     </div>
   )
 }

@@ -36,7 +36,8 @@ import {
   Filter,
   HelpCircle,
   ClipboardList,
-  Award
+  Award,
+  ScanEye
 } from "lucide-react"
 import { useState } from "react"
 
@@ -57,6 +58,7 @@ export default function AdminLayout({
     { name: t?.nav?.adminUsers || "Users", href: "/admin/users", icon: Users },
     { name: t?.nav?.adminCreateManufacturer || "Create Manufacturer", href: "/admin/manufacturers/create", icon: UserPlus },
     { name: t?.nav?.adminMfgRegistrations || "Mfg registrations", href: "/admin/manufacturer-registrations", icon: ClipboardList },
+    { name: t?.nav?.adminReviewManagement || "Review Management", href: "/admin/review-management", icon: ScanEye },
     { name: t?.nav?.adminSuppliers || "Suppliers", href: "/admin/suppliers", icon: Factory, badge: "12" },
     { name: t?.nav?.adminProducts || "Products", href: "/admin/products", icon: Package },
     { name: t?.nav?.adminIndustries || "Industries", href: "/admin/industries", icon: Layers },
