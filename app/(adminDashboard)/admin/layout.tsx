@@ -66,6 +66,7 @@ export default function AdminLayout({
     { name: t?.nav?.adminReviews || "Reviews", href: "/admin/reviews", icon: Star },
     { name: t?.nav?.adminRFQs || "RFQs", href: "/admin/rfqs", icon: FileText },
     { name: t?.nav?.adminMessages || "Messages", href: "/admin/messages", icon: MessageSquare },
+    { name: t?.nav?.adminSupportTickets || "Support Tickets", href: "/admin/customer-supports/tickets", icon: HelpCircle },
     { name: t?.nav?.adminReports || "Reports", href: "/admin/reports", icon: Flag, badge: "3" },
     { name: t?.nav?.adminPricing || "Pricing", href: "/admin/pricing", icon: DollarSign },
     { name: t?.nav?.adminPromotions || "Promotions", href: "/admin/promotions", icon: Sparkles },
@@ -135,7 +136,9 @@ export default function AdminLayout({
 
           <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto hide-scrollbar overflow-x-hidden overscroll-contain px-3 py-4">
             {navigation.map((item) => {
-              const isActive = pathname === item.href
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/admin" && pathname.startsWith(`${item.href}/`))
               return (
                 <Link
                   key={item.name}

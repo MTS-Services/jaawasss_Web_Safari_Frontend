@@ -27,7 +27,8 @@ import {
   CreditCard,
   FileBox,
   Clock,
-  ScanEye
+  ScanEye,
+  HelpCircle
 } from "lucide-react"
 import { useState } from "react"
 
@@ -35,6 +36,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard/manufacturer", icon: LayoutDashboard },
   { name: "Inquiries", href: "/dashboard/manufacturer/inquiries", icon: FileText },
   { name: "Messages", href: "/dashboard/manufacturer/messages", icon: MessageSquare },
+  { name: "Support Tickets", href: "/dashboard/manufacturer/support-tickets", icon: HelpCircle },
   { name: "Review Center", href: "/dashboard/manufacturer/review-center", icon: ScanEye },
   { name: "Products", href: "/dashboard/manufacturer/products", icon: Package },
   { name: "Catalogs", href: "/dashboard/manufacturer/catalogs", icon: FileBox },
@@ -79,6 +81,11 @@ export default function ManufacturerDashboardLayout({
 
   // Show approval status banner for non-approved manufacturers
   const showApprovalBanner = user.manufacturerStatus && user.manufacturerStatus !== "approved"
+  const isNavItemActive = (href: string) => {
+    if (pathname === href) return true
+    if (href !== "/dashboard/manufacturer" && pathname.startsWith(`${href}/`)) return true
+    return false
+  }
 
   return (
     <div className="flex h-dvh max-h-dvh min-h-0 w-full overflow-hidden bg-background">
@@ -149,7 +156,7 @@ export default function ManufacturerDashboardLayout({
 
           <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 py-4">
             {navigation.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = isNavItemActive(item.href)
               const navItem = item as typeof item & { highlight?: boolean }
               return (
                 <Link

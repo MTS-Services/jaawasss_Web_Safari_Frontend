@@ -63,6 +63,12 @@ const sidebarItems = [
     exact: true
   },
   {
+    title: "Support Tickets",
+    href: "/dashboard/buyer/support-tickets",
+    icon: HelpCircle,
+    exact: false
+  },
+  {
     title: "Recent Activity",
     href: "/dashboard/buyer/activity",
     icon: Activity,
