@@ -5,15 +5,19 @@ import { useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import {
   getMyCustomerSupportTicketById,
+  replyCustomerSupportTicket,
   type CustomerTicketDetail,
   type CustomerTicketMessage,
   type CustomerTicketPriority,
   type CustomerTicketStatus,
 } from "@/lib/api/customer-support-tickets"
-import { ArrowLeft, Loader2, Paperclip } from "lucide-react"
+import { ArrowLeft, Loader2, Paperclip, Send } from "lucide-react"
 
 interface CustomerSupportTicketDetailPageProps {
   basePath: string
@@ -72,6 +76,9 @@ export function CustomerSupportTicketDetailPage({ basePath }: CustomerSupportTic
 
   const [ticket, setTicket] = useState<CustomerTicketDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [replyMessage, setReplyMessage] = useState("")
+  const [replyAttachments, setReplyAttachments] = useState<File[]>([])
+  const [isReplying, setIsReplying] = useState(false)
 
   useEffect(() => {
     if (!ticketId) {
@@ -113,6 +120,38 @@ export function CustomerSupportTicketDetailPage({ basePath }: CustomerSupportTic
     if (!ticket?.messages) return []
     return [...ticket.messages].sort((a, b) => a.id - b.id)
   }, [ticket?.messages])
+
+  const handleSendReply = async () => {
+    if (!ticketId || !replyMessage.trim()) {
+      toast({
+        title: "Reply message required",
+        description: "Please write a message before sending.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsReplying(true)
+    const response = await replyCustomerSupportTicket(ticketId, {
+      message: replyMessage.trim(),
+      attachments: replyAttachments,
+    })
+    setIsReplying(false)
+
+    if (!response.success || !response.data) {
+      toast({
+        title: "Failed to send reply",
+        description: response.message || "Please try again.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setTicket(response.data)
+    setReplyMessage("")
+    setReplyAttachments([])
+    toast({ title: "Reply sent" })
+  }
 
   if (!ticketId) {
     return (
@@ -216,6 +255,46 @@ export function CustomerSupportTicketDetailPage({ basePath }: CustomerSupportTic
               </div>
             ))
           )}
+        </div>
+
+        <div className="mt-4 space-y-3 rounded-lg border border-border p-3">
+          <Label htmlFor="ticket-reply-message">Reply Message</Label>
+          <Textarea
+            id="ticket-reply-message"
+            value={replyMessage}
+            onChange={(event) => setReplyMessage(event.target.value)}
+            placeholder="Write your reply"
+            rows={4}
+          />
+
+          <div className="space-y-2">
+            <Label htmlFor="ticket-reply-attachments">Attachments</Label>
+            <Input
+              id="ticket-reply-attachments"
+              type="file"
+              multiple
+              onChange={(event) => setReplyAttachments(Array.from(event.target.files || []))}
+            />
+
+            {replyAttachments.length > 0 ? (
+              <div className="space-y-1 text-xs text-muted-foreground">
+                {replyAttachments.map((file, index) => (
+                  <p key={`${file.name}-${index}`}>{file.name}</p>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              className="gap-2"
+              onClick={() => void handleSendReply()}
+              disabled={isReplying || !replyMessage.trim()}
+            >
+              {isReplying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Send Reply
+            </Button>
+          </div>
         </div>
       </div>
     </div>

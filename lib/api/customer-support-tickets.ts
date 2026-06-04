@@ -90,6 +90,11 @@ export interface CreateCustomerTicketInput {
   attachments?: File[]
 }
 
+export interface ReplyCustomerTicketInput {
+  message: string
+  attachments?: File[]
+}
+
 type RecordLike = Record<string, unknown>
 
 function toRecord(value: unknown): RecordLike {
@@ -324,6 +329,40 @@ export async function createCustomerSupportTicket(
     return {
       success: false,
       message: getApiErrorMessage(error, "Failed to create support ticket."),
+      data: null,
+    }
+  }
+}
+
+export async function replyCustomerSupportTicket(
+  ticketId: number,
+  input: ReplyCustomerTicketInput
+): Promise<CustomerTicketDetailResponse> {
+  try {
+    const formData = new FormData()
+    formData.append("message", input.message)
+
+    if (input.attachments?.length) {
+      input.attachments.forEach((file, index) => {
+        formData.append(`attachments[${index}]`, file)
+      })
+    }
+
+    const response = await apiClient.post(
+      `/customer-supports/tickets/${ticketId}/messages`,
+      formData
+    )
+    const payload = toRecord(response.data)
+
+    return {
+      success: typeof payload.success === "boolean" ? payload.success : true,
+      message: typeof payload.message === "string" ? payload.message : undefined,
+      data: payload.data ? normalizeDetail(payload.data) : null,
+    }
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message: getApiErrorMessage(error, "Failed to send ticket reply."),
       data: null,
     }
   }
