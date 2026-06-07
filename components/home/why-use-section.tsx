@@ -1,3 +1,5 @@
+"use client"
+
 import { 
   Shield, 
   Globe, 
@@ -9,59 +11,66 @@ import {
   Award,
   TrendingUp
 } from "lucide-react"
-
-const buyerBenefits = [
-  {
-    icon: Wallet,
-    title: "Free Forever for Buyers",
-    description: "Search, compare, message, and request quotes — all completely free. No hidden fees, no subscription required.",
-  },
-  {
-    icon: Shield,
-    title: "Reviewed Suppliers Only",
-    description: "Every manufacturer is reviewed and approved by our team based on submitted information before appearing on the platform.",
-  },
-  {
-    icon: Globe,
-    title: "Global Reach",
-    description: "Access factories from 50+ countries across all major manufacturing regions worldwide.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Direct Communication",
-    description: "Chat directly with factory representatives, no middlemen or brokers involved.",
-  },
-  {
-    icon: BarChart3,
-    title: "Compare & Decide",
-    description: "Side-by-side supplier comparison with detailed capabilities, certifications, and pricing.",
-  },
-  {
-    icon: Clock,
-    title: "Save Time",
-    description: "Streamlined RFQ process, organized inbox, and saved suppliers keep your workflow efficient.",
-  },
-]
-
-const manufacturerBenefits = [
-  {
-    icon: TrendingUp,
-    title: "Global Visibility",
-    description: "Get discovered by importers and buyers from around the world looking for your products.",
-  },
-  {
-    icon: Award,
-    title: "Premium Positioning",
-    description: "Present your factory with a professional profile, product catalogs, and submitted credentials.",
-  },
-  {
-    icon: Users,
-    title: "Quality Leads",
-    description: "Receive inquiries from serious buyers who have already researched your capabilities.",
-  },
-]
+import { useTranslation } from "@/lib/i18n"
 
 export function WhyUseSection() {
+  const { t } = useTranslation();
+
+  if (!t || !t.landing?.whyUse) {
+    return null
+  }
+
+  const buyerBenefits = [
+    {
+      icon: Wallet,
+      title: t.landing.whyUse.bb1Title,
+      description: t.landing.whyUse.bb1Desc,
+    },
+    {
+      icon: Shield,
+      title: t.landing.whyUse.bb2Title,
+      description: t.landing.whyUse.bb2Desc,
+    },
+    {
+      icon: Globe,
+      title: t.landing.whyUse.bb3Title,
+      description: t.landing.whyUse.bb3Desc,
+    },
+    {
+      icon: MessageSquare,
+      title: t.landing.whyUse.bb4Title,
+      description: t.landing.whyUse.bb4Desc,
+    },
+    {
+      icon: BarChart3,
+      title: t.landing.whyUse.bb5Title,
+      description: t.landing.whyUse.bb5Desc,
+    },
+    {
+      icon: Clock,
+      title: t.landing.whyUse.bb6Title,
+      description: t.landing.whyUse.bb6Desc,
+    },
+  ]
+
+  const manufacturerBenefits = [
+    {
+      icon: TrendingUp,
+      title: t.landing.whyUse.mb1Title,
+      description: t.landing.whyUse.mb1Desc,
+    },
+    {
+      icon: Award,
+      title: t.landing.whyUse.mb2Title,
+      description: t.landing.whyUse.mb2Desc,
+    },
+    {
+      icon: Users,
+      title: t.landing.whyUse.mb3Title,
+      description: t.landing.whyUse.mb3Desc,
+    },
+  ]
+
   return (
     <section className="py-8 sm:py-12 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -69,10 +78,10 @@ export function WhyUseSection() {
         <div>
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
-              Why Buyers Choose SourceNest
+              {t.landing.whyUse.buyerTitle}
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Everything you need to find and connect with the right manufacturers — at no cost
+              {t.landing.whyUse.buyerSubtitle}
             </p>
           </div>
 
@@ -98,10 +107,10 @@ export function WhyUseSection() {
         <div>
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
-              Why Manufacturers Join
+              {t.landing.whyUse.mfgTitle}
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Expand your reach and connect with qualified buyers through a trusted platform
+              {t.landing.whyUse.mfgSubtitle}
             </p>
           </div>
 
@@ -120,10 +129,10 @@ export function WhyUseSection() {
           {/* Why Factories Pay */}
           <div className="mt-14 rounded-2xl bg-primary p-8 text-center text-primary-foreground md:p-12">
             <h3 className="font-serif text-2xl font-medium md:text-3xl">
-              Why Do Manufacturers Pay to Join?
+              {t.landing.whyUse.whyPayTitle}
             </h3>
             <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/80 leading-relaxed">
-              SourceNest is free for buyers to ensure maximum reach for manufacturers. Factories pay a subscription to fund platform development, review processes, and premium features. This model ensures only serious, committed manufacturers join — giving buyers confidence in every supplier they discover.
+              {t.landing.whyUse.whyPayDesc}
             </p>
           </div>
         </div>

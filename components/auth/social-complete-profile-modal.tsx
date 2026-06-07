@@ -221,7 +221,7 @@ export function SocialCompleteProfileModal({
             <DialogDescription>
               {role === "buyer"
                 ? "Finish your buyer profile to continue."
-                : "Finish your manufacturer verification details to continue."}
+                : "Finish your manufacturer review details to continue."}
             </DialogDescription>
           </DialogHeader>
 
@@ -262,7 +262,7 @@ export function SocialCompleteProfileModal({
                       <SelectTrigger id="socialCountry">
                         <SelectValue placeholder="Select your country" />
                       </SelectTrigger>
-                      <SelectContent className="max-h-[300px]">
+                      <SelectContent className="max-h-75">
                         {countries.map((country) => (
                           <SelectItem key={country.code} value={country.code}>
                             {country.name}

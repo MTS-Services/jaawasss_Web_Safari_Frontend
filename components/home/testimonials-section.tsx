@@ -1,4 +1,7 @@
+"use client"
+
 import { Quote } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 const testimonials = [
   {
@@ -25,15 +28,16 @@ const testimonials = [
 ]
 
 export function TestimonialsSection() {
+  const { t } = useTranslation()
   return (
     <section className="bg-muted/50 py-8 sm:py-12 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-            Trusted by Buyers & Manufacturers Worldwide
+            {t.landing.testimonials.title}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            See what our users say about their experience with SourceNest
+            {t.landing.testimonials.subtitle}
           </p>
         </div>
 

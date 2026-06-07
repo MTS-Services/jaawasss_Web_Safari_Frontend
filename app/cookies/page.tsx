@@ -17,29 +17,29 @@ export default function CookiesPage() {
           <p className="mt-4 text-muted-foreground">Last updated: March 2026</p>
           
           <div className="prose prose-neutral mt-8 max-w-none">
-            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">1. What Are Cookies</h2>
+            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">1. Use of Cookies</h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Cookies are small text files that are placed on your computer or mobile device when you visit a website. They are widely used to make websites work more efficiently and provide information to the owners of the site.
+              SourceNest uses cookies to support functionality, improve performance, and analyze usage.
             </p>
             
-            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">2. How We Use Cookies</h2>
+            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">2. Types of Cookies</h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              We use cookies to understand how you use our website, remember your preferences, and improve your overall experience. We also use cookies to analyze site traffic and for marketing purposes.
+              Essential, analytics, and marketing cookies may be used.
             </p>
             
-            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">3. Types of Cookies We Use</h2>
+            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">3. Third-Party Services</h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Essential cookies: Required for the website to function properly. Analytics cookies: Help us understand how visitors interact with our website. Marketing cookies: Used to track visitors across websites for advertising purposes.
+              Third-party tools may use cookies. SourceNest does not control or guarantee their behavior.
             </p>
             
-            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">4. Managing Cookies</h2>
+            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">4. User Control</h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              Most web browsers allow you to control cookies through their settings. You can set your browser to refuse cookies or delete certain cookies. However, this may affect the functionality of our website.
+              Users can manage cookies through browser settings.
             </p>
             
-            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">5. Contact Us</h2>
+            <h2 className="mt-8 font-serif text-2xl font-medium text-foreground">5. Disclaimer</h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-              If you have any questions about our Cookie Policy, please contact us at privacy@sourcenest.com.
+              SourceNest does not guarantee that cookies or third-party services are secure, error-free, or uninterrupted.
             </p>
           </div>
         </div>

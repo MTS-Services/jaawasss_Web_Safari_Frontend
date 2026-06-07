@@ -1,9 +1,86 @@
+import axios from "axios";
 import { apiClient, publicApiClient } from "./client";
-import { LoginInput, LoginResponse } from "@/lib/types";
+import { AuthTokenPayload, LoginInput, LoginResponse } from "@/lib/types";
 
-export async function login(data: LoginInput): Promise<LoginResponse> {
-  const response = await apiClient.post<LoginResponse>("/login", data);
-  return response.data;
+export type LoginTwoFactorChallengeData = {
+  two_factor?: boolean
+  twoFactor?: boolean
+  two_factor_token?: string
+  twoFactorToken?: string
+  two_factor_challenge_token?: string
+  challenge_token?: string
+}
+
+export type LoginEnvelope = LoginResponse & {
+  two_factor_token?: string
+  twoFactorToken?: string
+  data: (AuthTokenPayload & LoginTwoFactorChallengeData) | LoginTwoFactorChallengeData | null
+}
+
+function asObject(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object") {
+    return null
+  }
+
+  return value as Record<string, unknown>
+}
+
+export function extractTwoFactorToken(payload: unknown): string | null {
+  const source = asObject(payload)
+  if (!source) {
+    return null
+  }
+
+  const directToken =
+    source.two_factor_token ?? source.twoFactorToken ?? source.two_factor_challenge_token ?? source.challenge_token
+
+  if (typeof directToken === "string" && directToken.trim()) {
+    return directToken.trim()
+  }
+
+  const nested = asObject(source.data)
+  if (!nested) {
+    return null
+  }
+
+  const nestedToken =
+    nested.two_factor_token ?? nested.twoFactorToken ?? nested.two_factor_challenge_token ?? nested.challenge_token
+
+  if (typeof nestedToken === "string" && nestedToken.trim()) {
+    return nestedToken.trim()
+  }
+
+  return null
+}
+
+export function isTwoFactorRequiredResponse(payload: unknown): boolean {
+  if (extractTwoFactorToken(payload)) {
+    return true
+  }
+
+  const source = asObject(payload)
+  if (!source) {
+    return false
+  }
+
+  const nested = asObject(source.data)
+  if (!nested) {
+    return false
+  }
+
+  return nested.two_factor === true || nested.twoFactor === true
+}
+
+export async function login(data: LoginInput): Promise<LoginEnvelope> {
+  try {
+    const response = await apiClient.post<LoginEnvelope>("/login", data)
+    return response.data
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data && typeof error.response.data === "object") {
+      return error.response.data as LoginEnvelope
+    }
+    throw error
+  }
 }
 
 /** Same envelope as login; `data` may be null when manufacturer registration is pending review. */
@@ -18,7 +95,33 @@ export async function register(formData: FormData): Promise<LoginResponse> {
   return response.data;
 }
 
-type SocialLoginEnvelope = LoginResponse & {
+export type TwoFactorChallengeInput = {
+  twoFactorToken: string
+  code?: string
+  recoveryCode?: string
+}
+
+export async function submitTwoFactorChallenge(input: TwoFactorChallengeInput): Promise<LoginEnvelope> {
+  if (!input.code?.trim() && !input.recoveryCode?.trim()) {
+    throw new Error("A verification code or recovery code is required.")
+  }
+
+  try {
+    const response = await publicApiClient.post<LoginEnvelope>("/two-factor-challenge", {
+      two_factor_token: input.twoFactorToken,
+      ...(input.code?.trim() ? { code: input.code.trim() } : {}),
+      ...(input.recoveryCode?.trim() ? { recovery_code: input.recoveryCode.trim() } : {}),
+    })
+    return response.data
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data && typeof error.response.data === "object") {
+      return error.response.data as LoginEnvelope
+    }
+    throw error
+  }
+}
+
+type SocialLoginEnvelope = LoginEnvelope & {
   setup_token?: string
 }
 

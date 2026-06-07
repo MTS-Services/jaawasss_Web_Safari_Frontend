@@ -4,6 +4,10 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { Supplier } from "@/lib/data/suppliers"
 import { Product } from "@/lib/data/products"
 
+type ComparableProduct = {
+  slug: string
+}
+
 interface SavedSupplier {
   id: string
   name: string
@@ -31,6 +35,7 @@ interface FavoritesContextType {
   savedSuppliers: SavedSupplier[]
   savedProducts: SavedProduct[]
   compareList: string[] // supplier IDs
+  productCompareList: string[] // product slugs
   addSupplierToFavorites: (supplier: Supplier) => void
   removeSupplierFromFavorites: (supplierId: string) => void
   isSupplierSaved: (supplierId: string) => boolean
@@ -43,16 +48,24 @@ interface FavoritesContextType {
   clearCompareList: () => void
   compareCount: number
   maxCompare: number
+  addProductToCompare: (product: ComparableProduct) => boolean
+  removeProductFromCompare: (productSlug: string) => void
+  isProductInCompare: (productSlug: string) => boolean
+  clearProductCompareList: () => void
+  productCompareCount: number
+  maxProductCompare: number
 }
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined)
 
 const MAX_COMPARE = 4
+const MAX_PRODUCT_COMPARE = 4
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const [savedSuppliers, setSavedSuppliers] = useState<SavedSupplier[]>([])
   const [savedProducts, setSavedProducts] = useState<SavedProduct[]>([])
   const [compareList, setCompareList] = useState<string[]>([])
+  const [productCompareList, setProductCompareList] = useState<string[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
 
   // Load from localStorage on mount
@@ -60,6 +73,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     const storedSuppliers = localStorage.getItem("sourcenest_saved_suppliers")
     const storedProducts = localStorage.getItem("sourcenest_saved_products")
     const storedCompare = localStorage.getItem("sourcenest_compare_list")
+    const storedProductCompare = localStorage.getItem("sourcenest_product_compare_list")
     
     if (storedSuppliers) {
       try {
@@ -84,6 +98,14 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         console.error("Failed to parse compare list", e)
       }
     }
+
+    if (storedProductCompare) {
+      try {
+        setProductCompareList(JSON.parse(storedProductCompare))
+      } catch (e) {
+        console.error("Failed to parse product compare list", e)
+      }
+    }
     
     setIsInitialized(true)
   }, [])
@@ -106,6 +128,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("sourcenest_compare_list", JSON.stringify(compareList))
     }
   }, [compareList, isInitialized])
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("sourcenest_product_compare_list", JSON.stringify(productCompareList))
+    }
+  }, [productCompareList, isInitialized])
 
   const addSupplierToFavorites = (supplier: Supplier) => {
     if (!savedSuppliers.some(s => s.id === supplier.id)) {
@@ -178,11 +206,36 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     setCompareList([])
   }
 
+  const addProductToCompare = (product: ComparableProduct): boolean => {
+    if (productCompareList.length >= MAX_PRODUCT_COMPARE) {
+      return false
+    }
+
+    if (!productCompareList.includes(product.slug)) {
+      setProductCompareList(prev => [...prev, product.slug])
+    }
+
+    return true
+  }
+
+  const removeProductFromCompare = (productSlug: string) => {
+    setProductCompareList(prev => prev.filter(slug => slug !== productSlug))
+  }
+
+  const isProductInCompare = (productSlug: string) => {
+    return productCompareList.includes(productSlug)
+  }
+
+  const clearProductCompareList = () => {
+    setProductCompareList([])
+  }
+
   return (
     <FavoritesContext.Provider value={{
       savedSuppliers,
       savedProducts,
       compareList,
+      productCompareList,
       addSupplierToFavorites,
       removeSupplierFromFavorites,
       isSupplierSaved,
@@ -195,6 +248,13 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       clearCompareList,
       compareCount: compareList.length,
       maxCompare: MAX_COMPARE
+      ,
+      addProductToCompare,
+      removeProductFromCompare,
+      isProductInCompare,
+      clearProductCompareList,
+      productCompareCount: productCompareList.length,
+      maxProductCompare: MAX_PRODUCT_COMPARE
     }}>
       {children}
     </FavoritesContext.Provider>

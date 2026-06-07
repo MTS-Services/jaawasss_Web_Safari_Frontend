@@ -1,63 +1,74 @@
+"use client"
+
 import Link from "next/link"
-import { Factory, Linkedin, Twitter, Facebook, Youtube } from "lucide-react"
-
-const footerLinks = {
-  platform: {
-    title: "Platform",
-    links: [
-      { label: "For Buyers", href: "/for-buyers" },
-      { label: "For Manufacturers", href: "/for-manufacturers" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Search", href: "/search" },
-    ],
-  },
-  discover: {
-    title: "Discover",
-    links: [
-      { label: "Browse Suppliers", href: "/suppliers" },
-      { label: "Browse Products", href: "/products" },
-      { label: "Industries", href: "/industries" },
-      { label: "Request Quote", href: "/rfq/new" },
-    ],
-  },
-  resources: {
-    title: "Resources",
-    links: [
-      { label: "Help Center", href: "/help" },
-      { label: "Review Process", href: "/verification" },
-      { label: "FAQ", href: "/faq" },
-      { label: "Blog & Insights", href: "/blog" },
-    ],
-  },
-  company: {
-    title: "Company",
-    links: [
-      { label: "About Us", href: "/about" },
-      { label: "Contact", href: "/contact" },
-      { label: "Buyer Dashboard", href: "/dashboard/buyer" },
-      { label: "Manufacturer Dashboard", href: "/dashboard/manufacturer" },
-    ],
-  },
-  legal: {
-    title: "Legal",
-    links: [
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms of Service", href: "/terms" },
-      { label: "Cookie Policy", href: "/cookies" },
-    ],
-  },
-}
-
-const industries = [
-  { label: "Electronics & Electrical", href: "/industries/electronics-electrical" },
-  { label: "Machinery & Equipment", href: "/industries/machinery-equipment" },
-  { label: "Textiles & Apparel", href: "/industries/textiles-apparel" },
-  { label: "Home & Garden", href: "/industries/home-garden" },
-  { label: "Health & Beauty", href: "/industries/health-beauty" },
-  { label: "View All Industries", href: "/industries" },
-]
+import Image from "next/image"
+import { Linkedin, Twitter, Facebook, Youtube } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 export function Footer() {
+  const { t } = useTranslation()
+
+  // Guard against undefined translations during SSR/hydration
+  if (!t || !t.landing || !t.landing.footer) {
+    return null
+  }
+
+  const footerLinks = {
+    platform: {
+      title: t.landing.footer.platform,
+      links: [
+        { label: t.landing.footer.forBuyers, href: "/for-buyers" },
+        { label: t.landing.footer.forMfg, href: "/for-manufacturers" },
+        { label: t.landing.footer.pricing, href: "/pricing" },
+        { label: t.landing.footer.search, href: "/search" },
+      ],
+    },
+    discover: {
+      title: t.landing.footer.discover,
+      links: [
+        { label: t.landing.footer.browseSuppliers, href: "/suppliers" },
+        { label: t.landing.footer.browseProducts, href: "/products" },
+        { label: t.landing.footer.industries, href: "/industries" },
+        { label: t.landing.footer.rfq, href: "/rfq/new" },
+      ],
+    },
+    resources: {
+      title: t.landing.footer.resources,
+      links: [
+        { label: t.landing.footer.helpCenter, href: "/help" },
+        { label: t.landing.footer.reviewProcess, href: "/verification" },
+        { label: t.landing.footer.faq, href: "/faq" },
+        { label: t.landing.footer.blog, href: "/blog" },
+      ],
+    },
+    company: {
+      title: t.landing.footer.company,
+      links: [
+        { label: t.landing.footer.aboutUs, href: "/about" },
+        { label: t.landing.footer.contact, href: "/contact" },
+        { label: t.landing.footer.buyerDash, href: "/dashboard/buyer" },
+        { label: t.landing.footer.mfgDash, href: "/dashboard/manufacturer" },
+      ],
+    },
+    legal: {
+      title: t.landing.footer.legal,
+      links: [
+        { label: t.landing.footer.privacy, href: "/privacy" },
+        { label: t.landing.footer.terms, href: "/terms" },
+        { label: t.landing.footer.cookie, href: "/cookies" },
+      ],
+    },
+  }
+
+  const industries = [
+    { label: t.landing.industries.electronicsElectrical, href: "/industries/electronics-electrical" },
+    { label: t.landing.industries.machineryEquipment, href: "/industries/machinery-equipment" },
+    { label: t.landing.industries.textilesApparel, href: "/industries/textiles-apparel" },
+    { label: t.landing.industries.homeGarden, href: "/industries/home-garden" },
+    { label: t.landing.industries.healthBeauty, href: "/industries/health-beauty" },
+    { label: t.landing.footer.viewAll, href: "/industries" },
+  ]
+
   return (
     <footer className="border-t border-border bg-primary text-primary-foreground">
       {/* Main Footer */}
@@ -66,13 +77,16 @@ export function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-2 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-                <Factory className="h-5 w-5 text-secondary-foreground" />
-              </div>
-              <span className="font-serif text-xl font-medium">SourceNest</span>
+              <Image
+                src="/images/logoFooter.png"
+                alt="SourceNest"
+                width={120}
+                height={120}
+                className="rounded-lg object-contain h-27.5 w-27.5 md:h-37.5 md:w-37.5"
+              />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-primary-foreground/80">
-              The premium global sourcing platform connecting buyers with reviewed manufacturers worldwide.
+              {t.landing.footer.slogan}
             </p>
             {/* Social Links */}
             <div className="mt-6 flex gap-4">
@@ -183,7 +197,7 @@ export function Footer() {
 
         {/* Industries Row */}
         <div className="mt-12 border-t border-primary-foreground/10 pt-8">
-          <h3 className="text-sm font-semibold">Popular Industries</h3>
+          <h3 className="text-sm font-semibold">{t.landing.footer.popular}</h3>
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
             {industries.map((industry) => (
               <Link
@@ -202,7 +216,7 @@ export function Footer() {
       <div className="border-t border-primary-foreground/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:px-6 lg:px-8">
           <p className="text-sm text-primary-foreground/60">
-            © {new Date().getFullYear()} SourceNest. All rights reserved.
+            © {new Date().getFullYear()} SourceNest. {t.landing.footer.rights}
           </p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {footerLinks.legal.links.map((link) => (

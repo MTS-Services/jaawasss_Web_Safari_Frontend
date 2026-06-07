@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Package } from "lucide-react"
 import { getFeaturedProducts } from "@/lib/data/products"
+import { useTranslation } from "@/lib/i18n"
 
 const featuredProducts = getFeaturedProducts().slice(0, 6)
 
 export function FeaturedProductsSection() {
   const router = useRouter()
+  const { t } = useTranslation()
 
   return (
     <section className="py-8 sm:py-12 lg:py-28">
@@ -18,15 +20,15 @@ export function FeaturedProductsSection() {
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2 className="font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-                Featured Products
-              </h2>
+              {t.landing.featured.productsTitle}
+            </h2>
             <p className="mt-2 text-lg text-muted-foreground">
-              Explore quality products from reviewed manufacturers
+              {t.landing.featured.productsSubtitle}
             </p>
           </div>
           <Button variant="outline" className="gap-2" asChild>
             <Link href="/products">
-              View All Products
+              {t.common.view} All
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>

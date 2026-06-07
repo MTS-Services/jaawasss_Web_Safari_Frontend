@@ -25,15 +25,15 @@ export function ProductPageActions({ product }: ProductPageActionsProps) {
     addProductToFavorites, 
     removeProductFromFavorites, 
     isProductSaved,
-    addToCompare,
-    removeFromCompare,
-    isInCompare,
-    compareCount,
-    maxCompare
+    addProductToCompare,
+    removeProductFromCompare,
+    isProductInCompare,
+    productCompareCount,
+    maxProductCompare
   } = useFavorites()
   
   const isSaved = isProductSaved(product.id)
-  const supplierInCompare = isInCompare(product.supplierId)
+  const productInCompare = isProductInCompare(product.slug)
 
   const handleFavoriteClick = () => {
     if (isSaved) {
@@ -44,10 +44,10 @@ export function ProductPageActions({ product }: ProductPageActionsProps) {
   }
 
   const handleCompareClick = () => {
-    if (supplierInCompare) {
-      removeFromCompare(product.supplierId)
+    if (productInCompare) {
+      removeProductFromCompare(product.slug)
     } else {
-      addToCompare(product.supplierId)
+      addProductToCompare(product)
     }
   }
 
@@ -67,36 +67,36 @@ export function ProductPageActions({ product }: ProductPageActionsProps) {
           </Link>
         </Button>
       </div>
-      
+                  variant={productInCompare ? "secondary" : "outline"}
       <div className="flex gap-3">
         <TooltipProvider>
-          <Tooltip>
+                  disabled={!productInCompare && productCompareCount >= maxProductCompare}
             <TooltipTrigger asChild>
               <Button
-                size="lg"
+                  {productInCompare ? "In Compare" : "Compare"}
                 variant={isSaved ? "secondary" : "outline"}
                 className="flex-1 gap-2"
                 onClick={handleFavoriteClick}
-              >
-                <Heart className={cn("h-4 w-4", isSaved && "fill-current")} />
-                {isSaved ? "Saved" : "Save Product"}
-              </Button>
-            </TooltipTrigger>
+                {productInCompare 
+                  ? "Remove from comparison" 
+                  : productCompareCount >= maxProductCompare 
+                    ? `Maximum ${maxProductCompare} products` 
+                    : "Add product to comparison"}
             <TooltipContent>
               {isSaved ? "Remove from favorites" : "Save to favorites"}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
 
-        <TooltipProvider>
+      {productCompareCount >= 2 && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 size="lg"
-                variant={supplierInCompare ? "secondary" : "outline"}
+          onClick={() => router.push("/products/compare")}
                 className="flex-1 gap-2"
                 onClick={handleCompareClick}
-                disabled={!supplierInCompare && compareCount >= maxCompare}
+          Compare Products ({productCompareCount})
               >
                 <Scale className="h-4 w-4" />
                 {supplierInCompare ? "Supplier in Compare" : "Compare Supplier"}

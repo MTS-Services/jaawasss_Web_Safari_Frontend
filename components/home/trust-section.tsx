@@ -1,26 +1,35 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Shield, FileCheck, Eye, CheckCircle, ArrowRight } from "lucide-react"
-
-const trustFeatures = [
-  {
-    icon: FileCheck,
-    title: "Document Review",
-    description: "Business licenses, certifications, and export documentation are reviewed by our screening team based on submitted information.",
-  },
-  {
-    icon: Eye,
-    title: "Profile Review",
-    description: "Every manufacturer profile is manually reviewed before approval to assess accuracy based on provided information.",
-  },
-  {
-    icon: CheckCircle,
-    title: "Ongoing Monitoring",
-    description: "We continuously monitor supplier performance and buyer feedback to maintain quality standards.",
-  },
-]
+import { useTranslation } from "@/lib/i18n"
 
 export function TrustSection() {
+  const { t } = useTranslation()
+
+  if (!t || !t.landing?.trust) {
+    return null
+  }
+
+  const trustFeatures = [
+    {
+      icon: FileCheck,
+      title: t.landing.trust.t1Title,
+      description: t.landing.trust.t1Desc,
+    },
+    {
+      icon: Eye,
+      title: t.landing.trust.t2Title,
+      description: t.landing.trust.t2Desc,
+    },
+    {
+      icon: CheckCircle,
+      title: t.landing.trust.t3Title,
+      description: t.landing.trust.t3Desc,
+    },
+  ]
+
   return (
     <section className="py-8 sm:py-12 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -29,13 +38,13 @@ export function TrustSection() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-1.5 text-sm text-secondary">
               <Shield className="h-4 w-4" />
-              <span>Trust & Review</span>
+              <span>{t.landing.trust.badge}</span>
             </div>
             <h2 className="mt-6 font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-              Every Supplier is Reviewed Before You See Them
+              {t.landing.trust.title}
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-              Unlike open marketplaces, SourceNest requires admin approval for every manufacturer. This means you only see suppliers that have been reviewed based on submitted information and documents.
+              {t.landing.trust.subtitle}
             </p>
 
             <div className="mt-10 space-y-6">
@@ -54,7 +63,7 @@ export function TrustSection() {
 
             <Button className="mt-10 gap-2" asChild>
               <Link href="/verification">
-                Learn About Our Review Process
+                {t.landing.trust.learnMore}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -65,28 +74,29 @@ export function TrustSection() {
             <div className="rounded-2xl bg-primary p-8 text-primary-foreground lg:p-12">
               <div className="flex items-center gap-3">
                 <Shield className="h-10 w-10" />
-                <span className="font-serif text-2xl">SourceNest Reviewed</span>
+                <span className="font-serif text-2xl">{t.landing.trust.reviewedBadge}</span>
               </div>
+
               <div className="mt-8 space-y-4">
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Business Registration Documents Reviewed</span>
+                  <span>{t.landing.trust.point1}</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Factory Location Information Provided</span>
+                  <span>{t.landing.trust.point2}</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Certifications Submitted</span>
+                  <span>{t.landing.trust.point3}</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Export Experience Declared</span>
+                  <span>{t.landing.trust.point4}</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-lg bg-primary-foreground/10 p-4">
                   <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                  <span>Profile Content Reviewed</span>
+                  <span>{t.landing.trust.point5}</span>
                 </div>
               </div>
             </div>

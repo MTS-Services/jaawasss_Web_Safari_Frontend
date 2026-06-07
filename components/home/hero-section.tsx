@@ -5,8 +5,15 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, ArrowRight, Globe, Shield, MessageSquare } from "lucide-react"
+import { useTranslation } from "@/lib/i18n"
 
 export function HeroSection() {
+  const { t } = useTranslation()
+  
+  if (!t || !t.landing?.hero) {
+    return null
+  }
+  
   const [searchQuery, setSearchQuery] = useState("")
 
   const handleSearch = (e: React.FormEvent) => {
@@ -30,18 +37,18 @@ export function HeroSection() {
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-secondary/20 px-4 py-1.5 text-sm text-primary-foreground">
             <Globe className="h-4 w-4" />
-            <span>Connecting Global Trade</span>
+            <span>{t.landing.hero.badge}</span>
           </div>
 
           {/* Headline */}
           <h1 className="font-serif text-3xl font-medium tracking-tight text-primary-foreground min-[400px]:text-4xl sm:text-5xl lg:text-6xl">
-            <span className="block text-balance">Discover Reviewed</span>
-            <span className="block text-balance">Manufacturers Worldwide</span>
+            <span className="block text-balance">{t.landing.hero.title1}</span>
+            <span className="block text-balance">{t.landing.hero.title2}</span>
           </h1>
 
           {/* Subheadline */}
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-primary-foreground/80 sm:text-xl">
-            Search products, compare suppliers, request quotes, and connect directly with trusted factories through one premium global sourcing platform.
+            {t.landing.hero.subtitle}
           </p>
 
           {/* Search Bar */}
@@ -51,14 +58,14 @@ export function HeroSection() {
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Search products, suppliers, or industries..."
+                  placeholder={t.landing.hero.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-14 border-0 bg-background pl-12 pr-4 text-base shadow-lg"
                 />
               </div>
               <Button type="submit" size="lg" className="h-14 bg-secondary px-8 text-secondary-foreground hover:bg-secondary/90">
-                Search
+                {t.landing.hero.searchButton}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -66,18 +73,18 @@ export function HeroSection() {
 
           {/* Quick Links */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-primary-foreground/70">
-            <span>Popular:</span>
+            <span>{t.landing.hero.popular}</span>
             <Link href="/industries/electronics-electrical" className="hover:text-primary-foreground hover:underline">
-              Electronics
+              {t.landing.hero.popElectronics}
             </Link>
             <Link href="/industries/textiles-apparel" className="hover:text-primary-foreground hover:underline">
-              Textiles
+              {t.landing.hero.popTextiles}
             </Link>
             <Link href="/industries/machinery-equipment" className="hover:text-primary-foreground hover:underline">
-              Machinery
+              {t.landing.hero.popMachinery}
             </Link>
             <Link href="/industries/food-beverage" className="hover:text-primary-foreground hover:underline">
-              Food & Beverage
+              {t.landing.hero.popFood}
             </Link>
           </div>
 
@@ -88,21 +95,21 @@ export function HeroSection() {
                 <Globe className="h-6 w-6 text-primary-foreground" />
               </div>
               <span className="text-2xl font-semibold text-primary-foreground">50+</span>
-              <span className="text-sm text-primary-foreground/70">Countries Covered</span>
+              <span className="text-sm text-primary-foreground/70">{t.landing.hero.statCountries}</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/20">
                 <Shield className="h-6 w-6 text-primary-foreground" />
               </div>
               <span className="text-2xl font-semibold text-primary-foreground">100%</span>
-              <span className="text-sm text-primary-foreground/70">Reviewed Suppliers</span>
+              <span className="text-sm text-primary-foreground/70">{t.landing.hero.statReviewed}</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/20">
                 <MessageSquare className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="text-2xl font-semibold text-primary-foreground">Direct</span>
-              <span className="text-sm text-primary-foreground/70">Factory Communication</span>
+              <span className="text-2xl font-semibold text-primary-foreground">{t.landing.hero.statDirectPrefix}</span>
+              <span className="text-sm text-primary-foreground/70">{t.landing.hero.statDirect}</span>
             </div>
           </div>
         </div>

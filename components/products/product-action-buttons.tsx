@@ -28,14 +28,15 @@ export function ProductActionButtons({
     addProductToFavorites, 
     removeProductFromFavorites, 
     isProductSaved,
-    addToCompare,
-    isInCompare,
-    compareCount,
-    maxCompare
+    addProductToCompare,
+    removeProductFromCompare,
+    isProductInCompare,
+    productCompareCount,
+    maxProductCompare
   } = useFavorites()
   
   const isSaved = isProductSaved(product.id)
-  const supplierInCompare = isInCompare(product.supplierId)
+  const productInCompare = isProductInCompare(product.slug)
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -52,8 +53,13 @@ export function ProductActionButtons({
     e.preventDefault()
     e.stopPropagation()
     
-    if (!supplierInCompare && compareCount < maxCompare) {
-      addToCompare(product.supplierId)
+    if (productInCompare) {
+      removeProductFromCompare(product.slug)
+      return
+    }
+
+    if (productCompareCount < maxProductCompare) {
+      addProductToCompare(product)
     }
   }
 
@@ -92,18 +98,18 @@ export function ProductActionButtons({
                   variant="outline"
                   className="flex-1 gap-2"
                   onClick={handleCompareSupplierClick}
-                  disabled={supplierInCompare || compareCount >= maxCompare}
+                  disabled={!productInCompare && productCompareCount >= maxProductCompare}
                 >
                   <Scale className="h-4 w-4" />
-                  {supplierInCompare ? "Supplier Added" : "Compare Supplier"}
+                  {productInCompare ? "In Compare" : "Compare"}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {supplierInCompare 
-                  ? "Supplier is in comparison list" 
-                  : compareCount >= maxCompare 
-                    ? `Maximum ${maxCompare} suppliers` 
-                    : "Add supplier to comparison"}
+                {productInCompare 
+                  ? "Remove from comparison" 
+                  : productCompareCount >= maxProductCompare 
+                    ? `Maximum ${maxProductCompare} products` 
+                    : "Add product to comparison"}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

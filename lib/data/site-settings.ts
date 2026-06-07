@@ -198,7 +198,7 @@ export const defaultLegalPages: LegalPage[] = [
       {
         id: "contact",
         title: "5. Contact Us",
-        content: "If you have any questions about this Privacy Policy, please contact us at privacy@sourcenest.com.",
+        content: "If you have any questions about this Privacy Policy, please contact us at info@sourcenest.tech.",
         order: 5
       }
     ]
@@ -243,7 +243,7 @@ export const defaultLegalPages: LegalPage[] = [
       {
         id: "contact",
         title: "6. Contact Information",
-        content: "Questions about the Terms of Service should be sent to us at legal@sourcenest.com.",
+        content: "Questions about the Terms of Service should be sent to us at info@sourcenest.tech.",
         order: 6
       }
     ]
@@ -282,7 +282,7 @@ export const defaultLegalPages: LegalPage[] = [
       {
         id: "contact",
         title: "5. Contact Us",
-        content: "If you have any questions about our Cookie Policy, please contact us at privacy@sourcenest.com.",
+        content: "If you have any questions about our Cookie Policy, please contact us at info@sourcenest.tech.",
         order: 5
       }
     ]
@@ -353,7 +353,7 @@ export const defaultAboutPage: AboutPageData = {
     title: "Why SourceNest is Different",
     points: [
       {
-        id: "verified",
+        id: "reviewed",
         title: "Reviewed-Only Marketplace",
         description: "Unlike open platforms where anyone can list, every manufacturer on SourceNest goes through our review and approval process based on submitted information. This means buyers know that suppliers have been screened, and manufacturers know they're in good company.",
         enabled: true

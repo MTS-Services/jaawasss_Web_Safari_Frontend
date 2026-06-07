@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import Image from "next/image"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import {
@@ -48,6 +49,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import { useFavorites } from "@/lib/favorites-context"
+import { useTranslation } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 interface HeaderNavItemDef {
@@ -56,93 +58,6 @@ interface HeaderNavItemDef {
   description: string
   icon: LucideIcon
 }
-
-const discoverItems: HeaderNavItemDef[] = [
-  {
-    title: "Browse Industries",
-    href: "/industries",
-    description: "Find suppliers by industry sector and specialization",
-    icon: Grid3X3,
-  },
-  {
-    title: "Browse Suppliers",
-    href: "/suppliers",
-    description: "Discover reviewed manufacturers from around the world",
-    icon: Factory,
-  },
-  {
-    title: "Browse Products",
-    href: "/products",
-    description: "Explore products across all categories and industries",
-    icon: Package,
-  },
-  {
-    title: "Featured Manufacturers",
-    href: "/suppliers?featured=true",
-    description: "Top-rated reviewed manufacturers on the platform",
-    icon: Building2,
-  },
-  {
-    title: "Global Supplier Map",
-    href: "/suppliers/map",
-    description: "Explore suppliers by country and region",
-    icon: Globe,
-  },
-  {
-    title: "Compare Suppliers",
-    href: "/suppliers/compare",
-    description: "Compare manufacturers side by side",
-    icon: Scale,
-  },
-  {
-    title: "New Suppliers",
-    href: "/suppliers?sort=newest",
-    description: "Recently joined manufacturers on SourceNest",
-    icon: Factory,
-  },
-]
-
-const platformItems: HeaderNavItemDef[] = [
-  {
-    title: "For Buyers",
-    href: "/for-buyers",
-    description: "Search, compare, and connect with suppliers for free",
-    icon: Users,
-  },
-  {
-    title: "For Manufacturers",
-    href: "/for-manufacturers",
-    description: "Showcase your factory and reach global buyers",
-    icon: Building2,
-  },
-  {
-    title: "Pricing",
-    href: "/pricing",
-    description: "View subscription plans for manufacturers",
-    icon: DollarSign,
-  },
-]
-
-const resourceItems: HeaderNavItemDef[] = [
-  {
-    title: "Review",
-    href: "/verification",
-    description: "Learn how we reviewed and approve suppliers",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Help Center",
-    href: "/help",
-    description: "Get answers to common questions",
-    icon: HelpCircle,
-  },
-  {
-    title: "About Us",
-    href: "/about",
-    description: "Learn about SourceNest and our mission",
-    icon: Info,
-  },
-]
 
 function HeaderNavDropdown({
   label,
@@ -193,8 +108,103 @@ function HeaderNavDropdown({
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
   const { user, logout, isAuthenticated } = useAuth()
   const { savedSuppliers, savedProducts, removeSupplierFromFavorites, removeProductFromFavorites } = useFavorites()
+  const { t } = useTranslation()
+  
+  // Ensure hydration happens only after client-side mount
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  // Create navigation items with translations
+  const discoverItems: HeaderNavItemDef[] = [
+    {
+      title: t?.nav?.browseIndustries || "Browse Industries",
+      href: "/industries",
+      description: t?.nav?.browseIndustriesDesc || "Find suppliers by industry sector and specialization",
+      icon: Grid3X3,
+    },
+    {
+      title: t?.nav?.browseSuppliers || "Browse Suppliers",
+      href: "/suppliers",
+      description: t?.nav?.browseSuppliersDesc || "Discover reviewed manufacturers from around the world",
+      icon: Factory,
+    },
+    {
+      title: t?.nav?.browseProducts || "Browse Products",
+      href: "/products",
+      description: t?.nav?.browseProductsDesc || "Explore products across all categories and industries",
+      icon: Package,
+    },
+    {
+      title: t?.nav?.featuredManufacturers || "Featured Manufacturers",
+      href: "/suppliers?featured=true",
+      description: t?.nav?.featuredManufacturersDesc || "Top-rated reviewed manufacturers on the platform",
+      icon: Building2,
+    },
+    {
+      title: t?.nav?.globalSupplierMap || "Global Supplier Map",
+      href: "/suppliers/map",
+      description: t?.nav?.globalSupplierMapDesc || "Explore suppliers by country and region",
+      icon: Globe,
+    },
+    {
+      title: t?.nav?.compareSuppliers || "Compare Suppliers",
+      href: "/suppliers/compare",
+      description: t?.nav?.compareSuppliersDesc || "Compare manufacturers side by side",
+      icon: Scale,
+    },
+    {
+      title: t?.nav?.newSuppliers || "New Suppliers",
+      href: "/suppliers?sort=newest",
+      description: t?.nav?.newSuppliersDesc || "Recently joined manufacturers on SourceNest",
+      icon: Factory,
+    },
+  ]
+
+  const platformItems: HeaderNavItemDef[] = [
+    {
+      title: t?.nav?.forBuyers || "For Buyers",
+      href: "/for-buyers",
+      description: t?.nav?.forBuyersDesc || "Search, compare, and connect with suppliers for free",
+      icon: Users,
+    },
+    {
+      title: t?.nav?.forManufacturers || "For Manufacturers",
+      href: "/for-manufacturers",
+      description: t?.nav?.forManufacturersDesc || "Showcase your factory and reach global buyers",
+      icon: Building2,
+    },
+    {
+      title: t?.nav?.pricing || "Pricing",
+      href: "/pricing",
+      description: "View subscription plans for manufacturers",
+      icon: DollarSign,
+    },
+  ]
+
+  const resourceItems: HeaderNavItemDef[] = [
+    {
+      title: t?.nav?.review || "Review",
+      href: "/verification",
+      description: t?.nav?.reviewDesc || "Learn how we review and approve suppliers",
+      icon: ShieldCheck,
+    },
+    {
+      title: t?.nav?.helpCenter || "Help Center",
+      href: "/help",
+      description: t?.nav?.helpCenterDesc || "Find answers to common questions",
+      icon: HelpCircle,
+    },
+    {
+      title: t?.nav?.aboutUs || "About Us",
+      href: "/about",
+      description: t?.nav?.aboutUsDesc || "Learn more about SourceNest",
+      icon: Info,
+    },
+  ]
   
   // savedSuppliers and savedProducts already contain full details from context
   const savedSupplierDetails = savedSuppliers.slice(0, 5)
@@ -217,28 +227,30 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="mx-auto flex h-16 min-w-0 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-[#fffefa] backdrop-blur supports-backdrop-filter:bg-background/60">
+      <div className="mx-auto flex h-18 md:h-24 min-w-0 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Factory className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="hidden min-[400px]:block font-serif text-xl font-medium text-foreground">SourceNest</span>
+          <Image
+            src="/images/logo.png"
+            alt="SourceNest"
+            width={120}
+            height={120}
+            className="rounded-lg object-contain h-27.5 w-27.5 md:h-37.5 md:w-37.5"
+          />
         </Link>
-
         {/* Desktop navigation: dropdowns (reliable focus/hover vs. NavigationMenu viewport) */}
         <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main">
-          <HeaderNavDropdown label="Discover" items={discoverItems} twoColumn />
-          <HeaderNavDropdown label="Platform" items={platformItems} />
-          <HeaderNavDropdown label="Resources" items={resourceItems} />
+          <HeaderNavDropdown label={t?.nav?.headerDiscover || "Discover"} items={discoverItems} twoColumn />
+          <HeaderNavDropdown label={t?.nav?.headerPlatform || "Platform"} items={platformItems} />
+          <HeaderNavDropdown label={t?.nav?.headerResources || "Resources"} items={resourceItems} />
           <Button variant="ghost" asChild className="font-medium">
-            <Link href="/blog">Insights</Link>
+            <Link href="/blog">{t?.nav?.headerInsights || "Insights"}</Link>
           </Button>
         </nav>
 
         {/* Desktop Actions */}
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-3 lg:flex" suppressHydrationWarning>
           <Button variant="ghost" size="icon" aria-label="Search" asChild>
             <Link href="/search">
               <Search className="h-5 w-5" />
@@ -263,11 +275,11 @@ export function Header() {
                   <TabsList className="grid w-full grid-cols-2 h-9">
                     <TabsTrigger value="suppliers" className="gap-1.5 text-xs">
                       <Factory className="h-3.5 w-3.5" />
-                      Suppliers ({savedSuppliers.length})
+                      {t?.nav?.savedTabSuppliers || "Suppliers"} ({savedSuppliers.length})
                     </TabsTrigger>
                     <TabsTrigger value="products" className="gap-1.5 text-xs">
                       <Package className="h-3.5 w-3.5" />
-                      Products ({savedProducts.length})
+                      {t?.nav?.savedTabProducts || "Products"} ({savedProducts.length})
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -277,12 +289,12 @@ export function Header() {
                   {savedSupplierDetails.length === 0 ? (
                     <div className="px-3 py-6 text-center">
                       <Factory className="mx-auto h-8 w-8 text-muted-foreground/50" />
-                      <p className="mt-2 text-sm text-muted-foreground">No saved suppliers yet</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{t?.nav?.noSavedSuppliers || "No saved suppliers yet"}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Click the heart icon on any supplier to save them
+                        {t?.nav?.saveSupplierHint || "Click the heart icon on any supplier to save them"}
                       </p>
                       <Button variant="outline" size="sm" className="mt-3" asChild>
-                        <Link href="/suppliers">Browse Suppliers</Link>
+                        <Link href="/suppliers">{t?.nav?.browseSuppliersCTA || "Browse Suppliers"}</Link>
                       </Button>
                     </div>
                   ) : (
@@ -324,7 +336,7 @@ export function Header() {
                       ))}
                       {savedSuppliers.length > 5 && (
                         <div className="px-3 py-2 text-center text-xs text-muted-foreground border-t">
-                          +{savedSuppliers.length - 5} more suppliers
+                          +{savedSuppliers.length - 5} {t?.nav?.moreSuppliersCount || "more suppliers"}
                         </div>
                       )}
                     </div>
@@ -332,7 +344,7 @@ export function Header() {
                   <div className="border-t p-2">
                     <Button variant="ghost" size="sm" className="w-full justify-center gap-2 text-primary" asChild>
                       <Link href="/dashboard/buyer/saved">
-                        View All Saved Suppliers
+                        {t?.nav?.viewAllSavedSuppliers || "View All Saved Suppliers"}
                         <ExternalLink className="h-3 w-3" />
                       </Link>
                     </Button>
@@ -344,12 +356,12 @@ export function Header() {
                   {savedProductDetails.length === 0 ? (
                     <div className="px-3 py-6 text-center">
                       <Package className="mx-auto h-8 w-8 text-muted-foreground/50" />
-                      <p className="mt-2 text-sm text-muted-foreground">No saved products yet</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{t?.nav?.noSavedProducts || "No saved products yet"}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Click the heart icon on any product to save it
+                        {t?.nav?.saveProductHint || "Click the heart icon on any product to save it"}
                       </p>
                       <Button variant="outline" size="sm" className="mt-3" asChild>
-                        <Link href="/products">Browse Products</Link>
+                        <Link href="/products">{t?.nav?.browseProductsCTA || "Browse Products"}</Link>
                       </Button>
                     </div>
                   ) : (
@@ -384,7 +396,7 @@ export function Header() {
                       ))}
                       {savedProducts.length > 5 && (
                         <div className="px-3 py-2 text-center text-xs text-muted-foreground border-t">
-                          +{savedProducts.length - 5} more products
+                          +{savedProducts.length - 5} {t?.nav?.moreProductsCount || "more products"}
                         </div>
                       )}
                     </div>
@@ -392,7 +404,7 @@ export function Header() {
                   <div className="border-t p-2">
                     <Button variant="ghost" size="sm" className="w-full justify-center gap-2 text-primary" asChild>
                       <Link href="/dashboard/buyer/saved">
-                        View All Saved Products
+                        {t?.nav?.viewAllSavedProducts || "View All Saved Products"}
                         <ExternalLink className="h-3 w-3" />
                       </Link>
                     </Button>
@@ -409,7 +421,7 @@ export function Header() {
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-secondary" />
             </Link>
           </Button>
-          {isAuthenticated && user ? (
+          {mounted && isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
@@ -432,36 +444,36 @@ export function Header() {
                 <DropdownMenuItem asChild>
                   <Link href={getDashboardUrl()} className="cursor-pointer">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
-                    Dashboard
+                    {t?.nav?.userMenuDashboard || "Dashboard"}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href={`${getDashboardUrl()}/settings`} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    {t?.nav?.userMenuSettings || "Settings"}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
+                  {t?.nav?.userMenuSignOut || "Sign Out"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <>
               <Button variant="ghost" asChild>
-                <Link href="/auth/signin">Sign In</Link>
+                <Link href="/auth/signin">{t?.nav?.userMenuSignIn || "Sign In"}</Link>
               </Button>
               <Button asChild>
-                <Link href="/auth/signup">Get Started</Link>
+                <Link href="/auth/signup">{t?.nav?.userMenuGetStarted || "Get Started"}</Link>
               </Button>
             </>
           )}
         </div>
 
         {/* Mobile Menu */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 lg:hidden" suppressHydrationWarning>
           <Button variant="ghost" size="icon" aria-label="Saved Items" className="relative" asChild>
             <Link href="/dashboard/buyer/saved">
               <Heart className={cn("h-5 w-5", totalSaved > 0 && "text-rose-500")} />
@@ -492,10 +504,13 @@ export function Header() {
             <SheetContent side="right" className="w-full max-w-sm overflow-y-auto">
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                    <Factory className="h-4 w-4 text-primary-foreground" />
-                  </div>
-                  <span className="font-serif">SourceNest</span>
+                  <Image
+                    src="/images/logo.png"
+                    alt="SourceNest"
+                    width={120}
+                    height={120}
+                    className="rounded-lg object-contain h-27.5 w-27.5 md:h-37.5 md:w-37.5"
+                  />
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-1">
@@ -504,7 +519,7 @@ export function Header() {
                   onClick={() => toggleSection('discover')}
                   className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
                 >
-                  Discover
+                  {t?.nav?.headerDiscover || "Discover"}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", expandedSection === 'discover' && "rotate-180")} />
                 </button>
                 {expandedSection === 'discover' && (
@@ -528,7 +543,7 @@ export function Header() {
                   onClick={() => toggleSection('platform')}
                   className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
                 >
-                  Platform
+                  {t?.nav?.headerPlatform || "Platform"}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", expandedSection === 'platform' && "rotate-180")} />
                 </button>
                 {expandedSection === 'platform' && (
@@ -552,7 +567,7 @@ export function Header() {
                   onClick={() => toggleSection('resources')}
                   className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
                 >
-                  Resources
+                  {t?.nav?.headerResources || "Resources"}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", expandedSection === 'resources' && "rotate-180")} />
                 </button>
                 {expandedSection === 'resources' && (
@@ -577,13 +592,13 @@ export function Header() {
                   onClick={() => setMobileOpen(false)}
                   className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
                 >
-                  Insights
+                  {t?.nav?.headerInsights || "Insights"}
                 </Link>
 
                 <div className="my-4 border-t border-border" />
 
                 {/* Auth Actions */}
-                {isAuthenticated && user ? (
+                {mounted && (isAuthenticated && user) ? (
                   <>
                     <div className="mb-2 flex items-center gap-3 px-3 py-2">
                       <Avatar className="h-10 w-10">
@@ -602,7 +617,7 @@ export function Header() {
                       className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
                     >
                       <LayoutDashboard className="h-4 w-4" />
-                      Dashboard
+                      {t?.nav?.userMenuDashboard || "Dashboard"}
                     </Link>
                     <Link
                       href={`${getDashboardUrl()}/settings`}
@@ -610,7 +625,7 @@ export function Header() {
                       className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
                     >
                       <Settings className="h-4 w-4" />
-                      Settings
+                      {t?.nav?.userMenuSettings || "Settings"}
                     </Link>
                     <button
                       onClick={() => {
@@ -620,7 +635,7 @@ export function Header() {
                       className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-muted"
                     >
                       <LogOut className="h-4 w-4" />
-                      Sign Out
+                      {t?.nav?.userMenuSignOut || "Sign Out"}
                     </button>
                   </>
                 ) : (
@@ -630,11 +645,11 @@ export function Header() {
                       onClick={() => setMobileOpen(false)}
                       className="rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
                     >
-                      Sign In
+                      {t?.nav?.userMenuSignIn || "Sign In"}
                     </Link>
                     <Button className="mt-2 w-full" asChild>
                       <Link href="/auth/signup" onClick={() => setMobileOpen(false)}>
-                        Get Started
+                        {t?.nav?.userMenuGetStarted || "Get Started"}
                       </Link>
                     </Button>
                   </>

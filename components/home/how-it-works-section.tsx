@@ -2,97 +2,101 @@
 
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { 
-  Search, 
-  Building2, 
-  MessageSquare, 
+import {
+  Search,
+  Building2,
+  MessageSquare,
   FileText,
   UserPlus,
   CreditCard,
   Settings,
   Upload,
   CheckCircle,
-  Globe
+  Globe,
+  Shield,
 } from "lucide-react"
-
-const buyerSteps = [
-  {
-    step: 1,
-    title: "Search & Discover",
-    description: "Browse our global supplier directory, filter by industry, location, certifications, and capabilities to find the perfect manufacturing partners.",
-    icon: Search,
-  },
-  {
-    step: 2,
-    title: "Compare Suppliers",
-    description: "Save your favorite suppliers, compare them side-by-side, review their products, certifications, and capabilities to make informed decisions.",
-    icon: Building2,
-  },
-  {
-    step: 3,
-    title: "Connect & Communicate",
-    description: "Send messages directly to factories, request detailed quotes, and negotiate terms — all within the platform's secure messaging system.",
-    icon: MessageSquare,
-  },
-  {
-    step: 4,
-    title: "Request Quotes",
-    description: "Submit detailed RFQs with specifications, quantities, and requirements. Receive competitive quotes directly from reviewed manufacturers.",
-    icon: FileText,
-  },
-]
-
-const manufacturerSteps = [
-  {
-    step: 1,
-    title: "Create Your Account",
-    description: "Sign up as a manufacturer and choose the subscription plan that fits your business needs and growth goals.",
-    icon: UserPlus,
-  },
-  {
-    step: 2,
-    title: "Complete Payment",
-    description: "Subscribe to your chosen plan with secure payment. Your account is created but requires approval before going live.",
-    icon: CreditCard,
-  },
-  {
-    step: 3,
-    title: "Build Your Profile",
-    description: "Complete your factory profile with details, certifications, capabilities, and upload your product catalog and brochures.",
-    icon: Settings,
-  },
-  {
-    step: 4,
-    title: "Upload Products",
-    description: "Add your products with images, specifications, MOQ, lead times, and packaging details to showcase your full range.",
-    icon: Upload,
-  },
-  {
-    step: 5,
-    title: "Submit for Approval",
-    description: "Once ready, submit your profile for our team to review. We assess your submitted information to maintain platform quality.",
-    icon: CheckCircle,
-  },
-  {
-    step: 6,
-    title: "Go Global",
-    description: "After approval, your profile goes live. Start receiving inquiries and quote requests from buyers worldwide.",
-    icon: Globe,
-  },
-]
+import { useTranslation } from "@/lib/i18n"
 
 export function HowItWorksSection() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"buyers" | "manufacturers">("buyers")
+
+  const buyerSteps = [
+    {
+      step: 1,
+      title: t.landing.howItWorks.buyerStep1Title,
+      description: t.landing.howItWorks.buyerStep1Desc,
+      icon: Search,
+    },
+    {
+      step: 2,
+      title: t.landing.howItWorks.buyerStep2Title,
+      description: t.landing.howItWorks.buyerStep2Desc,
+      icon: Building2,
+    },
+    {
+      step: 3,
+      title: t.landing.howItWorks.buyerStep3Title,
+      description: t.landing.howItWorks.buyerStep3Desc,
+      icon: MessageSquare,
+    },
+    {
+      step: 4,
+      title: t.landing.howItWorks.buyerStep4Title,
+      description: t.landing.howItWorks.buyerStep4Desc,
+      icon: FileText,
+    },
+  ]
+
+  const manufacturerSteps = [
+    {
+      step: 1,
+      title: t.landing.howItWorks.mfgStep1Title,
+      description: t.landing.howItWorks.mfgStep1Desc,
+      icon: UserPlus,
+    },
+    {
+      step: 2,
+      title: t.landing.howItWorks.mfgStep5Title,
+      description: t.landing.howItWorks.mfgStep5Desc,
+      icon: CheckCircle,
+    },
+    {
+      step: 3,
+      title: t.landing.howItWorks.mfgStep2Title,
+      description: t.landing.howItWorks.mfgStep2Desc,
+      icon: CreditCard,
+    },
+    {
+      step: 4,
+      title: t.landing.howItWorks.mfgStep3Title,
+      description: t.landing.howItWorks.mfgStep3Desc,
+      icon: Settings,
+    },
+    {
+      step: 5,
+      title: t.landing.howItWorks.mfgStep4Title,
+      description: t.landing.howItWorks.mfgStep4Desc,
+      icon: Upload,
+    },
+    
+    {
+      step: 6,
+      title: t.landing.howItWorks.mfgStep6Title,
+      description: t.landing.howItWorks.mfgStep6Desc,
+      icon: Globe,
+    },
+  ]
 
   return (
     <section className="bg-muted/50 py-8 sm:py-12 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
-            How It Works
+            {t.landing.howItWorks.title}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Simple, transparent processes for both buyers and manufacturers
+            {t.landing.howItWorks.subtitle}
           </p>
         </div>
 
@@ -108,7 +112,7 @@ export function HowItWorksSection() {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              For Buyers
+              {t.landing.howItWorks.tabBuyers}
             </button>
             <button
               onClick={() => setActiveTab("manufacturers")}
@@ -119,7 +123,7 @@ export function HowItWorksSection() {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              For Manufacturers
+              {t.landing.howItWorks.tabMfg}
             </button>
           </div>
         </div>
@@ -149,7 +153,7 @@ export function HowItWorksSection() {
             </div>
             <div className="mt-12 rounded-xl bg-secondary/10 p-6 text-center">
               <p className="text-secondary font-medium">
-                Buyers use SourceNest completely free — no subscription required.
+                {t.landing.howItWorks.buyerFree}
               </p>
             </div>
           </div>
@@ -178,9 +182,13 @@ export function HowItWorksSection() {
                 </div>
               ))}
             </div>
-            <div className="mt-12 rounded-xl bg-secondary/10 p-6 text-center">
-              <p className="text-secondary font-medium">
-                All manufacturer accounts require admin approval before going live — ensuring quality and trust for buyers.
+            <div className="mx-auto mt-12 max-w-2xl rounded-xl bg-secondary/10 p-6 text-center">
+              <Shield className="mx-auto h-8 w-8 text-secondary" />
+              <p className="mt-4 font-medium text-secondary">
+                {t?.landing?.howItWorks?.important || "Important: No payment is required upfront. Your account will be reviewed first, and you will only be charged after approval."}
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {t?.landing?.howItWorks?.paymentComplete || "Once approved, complete your payment to activate your account and unlock full access to the platform."}
               </p>
             </div>
           </div>

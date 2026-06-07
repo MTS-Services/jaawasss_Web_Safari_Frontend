@@ -14,22 +14,24 @@ import { CtaSection } from "@/components/home/cta-section"
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen min-w-0 flex-col overflow-x-hidden">
+    <>
       <Header />
-      <main className="min-w-0 flex-1">
-        <HeroSection />
-        <IndustriesSection />
-        <WhatIsSection />
-        <FeaturedSuppliersSection />
-        <HowItWorksSection />
-        <FeaturedProductsSection />
-        <WhyUseSection />
-        <TrustSection />
-        <TestimonialsSection />
-        <FaqSection />
-        <CtaSection />
-      </main>
-      <Footer />
-    </div>
+      <div className="flex min-h-screen min-w-0 flex-col overflow-x-hidden">
+        <main className="min-w-0 flex-1">
+          <HeroSection />
+          <IndustriesSection />
+          <WhatIsSection />
+          <FeaturedSuppliersSection />
+          <HowItWorksSection />
+          <FeaturedProductsSection />
+          <WhyUseSection />
+          <TrustSection />
+          <TestimonialsSection />
+          <FaqSection />
+          <CtaSection />
+        </main>
+        <Footer />
+      </div>
+    </>
   )
 }

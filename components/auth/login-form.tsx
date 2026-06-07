@@ -25,7 +25,7 @@ import {
 import { useToast } from "../../hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/auth-context";
-import { login } from "../../lib/api/auth";
+import { extractTwoFactorToken, login } from "../../lib/api/auth";
 import { getDashboardPathByRole } from "../../lib/roles/dashboard-route";
 import { getGoogleIdToken } from "../../lib/google-identity";
 
@@ -56,6 +56,17 @@ export function LoginForm() {
         setUser(response.data.user);
         router.push(getDashboardPathByRole(response.data.user.role));
       } else {
+        const maybeTwoFactorToken = extractTwoFactorToken(response) || "";
+
+        if (maybeTwoFactorToken) {
+          const params = new URLSearchParams({
+            token: maybeTwoFactorToken,
+            role: data.role,
+          });
+          router.push(`/auth/two-factor?${params.toString()}`);
+          return;
+        }
+
         toast({
           title: "Login Failed",
           description: response.message || "An unknown error occurred.",
@@ -83,7 +94,16 @@ export function LoginForm() {
         return;
       }
 
-      if (result.needsProfileCompletion) {
+      if ("requiresTwoFactor" in result && result.requiresTwoFactor) {
+        const params = new URLSearchParams({
+          token: result.twoFactorToken,
+          role: result.role,
+        });
+        router.push(`/auth/two-factor?${params.toString()}`);
+        return;
+      }
+
+      if ("needsProfileCompletion" in result && result.needsProfileCompletion) {
         const params = new URLSearchParams({
           setup_token: result.setupToken,
           role: result.role,
@@ -157,7 +177,7 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
           Login
         </Button>
 

@@ -1,27 +1,31 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, MapPin, Clock, CheckCircle, Building2 } from "lucide-react"
 import { getFeaturedSuppliers } from "@/lib/data/suppliers"
+import { useTranslation } from "@/lib/i18n"
 
 const featuredSuppliers = getFeaturedSuppliers().slice(0, 4)
 
 export function FeaturedSuppliersSection() {
+  const { t } = useTranslation()
   return (
     <section className="bg-muted/50 py-8 sm:py-12 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <div className="space-y-1">
             <h2 className="font-serif text-2xl font-medium tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-              Featured Reviewed Suppliers
+              {t.landing.featured.suppliersTitle}
             </h2>
             <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
-              Discover top-rated manufacturers handpicked by our team
+              {t.landing.featured.suppliersSubtitle}
             </p>
           </div>
           <Button variant="outline" className="h-11 gap-2 px-6" asChild>
             <Link href="/suppliers">
-              View All Suppliers
+              {t.landing.featured.viewAllSuppliers}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
