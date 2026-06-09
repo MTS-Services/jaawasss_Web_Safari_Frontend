@@ -58,7 +58,7 @@ function StatusTag({ status }: { status: CustomerSupportTicketStatus }) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
         <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-        In Progress
+        Open
       </span>
     )
   }
@@ -380,7 +380,7 @@ export function AdminSupportChatView({ basePath, initialTicketId }: AdminSupport
                       <DropdownMenuLabel>Update Status</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => handleUpdateStatus("open")}>Pending</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleUpdateStatus("in_progress")}>In Progress</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleUpdateStatus("in_progress")}>Open</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleUpdateStatus("waiting_on_customer")}>Waiting on Customer</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleUpdateStatus("resolved")}>Resolved</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleUpdateStatus("closed")}>Closed</DropdownMenuItem>
@@ -405,7 +405,7 @@ export function AdminSupportChatView({ basePath, initialTicketId }: AdminSupport
                 {/* Initial ticket creation message from customer */}
                 <div className="flex flex-col items-start w-full">
                   <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-slate-100 px-4 py-3 text-[15px] text-slate-800">
-                    <p className="whitespace-pre-wrap break-words">{activeTicket.subject}</p>
+                    <p className="whitespace-pre-wrap wrap-break-word">{activeTicket.subject}</p>
                     <div className="text-xs text-slate-500 mb-2 space-y-1">
                       <p className="flex items-center gap-1.5"><Building2 className="h-3 w-3" /> Dept: {activeTicket.departmentType}</p>
                       <p className="flex items-center gap-1.5"><Mail className="h-3 w-3" /> Email: {activeTicket.user?.email || "N/A"}</p>
@@ -454,7 +454,7 @@ export function AdminSupportChatView({ basePath, initialTicketId }: AdminSupport
                                 : "bg-slate-100 text-slate-800 rounded-tl-sm"
                             }`}
                           >
-                            <p className="whitespace-pre-wrap break-words">{msg.message}</p>
+                            <p className="whitespace-pre-wrap wrap-break-word">{msg.message}</p>
                             
                             {/* Attachments */}
                             {msg.attachments && msg.attachments.length > 0 && (

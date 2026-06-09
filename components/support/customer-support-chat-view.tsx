@@ -63,7 +63,7 @@ function StatusTag({ status }: { status: CustomerTicketStatus }) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
         <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-        In Progress
+        Open
       </span>
     )
   }
