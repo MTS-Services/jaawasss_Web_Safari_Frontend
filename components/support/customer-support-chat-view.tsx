@@ -1,37 +1,10 @@
 "use client"
 
-import React, { useEffect, useMemo, useState, useRef } from "react"
-import { useRouter } from "next/navigation"
-import { format, isToday, isYesterday } from "date-fns"
-import { 
-  Headset, 
-  Plus, 
-  ShieldCheck, 
-  CornerDownLeft, 
-  Send, 
-  Paperclip, 
-  Loader2,
-  AlertCircle,
-  ArrowLeft
-} from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import {
   createCustomerSupportTicket,
@@ -40,607 +13,615 @@ import {
   replyCustomerSupportTicket,
   type CustomerTicket,
   type CustomerTicketDetail,
-  type CustomerTicketPriority,
   type CustomerTicketStatus,
 } from "@/lib/api/customer-support-tickets"
-import { useAuth } from "@/lib/auth-context"
+import {
+  LifeBuoy,
+  Send,
+  Plus,
+  ArrowLeft,
+  MessageSquare,
+  CheckCircle2,
+  CornerDownLeft,
+  Headset,
+  ShieldCheck,
+  Clock,
+  Sparkles,
+  Loader2
+} from "lucide-react"
+
+const TOPICS = [
+  "Orders & delivery",
+  "Payments & payouts",
+  "Account & profile",
+  "Technical issue",
+  "Something else",
+]
+
+function getDepartmentForTopic(topic: string) {
+  if (topic === "Orders & delivery") return "sales"
+  if (topic === "Payments & payouts") return "billing"
+  if (topic === "Technical issue") return "technical"
+  return "general"
+}
+
+/* ----------------------------- Shared UI config ----------------------------- */
+
+export const STATUS_CONFIG: Record<
+  CustomerTicketStatus | "unknown",
+  { label: string; short: string; pill: string; dot: string; solid: string }
+> = {
+  open: {
+    label: "Open",
+    short: "Open",
+    pill: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900",
+    dot: "bg-amber-500",
+    solid: "bg-amber-500",
+  },
+  "in_progress": {
+    label: "In Progress",
+    short: "Active",
+    pill: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900",
+    dot: "bg-sky-500",
+    solid: "bg-sky-500",
+  },
+  "waiting_on_customer": {
+    label: "Waiting on customer",
+    short: "Waiting",
+    pill: "bg-muted text-muted-foreground border-border",
+    dot: "bg-foreground/40",
+    solid: "bg-foreground/40",
+  },
+  resolved: {
+    label: "Resolved",
+    short: "Resolved",
+    pill: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900",
+    dot: "bg-emerald-500",
+    solid: "bg-emerald-500",
+  },
+  closed: {
+    label: "Closed",
+    short: "Closed",
+    pill: "bg-muted/60 text-muted-foreground border-border",
+    dot: "bg-muted-foreground",
+    solid: "bg-muted-foreground",
+  },
+  unknown: {
+    label: "Unknown",
+    short: "Unknown",
+    pill: "bg-muted text-muted-foreground border-border",
+    dot: "bg-foreground/40",
+    solid: "bg-foreground/40",
+  },
+}
+
+export function relativeTime(iso: string) {
+  const t = new Date(iso).getTime()
+  const now = Date.now()
+  const diff = now - t
+  if (diff < 0) return "just now"
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return "just now"
+  if (m < 60) return `${m}m`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h`
+  const d = Math.floor(h / 24)
+  if (d < 7) return `${d}d`
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
+export function clockTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+}
+
+export function dayLabel(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
+}
+
+export function initials(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+}
+
+function StatusPill({ status, className }: { status: CustomerTicketStatus | "unknown"; className?: string }) {
+  const c = STATUS_CONFIG[status] || STATUS_CONFIG.unknown
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        c.pill,
+        className,
+      )}
+    >
+      <span className={cn("h-1.5 w-1.5 rounded-full", c.dot)} />
+      {c.label}
+    </span>
+  )
+}
 
 interface CustomerSupportChatViewProps {
+  title: string
   basePath: string
-  initialTicketId?: string | null
 }
 
-function StatusTag({ status }: { status: CustomerTicketStatus }) {
-  if (status === "open" || status === "waiting_on_customer") {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-        <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-        {status === "open" ? "Pending" : "Waiting"}
-      </span>
-    )
-  }
-  if (status === "in_progress") {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
-        <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-        Open
-      </span>
-    )
-  }
-  if (status === "resolved" || status === "closed") {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-700">
-        <span className="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
-        {status === "resolved" ? "Resolved" : "Closed"}
-      </span>
-    )
-  }
-  return null
-}
-
-function formatRelativeTime(dateString: string | null) {
-  if (!dateString) return ""
-  const date = new Date(dateString)
-  if (isToday(date)) {
-    return format(date, "h:mm a")
-  }
-  if (isYesterday(date)) {
-    return "Yesterday"
-  }
-  return format(date, "MMM d")
-}
-
-function formatDateHeader(dateString: string | null) {
-  if (!dateString) return ""
-  const date = new Date(dateString)
-  return format(date, "EEEE, MMMM d")
-}
-
-export function CustomerSupportChatView({ basePath, initialTicketId }: CustomerSupportChatViewProps) {
-  const router = useRouter()
-  const { toast } = useToast()
+export function CustomerSupportChatView({ title, basePath }: CustomerSupportChatViewProps) {
   const { user } = useAuth()
-  
-  // State for tickets list
+  const { toast } = useToast()
+
   const [tickets, setTickets] = useState<CustomerTicket[]>([])
-  const [isListLoading, setIsListLoading] = useState(true)
-  const [totalTickets, setTotalTickets] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // State for active ticket detail
-  const [activeTicketId, setActiveTicketId] = useState<number | null>(
-    initialTicketId ? Number(initialTicketId) : null
-  )
-  const [activeTicket, setActiveTicket] = useState<CustomerTicketDetail | null>(null)
-  const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const [activeId, setActiveId] = useState<number | null>(null)
+  const [activeDetail, setActiveDetail] = useState<CustomerTicketDetail | null>(null)
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false)
 
-  // State for replying
-  const [replyMessage, setReplyMessage] = useState("")
+  const [composing, setComposing] = useState(false)
+  const [mobileThreadOpen, setMobileThreadOpen] = useState(false)
+
+  const [reply, setReply] = useState("")
   const [isReplying, setIsReplying] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // State for creating new ticket
-  const [isNewModalOpen, setIsNewModalOpen] = useState(false)
+  // New conversation form
+  const [topic, setTopic] = useState(TOPICS[0])
+  const [subject, setSubject] = useState("")
+  const [body, setBody] = useState("")
   const [isCreating, setIsCreating] = useState(false)
-  const [newSubject, setNewSubject] = useState("")
-  const [newDepartment, setNewDepartment] = useState("sales")
-  const [newMessage, setNewMessage] = useState("")
-  const [newPriority, setNewPriority] = useState<CustomerTicketPriority>("medium")
-  const [newAttachments, setNewAttachments] = useState<File[]>([])
 
-  // Fetch tickets list
-  const fetchTicketsList = async () => {
-    const res = await getMyCustomerSupportTickets(1, 50)
-    if (res.success) {
-      setTickets(res.data)
-      setTotalTickets(res.meta?.total || res.data.length)
-      
-      // If we have no active ticket but we have tickets, optionally auto-select the first one
-      if (!activeTicketId && res.data.length > 0 && !initialTicketId) {
-        // Only auto-select on desktop sizes to prevent hiding the list on mobile
-        if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-          setActiveTicketId(res.data[0].id)
-        }
+  const fullName = user ? `${user.firstName} ${user.lastName}` : "You"
+
+  const loadTickets = async () => {
+    setIsLoading(true)
+    const response = await getMyCustomerSupportTickets(1, 50)
+    if (response.success) {
+      setTickets(response.data)
+      if (response.data.length === 0 && !activeId) {
+        setComposing(true)
       }
     } else {
       toast({
-        title: "Error",
-        description: "Failed to load conversations.",
-        variant: "destructive"
+        title: "Failed to load support tickets",
+        description: response.message || "Please refresh and try again.",
+        variant: "destructive",
       })
     }
-    setIsListLoading(false)
+    setIsLoading(false)
   }
 
   useEffect(() => {
-    setIsListLoading(true)
-    fetchTicketsList()
+    loadTickets()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Fetch active ticket details
-  useEffect(() => {
-    let mounted = true
-
-    const fetchDetail = async () => {
-      if (!activeTicketId) {
-        setActiveTicket(null)
-        return
-      }
-      setIsDetailLoading(true)
-      const res = await getMyCustomerSupportTicketById(activeTicketId)
-      if (!mounted) return
-      
-      if (res.success && res.data) {
-        setActiveTicket(res.data)
-        // Scroll to bottom when new ticket loads
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-        }, 100)
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to load the selected conversation.",
-          variant: "destructive"
-        })
-        setActiveTicket(null)
-      }
-      setIsDetailLoading(false)
-    }
-
-    fetchDetail()
-
-    return () => {
-      mounted = false
-    }
-  }, [activeTicketId, toast])
-
-  const handleTicketSelect = (id: number | null) => {
-    setActiveTicketId(id)
-    if (id) {
-      router.push(`${basePath}/${id}`, { scroll: false })
+  const openConversation = async (id: number) => {
+    setActiveId(id)
+    setComposing(false)
+    setMobileThreadOpen(true)
+    setIsLoadingDetail(true)
+    const response = await getMyCustomerSupportTicketById(id)
+    if (response.success && response.data) {
+      setActiveDetail(response.data)
     } else {
-      router.push(`${basePath}`, { scroll: false })
+      toast({ title: "Failed to load ticket details", variant: "destructive" })
     }
+    setIsLoadingDetail(false)
   }
 
-  const handleCreateNewTicket = async () => {
-    if (!newSubject.trim() || !newMessage.trim()) {
-      toast({
-        title: "Required fields missing",
-        description: "Please provide both a subject and a message.",
-        variant: "destructive"
-      })
-      return
-    }
+  const startNew = () => {
+    setComposing(true)
+    setMobileThreadOpen(true)
+    setActiveId(null)
+    setActiveDetail(null)
+  }
 
+  const submitNew = async () => {
+    if (!body.trim()) return
     setIsCreating(true)
-    const res = await createCustomerSupportTicket({
-      subject: newSubject.trim(),
-      departmentType: newDepartment,
-      message: newMessage.trim(),
-      priority: newPriority,
-      attachments: newAttachments
+    const response = await createCustomerSupportTicket({
+      subject: subject.trim() || topic,
+      departmentType: getDepartmentForTopic(topic),
+      message: body.trim(),
+      priority: "medium", // default priority, backend will handle
     })
     setIsCreating(false)
 
-    if (res.success && res.data) {
+    if (response.success && response.data) {
       toast({ title: "Ticket created successfully" })
-      setIsNewModalOpen(false)
-      // Reset form
-      setNewSubject("")
-      setNewMessage("")
-      setNewAttachments([])
-      setNewPriority("medium")
-      setNewDepartment("sales")
-      
-      // Refresh list and select new ticket
-      await fetchTicketsList()
-      handleTicketSelect(res.data.id)
+      setSubject("")
+      setBody("")
+      setTopic(TOPICS[0])
+      setComposing(false)
+      loadTickets()
+      openConversation(response.data.id)
     } else {
       toast({
         title: "Failed to create ticket",
-        description: res.message || "Please try again later.",
-        variant: "destructive"
+        description: response.message || "Please try again.",
+        variant: "destructive",
       })
     }
   }
 
-  const handleSendReply = async () => {
-    if (!activeTicketId || !replyMessage.trim()) return
-
+  const sendReply = async () => {
+    if (!activeId || !reply.trim()) return
     setIsReplying(true)
-    const res = await replyCustomerSupportTicket(activeTicketId, {
-      message: replyMessage.trim()
+    const response = await replyCustomerSupportTicket(activeId, {
+      message: reply.trim(),
     })
     setIsReplying(false)
 
-    if (res.success && res.data) {
-      setActiveTicket(res.data)
-      setReplyMessage("")
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-      }, 100)
+    if (response.success && response.data) {
+      setActiveDetail(response.data)
+      setReply("")
     } else {
-      toast({
-        title: "Failed to send message",
-        description: res.message || "Please try again later.",
-        variant: "destructive"
-      })
+      toast({ title: "Failed to send reply", variant: "destructive" })
     }
   }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendReply()
-    }
-  }
-
-  const sortedMessages = useMemo(() => {
-    if (!activeTicket?.messages) return []
-    return [...activeTicket.messages].sort((a, b) => a.id - b.id)
-  }, [activeTicket?.messages])
-
-  const hasAdminReplied = useMemo(() => {
-    if (!sortedMessages.length) return false
-    // If there is any message from someone other than the current user, it's an admin reply
-    return sortedMessages.some(m => m.userId?.toString() !== user?.id?.toString())
-  }, [sortedMessages, user?.id])
 
   return (
-    <div className="flex h-[calc(100dvh-120px)] w-full max-w-full flex-col">
+    <div className="flex h-[calc(100vh-7rem)] flex-col gap-4">
       {/* Header */}
-      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shrink-0">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-[#4a3424] text-white">
-            <Headset className="h-5 w-5 sm:h-6 sm:w-6" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Headset className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="font-serif text-xl sm:text-2xl font-bold text-foreground">Support</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">Get help from the SourceNest team.</p>
+            <h1 className="font-serif text-2xl font-medium text-foreground">Support</h1>
+            <p className="text-sm text-muted-foreground">Get help from the SourceNest team.</p>
           </div>
         </div>
-        <Button 
-          onClick={() => setIsNewModalOpen(true)}
-          className="bg-[#4a3424] hover:bg-[#3d2a1d] text-white gap-2 w-full sm:w-auto"
-        >
+        <Button onClick={startNew} className="gap-1.5 self-start sm:self-auto">
           <Plus className="h-4 w-4" />
           New conversation
         </Button>
       </div>
 
-      {/* Main Content Split */}
-      <div className="flex flex-1 gap-6 overflow-hidden">
-        
-        {/* Left Sidebar - Conversations List */}
-        <div className={`w-full flex-col rounded-xl border border-border bg-white shadow-sm overflow-hidden lg:max-w-[320px] xl:max-w-[380px] ${activeTicketId ? 'hidden lg:flex' : 'flex'}`}>
-          <div className="flex items-center justify-between border-b border-border p-4">
-            <h2 className="font-semibold text-foreground">Your conversations</h2>
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
-              {totalTickets}
+      {/* Panes */}
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">
+        {/* ---- Conversation list ---- */}
+        <div
+          className={cn(
+            "flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card",
+            mobileThreadOpen && "hidden lg:flex",
+          )}
+        >
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <span className="text-sm font-semibold text-foreground">Your conversations</span>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground tabular-nums">
+              {tickets.length}
             </span>
           </div>
-          
-          <div className="flex-1 overflow-y-auto">
-            {isListLoading ? (
-              <div className="flex items-center justify-center py-10">
+
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center p-6">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : tickets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
-                <p className="text-sm">No conversations yet.</p>
+              <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-sm text-muted-foreground">
+                <MessageSquare className="h-8 w-8 opacity-40" />
+                No conversations yet.
+                <Button variant="outline" size="sm" className="mt-1 gap-1.5 bg-transparent" onClick={startNew}>
+                  <Plus className="h-4 w-4" />
+                  Start one
+                </Button>
               </div>
             ) : (
-              <div className="flex flex-col">
-                {tickets.map((t) => {
-                  const isActive = t.id === activeTicketId
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => handleTicketSelect(t.id)}
-                      className={`relative flex flex-col items-start gap-2 border-b border-border p-4 text-left transition-colors hover:bg-slate-50 ${
-                        isActive ? "bg-slate-50" : ""
-                      }`}
-                    >
-                      {isActive && (
-                        <div className="absolute left-0 top-0 h-full w-1 bg-amber-500 rounded-r-full" />
+              tickets.map((conv) => {
+                const isActive = conv.id === activeId && !composing
+                
+                // We don't have the last message in the generic list API, but we can display the updated time
+                const preview = ""
+
+                return (
+                  <button
+                    key={conv.id}
+                    onClick={() => openConversation(conv.id)}
+                    className={cn(
+                      "relative flex w-full flex-col gap-1.5 border-b border-border px-4 py-3 text-left transition-colors hover:bg-muted/40",
+                      isActive && "bg-muted/60",
+                    )}
+                  >
+                    {isActive && <span className="absolute inset-y-0 left-0 w-0.5 bg-primary" />}
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={cn(
+                          "truncate text-sm text-foreground font-medium",
+                        )}
+                      >
+                        {conv.subject}
+                      </span>
+                      <span className="flex shrink-0 items-center gap-1.5">
+                        <span className="text-[11px] text-muted-foreground">
+                          {conv.updatedAt ? relativeTime(conv.updatedAt) : ""}
+                        </span>
+                      </span>
+                    </div>
+                    <p
+                      className={cn(
+                        "truncate text-xs text-muted-foreground",
                       )}
-                      
-                      <div className="flex w-full items-start justify-between gap-2">
-                        <span className="line-clamp-1 font-medium text-foreground">
-                          {t.subject}
-                        </span>
-                        <span className="shrink-0 text-xs text-muted-foreground">
-                          {formatRelativeTime(t.updatedAt || t.createdAt)}
-                        </span>
-                      </div>
-                      
-                      {/* Fake excerpt for the list since the API doesn't return the last message text in the list response */}
-                      <p className="line-clamp-1 text-sm text-muted-foreground">
-                        Ticket #{t.id} • {t.departmentType}
-                      </p>
-                      
-                      <div className="mt-1 flex items-center gap-2">
-                        <StatusTag status={t.status} />
-                        <span className="text-xs text-muted-foreground">T-{t.id}</span>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
+                    >
+                      {preview}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <StatusPill status={conv.status} />
+                      <span className="text-[11px] text-muted-foreground">#{conv.id}</span>
+                    </div>
+                  </button>
+                )
+              })
             )}
+          </div>
+
+          {/* Reassurance footer */}
+          <div className="flex items-center gap-2 border-t border-border px-4 py-3 text-xs text-muted-foreground">
+            <ShieldCheck className="h-4 w-4 text-secondary" />
+            Avg. first reply under an hour
           </div>
         </div>
 
-        {/* Right Area - Chat View */}
-        <div className={`flex-1 flex-col rounded-xl border border-border bg-white shadow-sm overflow-hidden relative ${!activeTicketId ? 'hidden lg:flex' : 'flex'}`}>
-          {!activeTicketId ? (
-            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-              <Headset className="mb-4 h-12 w-12 opacity-20" />
-              <p>Select a conversation from the list or start a new one.</p>
+        {/* ---- Thread / Composer ---- */}
+        <div
+          className={cn(
+            "flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card",
+            !mobileThreadOpen && "hidden lg:flex",
+          )}
+        >
+          {composing ? (
+            <NewConversationForm
+              topic={topic}
+              setTopic={setTopic}
+              subject={subject}
+              setSubject={setSubject}
+              body={body}
+              setBody={setBody}
+              onSubmit={submitNew}
+              onBack={() => {
+                setMobileThreadOpen(false)
+                if (tickets.length) setComposing(false)
+              }}
+              canSubmit={!!body.trim()}
+              isCreating={isCreating}
+            />
+          ) : !activeId ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-muted-foreground">
+              <LifeBuoy className="h-10 w-10 opacity-40" />
+              Select a conversation, or start a new one.
+              <Button onClick={startNew} className="gap-1.5">
+                <Plus className="h-4 w-4" />
+                New conversation
+              </Button>
             </div>
-          ) : isDetailLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          ) : isLoadingDetail ? (
+            <div className="flex h-full flex-col items-center justify-center p-6">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground opacity-50" />
             </div>
-          ) : !activeTicket ? (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
-              <p>Conversation not found.</p>
-            </div>
-          ) : (
+          ) : activeDetail ? (
             <>
-              {/* Chat Header */}
-              <div className="flex items-center justify-between border-b border-border p-3 sm:p-4">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                  <Button variant="ghost" size="icon" className="lg:hidden shrink-0 mr-1 -ml-2" onClick={() => handleTicketSelect(null)}>
-                    <ArrowLeft className="h-5 w-5" />
-                  </Button>
-                  <div className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-                    <Headset className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="truncate font-semibold text-foreground text-sm sm:text-base">{activeTicket.subject}</h2>
-                    <p className="truncate text-[10px] sm:text-xs text-muted-foreground">
-                      SourceNest Support • T-{activeTicket.id}
-                    </p>
-                  </div>
+              {/* Thread header */}
+              <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden"
+                  onClick={() => setMobileThreadOpen(false)}
+                  aria-label="Back to list"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Headset className="h-4 w-4" />
                 </div>
-                <div className="shrink-0 ml-2">
-                  <StatusTag status={activeTicket.status} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-foreground">{activeDetail.subject}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    SourceNest Support · #{activeDetail.id}
+                  </p>
                 </div>
+                <StatusPill status={activeDetail.status} className="hidden sm:inline-flex" />
               </div>
 
-              {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-white">
-                {/* Initial ticket creation message */}
-                <div className="relative flex items-center justify-center py-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
+              {/* Messages */}
+              <div className="min-h-0 flex-1 space-y-1 overflow-y-auto bg-muted/20 px-4 py-5">
+                {activeDetail.status === "resolved" && (
+                  <div className="mx-auto mb-4 flex w-fit items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Support marked this resolved — reply to reopen
                   </div>
-                  <div className="relative flex justify-center text-xs">
-                    <span className="bg-white px-2 text-muted-foreground">
-                      {formatDateHeader(activeTicket.createdAt)}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col items-end w-full">
-                  <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[#4a3424] px-4 py-3 text-[15px] text-white">
-                    <p className="whitespace-pre-wrap wrap-break-word">{activeTicket.subject}</p>
-                    <div className="mt-1 flex items-center justify-end text-[11px] text-white/70">
-                      You · {formatRelativeTime(activeTicket.createdAt)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* The rest of the messages */}
-                {sortedMessages.map((msg, idx) => {
-                  const isCurrentUser = msg.userId?.toString() === user?.id?.toString()
-                  
-                  // Add date separator if it's a new day compared to previous message
-                  const prevMsgDate = idx > 0 ? sortedMessages[idx-1].createdAt : activeTicket.createdAt
-                  const showDateSeparator = msg.createdAt && prevMsgDate && 
-                    new Date(msg.createdAt).toDateString() !== new Date(prevMsgDate).toDateString()
-
+                )}
+                {activeDetail.messages.map((m, i) => {
+                  const isCustomer = user?.id ? m.userId?.toString() === user.id.toString() : true
+                  const prev = activeDetail.messages[i - 1]
+                  const showDay =
+                    !prev ||
+                    (m.createdAt && prev.createdAt && dayLabel(prev.createdAt) !== dayLabel(m.createdAt))
                   return (
-                    <React.Fragment key={msg.id}>
-                      {showDateSeparator && (
-                        <div className="relative flex items-center justify-center py-2">
-                          <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-border" />
-                          </div>
-                          <div className="relative flex justify-center text-xs">
-                            <span className="bg-white px-2 text-muted-foreground">
-                              {formatDateHeader(msg.createdAt)}
-                            </span>
-                          </div>
+                    <div key={m.id}>
+                      {showDay && m.createdAt && (
+                        <div className="my-4 flex items-center gap-3">
+                          <span className="h-px flex-1 bg-border" />
+                          <span className="text-[11px] font-medium text-muted-foreground">{dayLabel(m.createdAt)}</span>
+                          <span className="h-px flex-1 bg-border" />
                         </div>
                       )}
-
-                      <div className={`flex w-full ${isCurrentUser ? "justify-end" : "justify-start"} items-end gap-2`}>
-                        {!isCurrentUser && (
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 mb-1">
+                      <div className={cn("flex items-end gap-2", isCustomer ? "justify-end" : "justify-start")}>
+                        {!isCustomer && (
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                             <Headset className="h-4 w-4" />
                           </div>
                         )}
-                        
-                        <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[80%]`}>
-                          <div 
-                            className={`rounded-2xl px-4 py-3 text-[15px] ${
-                              isCurrentUser 
-                                ? "bg-[#4a3424] text-white rounded-tr-sm" 
-                                : "bg-slate-100 text-slate-800 rounded-tl-sm"
-                            }`}
-                          >
-                            <p className="whitespace-pre-wrap wrap-break-word">{msg.message}</p>
-                            
-                            {/* Attachments */}
-                            {msg.attachments && msg.attachments.length > 0 && (
-                              <div className="mt-2 space-y-1">
-                                {msg.attachments.map(att => (
-                                  <a
-                                    key={att.id}
-                                    href={att.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className={`flex items-center gap-1.5 text-xs hover:underline ${
-                                      isCurrentUser ? "text-white/90" : "text-blue-600"
-                                    }`}
-                                  >
-                                    <Paperclip className="h-3 w-3" />
-                                    {att.originalName}
-                                  </a>
-                                ))}
-                              </div>
+                        <div className={cn("max-w-[80%]", isCustomer && "text-right")}>
+                          <div
+                            className={cn(
+                              "inline-block rounded-2xl px-4 py-2.5 text-left text-sm leading-relaxed shadow-sm",
+                              isCustomer
+                                ? "rounded-br-md bg-primary text-primary-foreground"
+                                : "rounded-bl-md border border-border bg-card text-foreground",
                             )}
+                          >
+                            <div className="whitespace-pre-wrap">{m.message}</div>
                           </div>
-                          
-                          <div className="mt-1 flex items-center text-[11px] text-muted-foreground px-1">
-                            {isCurrentUser ? "You" : msg.user?.fullName || "Support"} · {formatRelativeTime(msg.createdAt)}
+                          <div
+                            className={cn(
+                              "mt-1 flex items-center gap-1 px-1 text-[11px] text-muted-foreground",
+                              isCustomer && "justify-end",
+                            )}
+                          >
+                            <span>{isCustomer ? "You" : "SourceNest Support"}</span>
+                            <span>·</span>
+                            <span>{m.createdAt ? clockTime(m.createdAt) : ""}</span>
                           </div>
                         </div>
-
-                        {isCurrentUser && (
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-600 mb-1 text-xs font-medium uppercase">
-                            {user?.name?.substring(0, 2) || "ME"}
+                        {isCustomer && (
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-xs font-semibold text-secondary">
+                            {initials(fullName)}
                           </div>
                         )}
                       </div>
-                    </React.Fragment>
+                    </div>
                   )
                 })}
-                <div ref={messagesEndRef} />
               </div>
 
-              {/* Chat Input Area */}
-              <div className="bg-white p-4">
-                {!hasAdminReplied && activeTicket.status !== "closed" && activeTicket.status !== "resolved" && (
-                  <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50/50 px-3 py-2 text-sm text-amber-800">
-                    <ShieldCheck className="h-4 w-4 text-amber-600" />
-                    Our team is reviewing your request. Avg. first reply under an hour.
+              {/* Composer */}
+              <div className="border-t border-border p-3">
+                <div className="rounded-xl border border-border bg-background focus-within:ring-2 focus-within:ring-ring">
+                  <Textarea
+                    placeholder="Write a message to support…"
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault()
+                        sendReply()
+                      }
+                    }}
+                    className="min-h-[60px] resize-none border-0 bg-transparent shadow-none focus-visible:ring-0"
+                    rows={2}
+                  />
+                  <div className="flex items-center justify-between gap-2 px-2 pb-2">
+                    <span className="hidden items-center gap-1 px-1 text-[11px] text-muted-foreground sm:flex">
+                      <CornerDownLeft className="h-3 w-3" />
+                      ⌘ + Enter to send
+                    </span>
+                    <Button onClick={sendReply} disabled={!reply.trim() || isReplying} size="sm" className="ml-auto gap-1.5">
+                      {isReplying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      Send
+                    </Button>
                   </div>
-                )}
-                
-                {activeTicket.status === "closed" || activeTicket.status === "resolved" ? (
-                  <div className="rounded-lg border border-border bg-slate-50 p-4 text-center text-sm text-muted-foreground">
-                    This conversation has been {activeTicket.status}.
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-border bg-white p-1 focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-all shadow-sm">
-                    <Textarea 
-                      value={replyMessage}
-                      onChange={(e) => setReplyMessage(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Write a message to support..."
-                      className="min-h-[60px] resize-none border-0 shadow-none focus-visible:ring-0 px-3 py-2 text-[15px]"
-                    />
-                    <div className="flex items-center justify-between px-2 pb-1 pt-2 border-t border-border/50">
-                      <div className="flex items-center text-xs text-muted-foreground gap-1.5 ml-1">
-                        <CornerDownLeft className="h-3.5 w-3.5" />
-                        Enter to send
-                      </div>
-                      <Button 
-                        size="sm" 
-                        onClick={handleSendReply}
-                        disabled={!replyMessage.trim() || isReplying}
-                        className="bg-[#9c8475] hover:bg-[#867061] text-white rounded-lg h-8 px-4 font-medium"
-                      >
-                        {isReplying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1.5" />}
-                        Send
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             </>
-          )}
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function NewConversationForm({
+  topic,
+  setTopic,
+  subject,
+  setSubject,
+  body,
+  setBody,
+  onSubmit,
+  onBack,
+  canSubmit,
+  isCreating,
+}: {
+  topic: string
+  setTopic: (v: string) => void
+  subject: string
+  setSubject: (v: string) => void
+  body: string
+  setBody: (v: string) => void
+  onSubmit: () => void
+  onBack: () => void
+  canSubmit: boolean
+  isCreating: boolean
+}) {
+  return (
+    <>
+      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+        <Button variant="ghost" size="icon" className="lg:hidden" onClick={onBack} aria-label="Back">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Sparkles className="h-4 w-4" />
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">New conversation</p>
+          <p className="text-xs text-muted-foreground">Tell us what you need help with.</p>
         </div>
       </div>
 
-      {/* New Conversation Modal */}
-      <Dialog open={isNewModalOpen} onOpenChange={setIsNewModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>New Conversation</DialogTitle>
-            <DialogDescription>
-              Start a new support request. Please provide as much detail as possible.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="subject">Subject *</Label>
-              <Input
-                id="subject"
-                value={newSubject}
-                onChange={(e) => setNewSubject(e.target.value)}
-                placeholder="What do you need help with?"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Department</Label>
-                <Select value={newDepartment} onValueChange={setNewDepartment}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sales">Sales</SelectItem>
-                    <SelectItem value="technical">Technical</SelectItem>
-                    <SelectItem value="billing">Billing</SelectItem>
-                    <SelectItem value="general">General</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Priority</Label>
-                <Select value={newPriority} onValueChange={(val) => setNewPriority(val as CustomerTicketPriority)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="message">Message *</Label>
-              <Textarea
-                id="message"
-                rows={4}
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Describe your issue in detail..."
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="attachments">Attachments</Label>
-              <Input
-                id="attachments"
-                type="file"
-                multiple
-                onChange={(e) => setNewAttachments(Array.from(e.target.files || []))}
-                className="cursor-pointer"
-              />
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
+        <div className="mx-auto max-w-xl space-y-5">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Topic</label>
+            <div className="flex flex-wrap gap-2">
+              {TOPICS.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTopic(t)}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                    topic === t
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  {t}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsNewModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              className="bg-[#4a3424] hover:bg-[#3d2a1d] text-white" 
-              onClick={handleCreateNewTicket}
-              disabled={isCreating}
-            >
-              {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create
-            </Button>
+
+          <div className="space-y-2">
+            <label htmlFor="support-subject" className="text-sm font-medium text-foreground">
+              Subject <span className="font-normal text-muted-foreground">(optional)</span>
+            </label>
+            <input
+              id="support-subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Brief summary"
+              className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+
+          <div className="space-y-2">
+            <label htmlFor="support-body" className="text-sm font-medium text-foreground">
+              How can we help?
+            </label>
+            <Textarea
+              id="support-body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Describe your question or issue in detail…"
+              className="min-h-[160px] resize-none"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+            <Clock className="h-4 w-4 shrink-0 text-secondary" />
+            Our support team typically replies within an hour during business hours.
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-end gap-2 border-t border-border p-3">
+        <Button onClick={onSubmit} disabled={!canSubmit || isCreating} className="gap-1.5">
+          {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          Send to support
+        </Button>
+      </div>
+    </>
   )
 }
