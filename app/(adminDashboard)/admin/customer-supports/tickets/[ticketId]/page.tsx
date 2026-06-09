@@ -29,11 +29,11 @@ import {
 import { ArrowLeft, Loader2, Paperclip, Send, Save } from "lucide-react"
 
 function statusLabel(status: CustomerSupportTicketStatus): string {
-  if (status === "in_progress") return "In Progress"
+  if (status === "in_progress") return "Open"
   if (status === "waiting_on_customer") return "Waiting On Customer"
   if (status === "resolved") return "Resolved"
   if (status === "closed") return "Closed"
-  if (status === "open") return "Open"
+  if (status === "open") return "Pending"
   return "Unknown"
 }
 
@@ -270,8 +270,8 @@ export default function AdminCustomerSupportTicketDetailsPage() {
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="open">Pending</SelectItem>
+                <SelectItem value="in_progress">Open</SelectItem>
                 <SelectItem value="waiting_on_customer">Waiting On Customer</SelectItem>
                 <SelectItem value="resolved">Resolved</SelectItem>
                 <SelectItem value="closed">Closed</SelectItem>

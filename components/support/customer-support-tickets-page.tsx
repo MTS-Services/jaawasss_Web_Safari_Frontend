@@ -31,11 +31,11 @@ interface CustomerSupportTicketsPageProps {
 }
 
 function statusLabel(status: CustomerTicketStatus): string {
-  if (status === "in_progress") return "In Progress"
+  if (status === "in_progress") return "Open"
   if (status === "waiting_on_customer") return "Waiting On Customer"
   if (status === "resolved") return "Resolved"
   if (status === "closed") return "Closed"
-  if (status === "open") return "Open"
+  if (status === "open") return "Pending"
   return "Unknown"
 }
 
@@ -271,11 +271,11 @@ export function CustomerSupportTicketsPage({ title, basePath }: CustomerSupportT
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Open</p>
+          <p className="text-sm text-muted-foreground">Pending</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{counters.open}</p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4">
-          <p className="text-sm text-muted-foreground">In Progress</p>
+          <p className="text-sm text-muted-foreground">Open</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{counters.inProgress}</p>
         </div>
         <div className="rounded-lg border border-border bg-card p-4">

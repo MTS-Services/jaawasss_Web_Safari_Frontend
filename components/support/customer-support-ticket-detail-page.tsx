@@ -24,11 +24,11 @@ interface CustomerSupportTicketDetailPageProps {
 }
 
 function statusLabel(status: CustomerTicketStatus): string {
-  if (status === "in_progress") return "In Progress"
+  if (status === "in_progress") return "Open"
   if (status === "waiting_on_customer") return "Waiting On Customer"
   if (status === "resolved") return "Resolved"
   if (status === "closed") return "Closed"
-  if (status === "open") return "Open"
+  if (status === "open") return "Pending"
   return "Unknown"
 }
 
