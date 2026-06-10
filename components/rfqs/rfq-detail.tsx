@@ -7,6 +7,8 @@ import {
   RFQ_STATUS_LABELS,
   type RfqStatus,
 } from "@/lib/rfqs-context"
+import { useOrders } from "@/lib/orders-context"
+import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -53,6 +55,8 @@ export interface RfqDetailConfig {
 
 export function RfqDetail({ rfqId, config }: { rfqId: string; config: RfqDetailConfig }) {
   const { getRfqById, addMessage, submitQuote, updateStatus } = useRfqs()
+  const { createOrder } = useOrders()
+  const router = useRouter()
   const rfq = getRfqById(rfqId)
 
   const [showMessageForm, setShowMessageForm] = useState(false)
@@ -108,6 +112,34 @@ export function RfqDetail({ rfqId, config }: { rfqId: string; config: RfqDetailC
 
   const handleAcceptQuote = () => {
     updateStatus(rfq.id, "accepted", "Buyer accepted the quote.")
+    
+    // Create an order automatically when quote is accepted
+    const newOrder = createOrder({
+      kind: "product",
+      title: rfq.productName,
+      rfqId: rfq.id,
+      rfqTitle: rfq.productName,
+      buyerEmail: rfq.buyerEmail,
+      buyerName: rfq.buyerName,
+      buyerCompany: rfq.buyerCompany,
+      manufacturerId: rfq.supplierId || "mfr-custom",
+      manufacturerName: rfq.supplierCompanyName || "Unknown Manufacturer",
+      quantity: `${rfq.quantity} ${rfq.quantityUnit}`,
+      unitPrice: rfq.quotedPrice || 0,
+      totalAmount: (rfq.quotedPrice || 0) * rfq.quantity,
+      currency: rfq.quoteCurrencyCode || "USD",
+      packagingDetails: rfq.packagingDetails || "",
+      productionTime: `${rfq.leadTimeDays || 30} days`,
+      estimatedDelivery: new Date(Date.now() + (rfq.leadTimeDays || 30) * 24 * 60 * 60 * 1000).toISOString(),
+      paymentTerms: "TBD",
+      shippingTerms: rfq.shippingTerms,
+      destination: `${rfq.destinationPortCity}, ${rfq.destinationCountry}`,
+      notes: rfq.manufacturerReply || "",
+      documents: []
+    })
+    
+    // Navigate to the order
+    router.push(`/dashboard/buyer/orders/${newOrder.id}`)
   }
 
   const handleCancelRfq = () => {
