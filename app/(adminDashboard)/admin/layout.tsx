@@ -37,7 +37,8 @@ import {
   HelpCircle,
   ClipboardList,
   Award,
-  ScanEye
+  ScanEye,
+  ShoppingBag
 } from "lucide-react"
 import { useState } from "react"
 
@@ -65,6 +66,7 @@ export default function AdminLayout({
     { name: t?.nav?.adminQuickFilters || "Quick Filters", href: "/admin/filters", icon: Filter },
     { name: t?.nav?.adminReviews || "Reviews", href: "/admin/reviews", icon: Star },
     { name: t?.nav?.adminRFQs || "RFQs", href: "/admin/rfqs", icon: FileText },
+    { name: t?.nav?.adminOrders || "Orders", href: "/admin/orders", icon: ShoppingBag },
     { name: t?.nav?.adminMessages || "Messages", href: "/admin/messages", icon: MessageSquare },
     { name: t?.nav?.adminSupportTickets || "Support Tickets", href: "/admin/customer-supports/tickets", icon: HelpCircle },
     { name: t?.nav?.adminReports || "Reports", href: "/admin/reports", icon: Flag, badge: "3" },

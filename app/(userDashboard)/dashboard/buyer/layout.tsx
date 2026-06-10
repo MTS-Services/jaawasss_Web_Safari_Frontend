@@ -32,7 +32,8 @@ import {
   Globe,
   HelpCircle,
   X,
-  User
+  User,
+  ShoppingBag
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -53,6 +54,12 @@ const sidebarItems = [
     title: "Saved Suppliers",
     href: "/dashboard/buyer/saved",
     icon: Heart,
+    exact: true
+  },
+  {
+    title: "Orders",
+    href: "/dashboard/buyer/orders",
+    icon: ShoppingBag,
     exact: true
   },
   {

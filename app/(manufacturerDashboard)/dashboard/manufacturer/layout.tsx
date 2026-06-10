@@ -28,7 +28,8 @@ import {
   FileBox,
   Clock,
   ScanEye,
-  HelpCircle
+  HelpCircle,
+  ShoppingBag
 } from "lucide-react"
 import { useState } from "react"
 
@@ -38,6 +39,7 @@ const navigation = [
   { name: "Messages", href: "/dashboard/manufacturer/messages", icon: MessageSquare },
   { name: "Support Tickets", href: "/dashboard/manufacturer/support-tickets", icon: HelpCircle },
   { name: "Review Center", href: "/dashboard/manufacturer/review-center", icon: ScanEye },
+  { name: "Orders", href: "/dashboard/manufacturer/orders", icon: ShoppingBag },
   { name: "Products", href: "/dashboard/manufacturer/products", icon: Package },
   { name: "Catalogs", href: "/dashboard/manufacturer/catalogs", icon: FileBox },
   { name: "Certifications", href: "/dashboard/manufacturer/certifications", icon: Award },

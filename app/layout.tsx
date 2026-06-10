@@ -7,6 +7,9 @@ import { I18nProvider } from '@/lib/i18n'
 import { Toaster } from '@/components/ui/toaster'
 import { FavoritesProvider } from '@/lib/favorites-context'
 import { SubscriptionProvider } from '@/lib/subscription-context'
+import { OrdersProvider } from '@/lib/orders-context'
+import { MessagesProvider } from '@/lib/messages-context'
+import { RfqsProvider } from '@/lib/rfqs-context'
 import './globals.css'
 
 const dmSans = DM_Sans({ 
@@ -56,7 +59,13 @@ export default function RootLayout({
           <AuthProvider>
             <SubscriptionProvider>
               <FavoritesProvider>
-                {children}
+                <RfqsProvider>
+                  <OrdersProvider>
+                    <MessagesProvider>
+                      {children}
+                    </MessagesProvider>
+                  </OrdersProvider>
+                </RfqsProvider>
               </FavoritesProvider>
             </SubscriptionProvider>
           </AuthProvider>

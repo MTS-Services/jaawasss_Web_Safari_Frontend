@@ -1,0 +1,350 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
+import { useMessages } from "@/lib/messages-context"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  LayoutDashboard,
+  FileText,
+  Heart,
+  MessageSquare,
+  Activity,
+  Settings,
+  LogOut,
+  Menu,
+  Search,
+  ChevronDown,
+  Globe,
+  HelpCircle,
+  X,
+  User,
+  Briefcase,
+  Package,
+  LifeBuoy
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+
+const sidebarItems = [
+  {
+    title: "Overview",
+    href: "/dashboard/buyer",
+    icon: LayoutDashboard,
+    exact: true
+  },
+  {
+    title: "My RFQs",
+    href: "/dashboard/buyer/rfqs",
+    icon: FileText,
+    badge: "3"
+  },
+  {
+    title: "Service Requests",
+    href: "/dashboard/buyer/service-requests",
+    icon: Briefcase
+  },
+  {
+    title: "Orders",
+    href: "/dashboard/buyer/orders",
+    icon: Package
+  },
+  {
+    title: "Saved Suppliers",
+    href: "/dashboard/buyer/saved",
+    icon: Heart
+  },
+  {
+    title: "Messages",
+    href: "/dashboard/buyer/messages",
+    icon: MessageSquare
+  },
+  {
+    title: "Recent Activity",
+    href: "/dashboard/buyer/activity",
+    icon: Activity
+  },
+  {
+    title: "Support",
+    href: "/dashboard/buyer/support",
+    icon: LifeBuoy
+  },
+  {
+    title: "Settings",
+    href: "/dashboard/buyer/settings",
+    icon: Settings
+  }
+]
+
+export default function BuyerDashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const pathname = usePathname()
+  const router = useRouter()
+  const { user, logout, isAuthenticated, isLoading } = useAuth()
+  const { getThreadsForBuyer } = useMessages()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  // Surface the number of active order/engagement conversations on the messages bell.
+  const messageThreadCount = user?.email ? getThreadsForBuyer(user.email).length : 0
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/auth/signin")
+    }
+    if (!isLoading && isAuthenticated && user?.role !== "buyer") {
+      router.push(user?.role === "admin" ? "/admin" : "/dashboard/manufacturer")
+    }
+  }, [isLoading, isAuthenticated, user, router])
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated || user?.role !== "buyer") {
+    return null
+  }
+
+  const isActive = (href: string, exact?: boolean) => {
+    if (exact) {
+      return pathname === href
+    }
+    return pathname.startsWith(href)
+  }
+
+  const handleLogout = () => {
+    logout()
+    router.push("/")
+  }
+
+  const SidebarContent = () => (
+    <div className="flex h-full flex-col">
+      {/* Logo */}
+      <div className="flex h-16 items-center justify-between border-b border-border px-4">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
+            <span className="text-sm font-bold text-secondary-foreground">SN</span>
+          </div>
+          <span className="font-serif text-lg font-medium text-foreground">SourceNest</span>
+        </Link>
+        <button 
+          className="lg:hidden text-foreground"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* User Info */}
+      <div className="border-b border-border p-4">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={user?.avatar} alt={user?.name} />
+            <AvatarFallback className="bg-secondary text-secondary-foreground">
+              {user?.name?.charAt(0) || "B"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">{user?.name || "Buyer"}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.company || "Your Company"}</p>
+          </div>
+          <Badge variant="secondary" className="text-xs">Buyer</Badge>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto p-4">
+        <ul className="space-y-1">
+          {sidebarItems.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  isActive(item.href, item.exact)
+                    ? "bg-secondary text-secondary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <item.icon className="h-5 w-5" />
+                <span className="flex-1">{item.title}</span>
+                {item.href.endsWith("/messages")
+                  ? messageThreadCount > 0 && (
+                      <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                        {messageThreadCount}
+                      </Badge>
+                    )
+                  : item.badge && (
+                      <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                        {item.badge}
+                      </Badge>
+                    )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Quick Actions */}
+      <div className="border-t border-border p-4">
+        <Button className="w-full gap-2" asChild>
+          <Link href="/rfq/new">
+            <FileText className="h-4 w-4" />
+            Submit New RFQ
+          </Link>
+        </Button>
+      </div>
+
+      {/* Footer Links */}
+      <div className="border-t border-border p-4">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <Link href="/help" className="flex items-center gap-1 hover:text-foreground">
+            <HelpCircle className="h-3 w-3" />
+            Help
+          </Link>
+          <Link href="/suppliers" className="flex items-center gap-1 hover:text-foreground">
+            <Globe className="h-3 w-3" />
+            Browse Suppliers
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="flex min-h-screen bg-muted/30">
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-foreground/50 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Desktop Sidebar */}
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-50 w-64 transform bg-card border-r border-border transition-transform duration-200 ease-in-out lg:static lg:translate-x-0",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <SidebarContent />
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Top Header */}
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-card px-4 lg:px-6">
+          <div className="flex items-center gap-4">
+            <button 
+              className="lg:hidden"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu className="h-6 w-6 text-foreground" />
+            </button>
+            
+            {/* Search */}
+            <div className="hidden md:flex">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search suppliers, products..."
+                  className="h-9 w-64 rounded-lg border border-input bg-background pl-9 pr-4 text-sm outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Contact Support */}
+            <Button variant="outline" size="sm" className="hidden gap-1.5 bg-transparent sm:inline-flex" asChild>
+              <Link href="/dashboard/buyer/support">
+                <LifeBuoy className="h-4 w-4" />
+                Contact Support
+              </Link>
+            </Button>
+
+            {/* Messages */}
+            <Button variant="ghost" size="icon" className="relative" asChild>
+              <Link href="/dashboard/buyer/messages" aria-label="Messages">
+                <MessageSquare className="h-5 w-5" />
+                {messageThreadCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
+                    {messageThreadCount}
+                  </span>
+                )}
+              </Link>
+            </Button>
+
+            {/* User Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="gap-2 px-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.avatar} alt={user?.name} />
+                    <AvatarFallback className="bg-secondary text-secondary-foreground">
+                      {user?.name?.charAt(0) || "B"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden text-sm font-medium md:inline-block">{user?.name || "Buyer"}</span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div>
+                    <p className="font-medium">{user?.name || "Buyer"}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/buyer/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/" className="cursor-pointer">
+                    <Globe className="mr-2 h-4 w-4" />
+                    View Website
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+          {children}
+        </main>
+      </div>
+    </div>
+  )
+}
