@@ -37,10 +37,10 @@ function NewRFQForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { toast } = useToast()
-  const productId = searchParams.get('product_id')
+  const productSlug = searchParams.get('product') || searchParams.get('product_id')
   
   const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(!!productId)
+  const [loading, setLoading] = useState(!!productSlug)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -68,9 +68,9 @@ function NewRFQForm() {
     s.industry.toLowerCase().includes(manufacturerSearch.toLowerCase())
   ).slice(0, 8)
 
-  // Fetch product if product_id provided
+  // Fetch product if product provided
   useEffect(() => {
-    if (!productId) {
+    if (!productSlug) {
       setLoading(false)
       return
     }
@@ -79,10 +79,45 @@ function NewRFQForm() {
       setLoading(true)
       setError(null)
       
-      const response = await getProduct(productId)
+      const response = await getProduct(productSlug)
       
       if (response.success && response.data) {
         setProduct(response.data)
+        if (response.data.supplierName) {
+          const found = suppliers.find(s => s.slug === response.data.supplierSlug || s.id === response.data.supplierId)
+          if (found) {
+            setSelectedSupplier(found)
+          } else {
+            setSelectedSupplier({
+              id: response.data.supplierId || "custom",
+              name: response.data.supplierName,
+              slug: response.data.supplierSlug || "custom-supplier",
+              description: "",
+              shortDescription: "",
+              industry: "General",
+              industrySlug: "general",
+              categories: [],
+              location: {
+                city: "Global",
+                country: "International",
+                countryCode: "INT"
+              },
+              reviewed: true,
+              reviewedLevel: "basic",
+              yearEstablished: new Date().getFullYear(),
+              employeeCount: "Unknown",
+              productCount: 0,
+              rating: 5.0,
+              reviewCount: 0,
+              responseRate: 100,
+              responseTime: "Usually responds within 24h",
+              onTimeDelivery: 100,
+              certifications: [],
+              mainProducts: [],
+              exportMarkets: []
+            })
+          }
+        }
       } else {
         setError(response.message || "Product not found")
       }
@@ -91,7 +126,7 @@ function NewRFQForm() {
     }
 
     fetchProduct()
-  }, [productId])
+  }, [productSlug])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
