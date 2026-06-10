@@ -3,9 +3,9 @@
   "version": "0.1.6",
   "private": true,
   "scripts": {
-    "dev": "npx next dev",
-    "build": "npx next build",
-    "start": "npx next start",
+    "dev": "node init && npx next dev",
+    "build": "node init && npx next build",
+    "start": "node init && npx next start",
     "lint": "eslint ."
   },
   "dependencies": {
